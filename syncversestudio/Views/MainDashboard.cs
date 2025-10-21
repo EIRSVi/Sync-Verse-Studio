@@ -269,12 +269,12 @@ namespace SyncVerseStudio.Views
             sidebarPanel.Controls.Add(navHeader);
             yPos += 40;
 
-            // Create role-based menu - removed sections, just direct menu items
+            // Create role-based menu in column layout
             switch (role)
             {
                 case UserRole.Administrator:
-                    // All admin menu items without sections
-                    CreateModernMenuItem("Dashboard", IconChar.ChartLine, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+                    // Core Operations Column
+                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Users", IconChar.Users, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
                     yPos += 52;
@@ -282,15 +282,15 @@ namespace SyncVerseStudio.Views
                     yPos += 52;
                     CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
                     yPos += 52;
-                    CreateModernMenuItem("Sales", IconChar.ChartLine, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
+                    CreateModernMenuItem("Sales", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
                     yPos += 52;
-                    CreateModernMenuItem("Customers", IconChar.Users, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
+                    CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
                     yPos += 52;
-                    CreateModernMenuItem("Reports", IconChar.ChartBar, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+                    CreateModernMenuItem("Reports", IconChar.FileAlt, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
                     yPos += 52;
@@ -298,17 +298,17 @@ namespace SyncVerseStudio.Views
                     break;
 
                 case UserRole.Cashier:
-                    CreateModernMenuItem("Dashboard", IconChar.ChartLine, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
                     yPos += 52;
-                    CreateModernMenuItem("Customers", IconChar.Users, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
+                    CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
                     break;
 
                 case UserRole.InventoryClerk:
-                    CreateModernMenuItem("Dashboard", IconChar.ChartLine, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
                     yPos += 52;
                     CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
                     yPos += 52;
@@ -316,7 +316,7 @@ namespace SyncVerseStudio.Views
                     yPos += 52;
                     CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
                     yPos += 52;
-                    CreateModernMenuItem("Stock Reports", IconChar.ChartBar, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+                    CreateModernMenuItem("Stock Reports", IconChar.FileAlt, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
                     break;
             }
         }
@@ -381,9 +381,8 @@ namespace SyncVerseStudio.Views
                         btn.Tag = btn.Tag is Color ? btn.Tag : null; // Keep color, remove selected flag
                     }
 
-                    // Set active state for clicked button
-                    var buttonAccentColor = (Color)clickedButton.Tag;
-                    clickedButton.BackColor = Color.FromArgb(80, buttonAccentColor.R, buttonAccentColor.G, buttonAccentColor.B);
+                    // Set active state for clicked button with single consistent color
+                    clickedButton.BackColor = accentColor;
                     clickedButton.ForeColor = Color.White;
                     clickedButton.IconColor = Color.White;
                     clickedButton.Tag = "selected"; // Mark as selected
@@ -500,7 +499,7 @@ namespace SyncVerseStudio.Views
             if (firstButton != null)
             {
                 var accentColor = GetModernRoleColor(role);
-                firstButton.BackColor = Color.FromArgb(80, accentColor.R, accentColor.G, accentColor.B);
+                firstButton.BackColor = accentColor;
                 firstButton.ForeColor = Color.White;
                 firstButton.IconColor = Color.White;
                 firstButton.Tag = "selected";
@@ -602,7 +601,7 @@ namespace SyncVerseStudio.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error during logout: {ex.Message}", "Logout Error",
+                MessageBox.Show($"{ex.Message}", "Logout Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }

@@ -70,7 +70,7 @@ namespace SyncVerseStudio.Views
 
             await CreateDashboardHeader(mainContainer);
             CreateLiveMetricsSection(mainContainer);
-            CreateDataOverviewSection(mainContainer);
+            CreateQuickActionsSection(mainContainer);
 
             this.Controls.Add(mainContainer);
         }
@@ -102,7 +102,7 @@ namespace SyncVerseStudio.Views
                 }
             };
 
-            // Welcome message without role
+            // Welcome message
             var welcomeLabel = new Label
             {
                 Text = $"Welcome back, {user.FirstName}!",
@@ -113,13 +113,13 @@ namespace SyncVerseStudio.Views
             };
             headerPanel.Controls.Add(welcomeLabel);
 
-            // Time zone status indicator (right side)
+            // Time status indicator
             var statusPanel = new Panel
             {
-                Size = new Size(250, 32),
-                Location = new Point(headerPanel.Width - 280, 35),
+                Size = new Size(200, 32),
+                Location = new Point(headerPanel.Width - 230, 35),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BackColor = Color.FromArgb(34, 197, 94) // green-500
+                BackColor = Color.FromArgb(34, 197, 94)
             };
 
             var statusLabel = new Label
@@ -128,7 +128,7 @@ namespace SyncVerseStudio.Views
                 Font = new Font("Segoe UI", 14F, FontStyle.Bold),
                 ForeColor = Color.White,
                 Location = new Point(15, 6),
-                Size = new Size(220, 20),
+                Size = new Size(170, 20),
                 TextAlign = ContentAlignment.MiddleLeft,
                 Name = "LiveStatusLabel"
             };
@@ -164,6 +164,82 @@ namespace SyncVerseStudio.Views
             container.Controls.Add(_cardsContainer);
         }
 
+        private void CreateQuickActionsSection(Panel container)
+        {
+            var actionsTitle = new Label
+            {
+                Text = "Quick Actions",
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Location = new Point(0, 600),
+                AutoSize = true
+            };
+            container.Controls.Add(actionsTitle);
+
+            var actionsPanel = new FlowLayoutPanel
+            {
+                Location = new Point(0, 640),
+                Size = new Size(container.Width - 60, 150),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                BackColor = Color.Transparent,
+                WrapContents = true,
+                AutoSize = false
+            };
+
+            var user = _authService.CurrentUser;
+            if (user != null)
+            {
+                switch (user.Role)
+                {
+                    case Models.UserRole.Administrator:
+                        CreateActionButton("Add New Product", Color.FromArgb(59, 130, 246), actionsPanel);
+                        CreateActionButton("Manage Users", Color.FromArgb(168, 85, 247), actionsPanel);
+                        CreateActionButton("View Reports", Color.FromArgb(34, 197, 94), actionsPanel);
+                        CreateActionButton("System Settings", Color.FromArgb(156, 163, 175), actionsPanel);
+                        break;
+
+                    case Models.UserRole.Cashier:
+                        CreateActionButton("New Sale", Color.FromArgb(34, 197, 94), actionsPanel);
+                        CreateActionButton("Customer Lookup", Color.FromArgb(59, 130, 246), actionsPanel);
+                        CreateActionButton("Sales History", Color.FromArgb(168, 85, 247), actionsPanel);
+                        break;
+
+                    case Models.UserRole.InventoryClerk:
+                        CreateActionButton("Add Product", Color.FromArgb(59, 130, 246), actionsPanel);
+                        CreateActionButton("Update Stock", Color.FromArgb(245, 158, 11), actionsPanel);
+                        CreateActionButton("Low Stock Alert", Color.FromArgb(239, 68, 68), actionsPanel);
+                        CreateActionButton("Stock Report", Color.FromArgb(34, 197, 94), actionsPanel);
+                        break;
+                }
+            }
+
+            container.Controls.Add(actionsPanel);
+        }
+
+        private void CreateActionButton(string text, Color bgColor, FlowLayoutPanel parent)
+        {
+            var button = new Button
+            {
+                Text = text,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = bgColor,
+                FlatStyle = FlatStyle.Flat,
+                Size = new Size(200, 45),
+                Margin = new Padding(10),
+                Cursor = Cursors.Hand
+            };
+
+            button.FlatAppearance.BorderSize = 0;
+            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(
+                Math.Max(0, bgColor.R - 20),
+                Math.Max(0, bgColor.G - 20),
+                Math.Max(0, bgColor.B - 20)
+            );
+
+            parent.Controls.Add(button);
+        }
+
         private void CreateLiveMetricCards()
         {
             var user = _authService.CurrentUser;
@@ -182,23 +258,23 @@ namespace SyncVerseStudio.Views
                     CreateLiveCard("Products", "0", IconChar.Box, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Categories", "0", IconChar.Tags, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Customers", "0", IconChar.Users, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Sales Today", "0", IconChar.DollarSign, Color.FromArgb(239, 68, 68), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Sales Today", "$0.00", IconChar.DollarSign, Color.FromArgb(239, 68, 68), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Suppliers", "0", IconChar.Truck, Color.FromArgb(245, 158, 11), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Users", "0", IconChar.UserTie, Color.FromArgb(156, 163, 175), cardWidth, cardHeight, cardMargin);
                     break;
 
                 case Models.UserRole.Cashier:
-                    CreateLiveCard("Today's Sales", "0", IconChar.DollarSign, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Today's Sales", "$0.00", IconChar.DollarSign, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Transactions", "0", IconChar.Receipt, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Customers", "0", IconChar.Users, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Average Sale", "0", IconChar.ChartLine, Color.FromArgb(245, 158, 11), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Average Sale", "$0.00", IconChar.ChartLine, Color.FromArgb(245, 158, 11), cardWidth, cardHeight, cardMargin);
                     break;
 
                 case Models.UserRole.InventoryClerk:
                     CreateLiveCard("Products", "0", IconChar.Box, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Low Stock", "0", IconChar.ExclamationTriangle, Color.FromArgb(239, 68, 68), cardWidth, cardHeight, cardMargin);
                     CreateLiveCard("Categories", "0", IconChar.Tags, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Stock Value", "0", IconChar.Gem, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Stock Value", "$0.00", IconChar.Gem, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
                     break;
             }
         }
@@ -247,128 +323,18 @@ namespace SyncVerseStudio.Views
             };
             card.Controls.Add(titleLabel);
 
-            if (!string.IsNullOrEmpty(value))
+            var valueLabel = new Label
             {
-                var valueLabel = new Label
-                {
-                    Text = value,
-                    Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                    ForeColor = Color.White,
-                    Location = new Point(100, 55),
-                    Size = new Size(width - 120, 35)
-                };
-                card.Controls.Add(valueLabel);
-                _cardValueLabels[title] = valueLabel;
-            }
+                Text = value,
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(100, 55),
+                Size = new Size(width - 120, 35)
+            };
+            card.Controls.Add(valueLabel);
+            _cardValueLabels[title] = valueLabel;
 
             _cardsContainer.Controls.Add(card);
-        }
-
-        private void CreateDataOverviewSection(Panel container)
-        {
-            var graphTitle = new Label
-            {
-                Text = "Sales Analytics",
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(0, 600),
-                AutoSize = true
-            };
-            container.Controls.Add(graphTitle);
-
-            // Create a simple chart-like visualization
-            var chartPanel = new Panel
-            {
-                Location = new Point(0, 640),
-                Size = new Size(container.Width - 60, 200),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
-                BackColor = Color.White,
-                Name = "ChartPanel"
-            };
-
-            chartPanel.Paint += (s, e) =>
-            {
-                var graphics = e.Graphics;
-                var rect = chartPanel.ClientRectangle;
-                
-                // Draw chart background
-                using (var brush = new SolidBrush(Color.White))
-                {
-                    graphics.FillRectangle(brush, rect);
-                }
-
-                // Draw grid lines
-                using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
-                {
-                    for (int i = 1; i <= 5; i++)
-                    {
-                        int y = rect.Height * i / 6;
-                        graphics.DrawLine(pen, 40, y, rect.Width - 20, y);
-                    }
-                    
-                    for (int i = 1; i <= 7; i++)
-                    {
-                        int x = 40 + (rect.Width - 60) * i / 8;
-                        graphics.DrawLine(pen, x, 20, x, rect.Height - 30);
-                    }
-                }
-
-                // Draw sample sales data as bars
-                var random = new Random(42); // Fixed seed for consistent display
-                var barWidth = (rect.Width - 100) / 7;
-                var colors = new Color[]
-                {
-                    Color.FromArgb(59, 130, 246),   // blue
-                    Color.FromArgb(34, 197, 94),    // green
-                    Color.FromArgb(168, 85, 247),   // purple
-                    Color.FromArgb(245, 158, 11),   // yellow
-                    Color.FromArgb(239, 68, 68),    // red
-                    Color.FromArgb(34, 197, 94),    // green
-                    Color.FromArgb(59, 130, 246)    // blue
-                };
-
-                for (int i = 0; i < 7; i++)
-                {
-                    var height = random.Next(50, rect.Height - 60);
-                    var x = 50 + i * barWidth + (barWidth - 30) / 2;
-                    var y = rect.Height - 40 - height;
-                    
-                    using (var brush = new SolidBrush(colors[i]))
-                    {
-                        graphics.FillRectangle(brush, x, y, 30, height);
-                    }
-                    
-                    // Draw day labels
-                    var dayLabels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
-                    using (var textBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
-                    {
-                        var textSize = graphics.MeasureString(dayLabels[i], new Font("Segoe UI", 9F));
-                        graphics.DrawString(dayLabels[i], new Font("Segoe UI", 9F), textBrush, 
-                            x + 15 - textSize.Width / 2, rect.Height - 25);
-                    }
-                }
-
-                // Draw Y-axis labels
-                using (var textBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
-                {
-                    var font = new Font("Segoe UI", 8F);
-                    for (int i = 0; i <= 5; i++)
-                    {
-                        var value = $"${i * 200}";
-                        var y = rect.Height - 40 - (rect.Height - 60) * i / 5;
-                        graphics.DrawString(value, font, textBrush, 5, y - 6);
-                    }
-                }
-
-                // Chart title
-                using (var titleBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
-                {
-                    var titleFont = new Font("Segoe UI", 12F, FontStyle.Bold);
-                    graphics.DrawString("Weekly Sales Overview", titleFont, titleBrush, 50, 5);
-                }
-            };
-
-            container.Controls.Add(chartPanel);
         }
 
         private async Task LoadDashboardDataAsync()
@@ -491,18 +457,6 @@ namespace SyncVerseStudio.Views
                     statusLabel.Text = DateTime.Now.ToString("HH:mm:ss");
                 }
             }));
-        }
-
-        private string GetTimeAgo(DateTime timestamp)
-        {
-            var timeSpan = DateTime.Now - timestamp;
-            return timeSpan switch
-            {
-                { TotalMinutes: < 1 } => "just now",
-                { TotalMinutes: < 60 } => $"{(int)timeSpan.TotalMinutes}m ago",
-                { TotalHours: < 24 } => $"{(int)timeSpan.TotalHours}h ago",
-                _ => timestamp.ToString("MM/dd")
-            };
         }
 
         private void ShowError(string message)
