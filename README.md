@@ -1084,8 +1084,452 @@ sqlcmd -S (localdb)\MSSQLLocalDB -E -Q "SELECT @@VERSION"
 - Documentation: This README and inline code comments
 
 ---
+# Implementation Plan
 
-**Document Version:** 2.0
-**Last Updated:** 2025-10-21 10:49:53 UTC
-**Author:** SyncVerse Studio Development Team
-**License:** Refer to LICENSE file in repository
+- [-] 1. Set up project structure and database foundation
+
+
+  - Create Windows Forms project in Visual Studio with .NET Framework 4.7.2+
+  - Install required NuGet packages: BCrypt.Net-Next, System.Data.SqlClient, Newtonsoft.Json, NLog
+  - Create folder structure: Models/, Data/, Business/, Forms/, Controls/, Utilities/
+  - Create SQL script to generate all database tables with indexes and sample data (Users, Roles, Categories, Suppliers, Products, Sales, SaleItems, StockMovements, AuditLogs)
+  - Configure App.config with connection string and NLog settings
+  - _Requirements: 10.1, 10.3, 10.5_
+
+- [ ] 2. Implement data models and utilities
+  - [ ] 2.1 Create all model classes
+    - Write User, Role, Product, Category, Supplier, Sale, SaleItem, StockMovement, and AuditLog model classes with properties matching database schema
+    - _Requirements: 1.1, 3.2, 4.2, 5.2, 6.1, 7.2, 8.1, 9.2_
+  
+  - [ ] 2.2 Implement utility classes
+    - Write SessionManager static class with UserID, Username, RoleID, RoleCode properties and SetSession/ClearSession/GetIPAddress methods
+    - Write PasswordHelper static class with HashPassword and VerifyPassword methods using BCrypt
+    - Write ValidationHelper static class with IsValidEmail, IsValidPhoneNumber, ValidateRequired, ValidateLength methods
+    - _Requirements: 1.4, 15.1, 15.4_
+
+- [ ] 3. Build data access layer (repositories)
+  - [ ] 3.1 Create database connection class
+    - Write DbConnection class with GetConnection method returning SqlConnection using connection string from App.config
+    - Implement connection error handling with NLog logging
+    - _Requirements: 10.1, 10.2, 10.5_
+  
+  - [ ] 3.2 Implement UserRepository
+    - Write GetAll, GetById, GetByUsername, Create, Update, Delete (soft delete), Search, UpdateLastLogin methods
+    - Use parameterized SQL queries for all operations
+    - _Requirements: 1.1, 1.2, 1.5, 3.2, 3.4, 3.5, 10.3_
+  
+  - [ ] 3.3 Implement ProductRepository
+    - Write GetAll, GetById, GetByCode, GetByBarcode, Create, Update, Delete (soft delete), Search, GetLowStockProducts, UpdateStock methods
+    - Join with Categories and Suppliers tables to include names
+    - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 8.4, 10.3_
+  
+  - [ ] 3.4 Implement CategoryRepository
+    - Write GetAll, GetById, GetByCode, Create, Update, Delete (soft delete with product check), Search, GetSubCategories methods
+    - Join with parent categories to include parent names
+    - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 10.3_
+  
+  - [ ] 3.5 Implement SupplierRepository
+    - Write GetAll, GetById, GetByCode, Create, Update, Delete (soft delete), Search methods
+    - _Requirements: 6.1, 6.3, 6.4, 6.5, 10.3_
+  
+  - [ ] 3.6 Implement SalesRepository
+    - Write GetAll, GetById, GetByUser, GetByDateRange, Create (with transaction for Sales and SaleItems), GetSaleItems, Search methods
+    - Implement transaction handling for multi-table inserts
+    - _Requirements: 7.2, 10.3, 10.4, 14.1_
+  
+  - [ ] 3.7 Implement StockMovementRepository
+    - Write GetAll, GetByProduct, GetByDateRange, Create, Search methods
+    - _Requirements: 8.1, 8.2, 8.3, 8.5, 10.3_
+  
+  - [ ] 3.8 Implement AuditLogRepository
+    - Write GetAll, GetByUser, GetByDateRange, GetByAction, GetByTable, Create, Search methods
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 10.3_
+
+- [ ] 4. Build business logic layer (services)
+  - [ ] 4.1 Implement UserService
+    - Write AuthenticateUser method with BCrypt password verification
+    - Write CreateUser method with password hashing and audit logging
+    - Write UpdateUser and DeleteUser methods with audit logging
+    - Write GetAllUsers, SearchUsers, ValidateUser methods
+    - _Requirements: 1.1, 1.2, 3.1, 3.2, 3.4, 3.5, 15.4_
+  
+  - [ ] 4.2 Implement ProductService
+    - Write CreateProduct, UpdateProduct, DeleteProduct methods with audit logging
+    - Write GetAllProducts, GetLowStockProducts, SearchProducts methods
+    - Write ValidateProduct method checking unique code/barcode/SKU and positive prices
+    - Write GenerateProductCode method to auto-generate next code
+    - _Requirements: 4.1, 4.2, 4.4, 4.5, 8.4_
+  
+  - [ ] 4.3 Implement CategoryService
+    - Write CreateCategory, UpdateCategory, DeleteCategory methods with audit logging
+    - Write GetAllCategories, SearchCategories methods
+    - Write ValidateCategory method checking unique code/name
+    - Write GenerateCategoryCode method to auto-generate next code
+    - _Requirements: 5.1, 5.4, 5.5_
+  
+  - [ ] 4.4 Implement SupplierService
+    - Write CreateSupplier, UpdateSupplier, DeleteSupplier methods with audit logging
+    - Write GetAllSuppliers, SearchSuppliers methods
+    - Write ValidateSupplier method checking unique code/name and email format
+    - Write GenerateSupplierCode method to auto-generate next code
+    - _Requirements: 6.1, 6.2, 6.4, 6.5_
+  
+  - [ ] 4.5 Implement SalesService
+    - Write ProcessSale method with transaction handling for sale creation, stock updates, stock movements, and audit logging
+    - Write GetAllSales, GetSalesByUser, GetSalesByDateRange, SearchSales methods
+    - Write CalculateSaleTotals method for SubTotal, TaxAmount, TotalAmount calculations
+    - Write GenerateSaleCode and ValidateSale methods
+    - _Requirements: 7.1, 7.2, 7.3, 7.4, 10.4, 14.5_
+  
+  - [ ] 4.6 Implement StockMovementService
+    - Write RecordStockIn, RecordStockOut, RecordStockAdjustment methods
+    - Write GetAllMovements, GetMovementsByProduct, GetMovementsByDateRange, SearchMovements methods
+    - _Requirements: 8.1, 8.2, 8.3, 8.5_
+  
+  - [ ] 4.7 Implement AuditService
+    - Write LogAction method to create audit log entries with JSON serialization for old/new values
+    - Write GetAllLogs, GetLogsByUser, GetLogsByDateRange, GetLogsByAction, GetLogsByTable, SearchLogs methods
+    - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5_
+
+- [ ] 5. Create custom UI controls with VS Code theme
+  - [ ] 5.1 Implement CustomButton control
+    - Create CustomButton class inheriting from Button
+    - Apply VS Code theme colors (#0E639C primary, #3C3C3C secondary)
+    - Implement hover effect (brightness +10%) and active state (#007ACC)
+    - Set border radius 2px, height 28px, padding 12px horizontal
+    - _Requirements: 11.1, 11.2_
+  
+  - [ ] 5.2 Implement CustomTextBox control
+    - Create CustomTextBox class inheriting from TextBox
+    - Apply VS Code theme colors (background #3C3C3C, text #CCCCCC, border #3E3E42)
+    - Implement focus border color #007ACC
+    - Add PlaceholderText, IsPassword, ValidationMessage properties
+    - Add inline error message label below textbox with red color #F48771
+    - _Requirements: 11.1, 11.2, 12.2, 12.3_
+  
+  - [ ] 5.3 Implement CustomDataGridView control
+    - Create CustomDataGridView class inheriting from DataGridView
+    - Apply VS Code theme colors (header #252526, alternating rows #2D2D30, grid lines #3E3E42)
+    - Implement row hover effect (background #2A2D2E with #007ACC left border 3px)
+    - Set selection color #264F78
+    - _Requirements: 11.1, 11.2, 13.3, 13.4_
+  
+  - [ ] 5.4 Implement ToastNotification control
+    - Create ToastNotification user control with width 320px
+    - Implement slide-in animation from right side
+    - Add auto-dismiss timer (4 seconds) and close button
+    - Create Success, Error, Warning, Info types with appropriate border colors (#4EC9B0, #F48771, #CE9178, #007ACC)
+    - Implement queue management for multiple toasts
+    - Position at bottom-right corner with 20px margin
+    - _Requirements: 11.5, 12.5_
+  
+  - [ ] 5.5 Implement SidebarNavigation control
+    - Create SidebarNavigation user control with width 250px (expanded) / 48px (collapsed)
+    - Apply background color #252526 with border right #3E3E42
+    - Implement active item styling (#37373D background, #007ACC left border 2px)
+    - Implement hover effect (#2A2D2E background)
+    - Add collapse/expand button functionality
+    - _Requirements: 11.4_
+  
+  - [ ] 5.6 Implement ConfirmationPanel control
+    - Create ConfirmationPanel user control that slides in from right
+    - Add semi-transparent overlay background
+    - Include message label, optional details, Confirm and Cancel buttons
+    - Implement slide-in/out animation
+    - _Requirements: 12.4_
+
+- [ ] 6. Implement login and authentication
+  - [ ] 6.1 Create LoginForm
+    - Design form with centered layout (600x400), VS Code dark theme
+    - Add PictureBox for github.com.png logo at top
+    - Add CustomTextBox controls for Username and Password
+    - Add CustomButton for Login
+    - Add Label for inline error messages below form
+    - _Requirements: 1.2, 1.3, 11.1, 11.2_
+  
+  - [ ] 6.2 Implement login logic
+    - Wire Login button click event to call UserService.AuthenticateUser
+    - On success, call SessionManager.SetSession and UserRepository.UpdateLastLogin
+    - Redirect to appropriate dashboard based on RoleCode
+    - On failure, display inline error message without popup
+    - Handle database connection errors with inline message
+    - _Requirements: 1.1, 1.2, 1.4, 1.5, 10.2, 15.1_
+
+- [ ] 7. Create base dashboard form and role-specific dashboards
+  - [ ] 7.1 Create BaseDashboardForm
+    - Design full-screen form (1920x1080) with VS Code dark theme
+    - Add SidebarNavigation control on left
+    - Add top bar panel with user info label (SessionManager.FullName) and logout button
+    - Add content panel on right for module cards
+    - Implement logout button to call SessionManager.ClearSession and redirect to LoginForm
+    - _Requirements: 2.5, 11.1, 11.4, 15.2, 15.3_
+  
+  - [ ] 7.2 Create AdminDashboardForm
+    - Inherit from BaseDashboardForm
+    - Add 10 module cards/buttons: User Management, Role Management, Product Management, Category Management, Supplier Management, Sales Overview, Inventory Overview, Reports Center, System Settings, Audit Trail
+    - Wire each button to open corresponding form
+    - _Requirements: 2.1_
+  
+  - [ ] 7.3 Create ManagerDashboardForm
+    - Inherit from BaseDashboardForm
+    - Add 7 module cards/buttons: Product Management, Category Management, Supplier Management, Sales Reports, Inventory Management, Staff Performance, Financial Reports
+    - Wire each button to open corresponding form
+    - _Requirements: 2.2_
+  
+  - [ ] 7.4 Create CashierDashboardForm
+    - Inherit from BaseDashboardForm
+    - Add 5 module cards/buttons: Point of Sale, Product Lookup, Customer Management, My Sales Report, Transaction History
+    - Wire each button to open corresponding form
+    - _Requirements: 2.3_
+  
+  - [ ] 7.5 Create ClerkDashboardForm
+    - Inherit from BaseDashboardForm (same layout as Admin)
+    - Add 8 module cards/buttons: Product Management, Category Management, Supplier Management, Stock Receiving, Stock Adjustments, Stock Transfer, Inventory Reports, Low Stock Alerts
+    - Wire each button to open corresponding form
+    - _Requirements: 2.4_
+
+- [ ] 8. Implement User Management module (Admin only)
+  - [ ] 8.1 Create UserManagementForm
+    - Design form with CustomDataGridView for users list
+    - Add search CustomTextBox with real-time filtering
+    - Add Add, Edit, Delete CustomButtons
+    - Add inline form panel for create/edit with fields: Username, Email, Password, FullName, RoleID dropdown, ProfileImagePath, Status dropdown
+    - Add validation labels for each field
+    - _Requirements: 3.1, 3.3, 11.1, 12.1, 12.2, 13.1_
+  
+  - [ ] 8.2 Implement user CRUD operations
+    - Wire Add button to show inline form with empty fields
+    - Wire Edit button to populate inline form with selected user data
+    - Wire Save button to call UserService.CreateUser or UpdateUser with validation
+    - Display inline validation errors without popups
+    - Wire Delete button to show ConfirmationPanel, then call UserService.DeleteUser
+    - Display toast notification on success
+    - Refresh DataGridView after each operation
+    - _Requirements: 3.1, 3.2, 3.4, 3.5, 12.2, 12.4, 12.5_
+  
+  - [ ] 8.3 Implement search and filter
+    - Wire search textbox TextChanged event to filter DataGridView rows
+    - Filter by Username, Email, or FullName columns
+    - _Requirements: 3.3, 13.1, 13.2_
+
+- [ ] 9. Implement Product Management module
+  - [ ] 9.1 Create ProductManagementForm
+    - Design form with CustomDataGridView for products list
+    - Add search CustomTextBox and category filter dropdown
+    - Add Add, Edit, Delete CustomButtons
+    - Add inline form panel with fields: ProductCode (auto-generated), ProductName, Description, CategoryID dropdown, SupplierID dropdown, CostPrice, SellingPrice, DiscountPercent, TaxRate, StockQuantity, ReorderLevel, MainImagePath, Barcode, SKU, Status dropdown
+    - Add validation labels and low stock indicator
+    - _Requirements: 4.1, 4.3, 11.1, 12.1, 12.2, 13.1_
+  
+  - [ ] 9.2 Implement product CRUD operations
+    - Wire Add button to show inline form with auto-generated ProductCode
+    - Wire Edit button to populate inline form with selected product data
+    - Wire Save button to call ProductService.CreateProduct or UpdateProduct with validation
+    - Display inline validation errors for required fields, unique constraints, positive prices
+    - Wire Delete button to show ConfirmationPanel, then call ProductService.DeleteProduct
+    - Display toast notification on success
+    - Refresh DataGridView after each operation
+    - _Requirements: 4.1, 4.2, 4.4, 4.5, 12.2, 12.4, 12.5_
+  
+  - [ ] 9.3 Implement search, filter, and low stock alerts
+    - Wire search textbox to filter by ProductCode, ProductName, Barcode, or SKU
+    - Wire category dropdown to filter by CategoryID
+    - Highlight rows in red where StockQuantity <= ReorderLevel
+    - _Requirements: 4.3, 8.4, 13.1, 13.2_
+
+- [ ] 10. Implement Category Management module
+  - [ ] 10.1 Create CategoryManagementForm
+    - Design form with CustomDataGridView for categories list
+    - Add search CustomTextBox
+    - Add Add, Edit, Delete CustomButtons
+    - Add inline form panel with fields: CategoryCode (auto-generated), CategoryName, ParentCategoryID dropdown, Description, DisplayOrder, Status dropdown
+    - Add validation labels
+    - _Requirements: 5.1, 5.3, 11.1, 12.1, 12.2, 13.1_
+  
+  - [ ] 10.2 Implement category CRUD operations
+    - Wire Add button to show inline form with auto-generated CategoryCode
+    - Wire Edit button to populate inline form with selected category data
+    - Wire Save button to call CategoryService.CreateCategory or UpdateCategory with validation
+    - Display inline validation errors for unique constraints
+    - Wire Delete button to check for associated products, show ConfirmationPanel or error message, then call CategoryService.DeleteCategory
+    - Display toast notification on success
+    - Refresh DataGridView after each operation
+    - _Requirements: 5.1, 5.4, 5.5, 12.2, 12.4, 12.5_
+  
+  - [ ] 10.3 Implement search and hierarchical display
+    - Wire search textbox to filter by CategoryCode or CategoryName
+    - Display ParentCategoryName in DataGridView for hierarchical view
+    - _Requirements: 5.2, 5.3, 13.1_
+
+- [ ] 11. Implement Supplier Management module
+  - [ ] 11.1 Create SupplierManagementForm
+    - Design form with CustomDataGridView for suppliers list
+    - Add search CustomTextBox
+    - Add Add, Edit, Delete CustomButtons
+    - Add inline form panel with fields: SupplierCode (auto-generated), SupplierName, ContactPerson, PhoneNumber, Email, Address, City, PostalCode, Country, SupplierType, PaymentTerms, Status dropdown
+    - Add validation labels
+    - _Requirements: 6.1, 6.3, 11.1, 12.1, 12.2, 13.1_
+  
+  - [ ] 11.2 Implement supplier CRUD operations
+    - Wire Add button to show inline form with auto-generated SupplierCode
+    - Wire Edit button to populate inline form with selected supplier data
+    - Wire Save button to call SupplierService.CreateSupplier or UpdateSupplier with validation
+    - Display inline validation errors for unique constraints and email/phone format
+    - Wire Delete button to show ConfirmationPanel, then call SupplierService.DeleteSupplier
+    - Display toast notification on success
+    - Refresh DataGridView after each operation
+    - _Requirements: 6.1, 6.2, 6.4, 6.5, 12.2, 12.4, 12.5_
+  
+  - [ ] 11.3 Implement search functionality
+    - Wire search textbox to filter by SupplierCode, SupplierName, or ContactPerson
+    - _Requirements: 6.3, 13.1_
+
+- [ ] 12. Implement Sales/POS module (Cashier)
+  - [ ] 12.1 Create SalesForm (POS interface)
+    - Design form with product search/scan CustomTextBox at top
+    - Add shopping cart CustomDataGridView with columns: ProductName, Quantity, UnitPrice, DiscountAmount, TaxAmount, LineTotal
+    - Add product list panel on left with available products
+    - Add quantity NumericUpDown and Add to Cart button
+    - Add Remove Item button for selected cart item
+    - Add labels for SubTotal, TaxAmount, DiscountAmount, TotalAmount with real-time calculation
+    - Add payment method dropdown (Cash, Credit Card, Debit Card)
+    - Add Complete Sale and Clear Cart CustomButtons
+    - _Requirements: 7.1, 7.3, 11.1_
+  
+  - [ ] 12.2 Implement POS operations
+    - Wire product search textbox to filter product list by ProductCode, ProductName, or Barcode
+    - Wire Add to Cart button to add selected product with quantity to cart DataGridView
+    - Implement real-time calculation of SubTotal, TaxAmount, TotalAmount as items are added/removed
+    - Wire Remove Item button to remove selected item from cart
+    - Wire Clear Cart button to empty cart DataGridView
+    - Wire Complete Sale button to call SalesService.ProcessSale with validation
+    - Display inline error if insufficient stock
+    - Display toast notification on successful sale completion
+    - Clear cart after successful sale
+    - _Requirements: 7.1, 7.2, 7.4, 7.5, 12.5_
+  
+  - [ ] 12.3 Implement stock validation
+    - Check product StockQuantity before adding to cart
+    - Display inline error message if quantity exceeds available stock
+    - Validate entire cart before completing sale
+    - _Requirements: 7.2_
+
+- [ ] 13. Implement Inventory Management module (Clerk)
+  - [ ] 13.1 Create InventoryForm
+    - Design form with CustomDataGridView for stock movements list
+    - Add filter dropdowns for Product, MovementType (IN/OUT/ADJUSTMENT)
+    - Add date range pickers for start and end dates
+    - Add Stock In, Stock Out, Stock Adjustment CustomButtons
+    - Add inline form panel with fields: ProductID dropdown, Quantity, Reason, Notes
+    - Add Low Stock Alerts section with CustomDataGridView showing products where StockQuantity <= ReorderLevel
+    - _Requirements: 8.3, 8.4, 11.1, 13.1_
+  
+  - [ ] 13.2 Implement stock movement operations
+    - Wire Stock In button to show inline form, then call StockMovementService.RecordStockIn
+    - Wire Stock Out button to show inline form, then call StockMovementService.RecordStockOut
+    - Wire Stock Adjustment button to show inline form, then call StockMovementService.RecordStockAdjustment
+    - Display toast notification on success
+    - Refresh stock movements DataGridView after each operation
+    - Refresh low stock alerts section
+    - _Requirements: 8.1, 8.2, 8.5, 12.5_
+  
+  - [ ] 13.3 Implement filters and low stock alerts
+    - Wire product dropdown to filter movements by ProductID
+    - Wire movement type dropdown to filter by MovementType
+    - Wire date range pickers to filter by MovementDate
+    - Load low stock products using ProductService.GetLowStockProducts
+    - _Requirements: 8.3, 8.4, 13.1, 13.2_
+
+- [ ] 14. Implement Reports module
+  - [ ] 14.1 Create ReportsForm
+    - Design form with report type dropdown (Sales Report, Inventory Report, User Activity Report)
+    - Add date range pickers for start and end dates
+    - Add filter options panel (varies by report type)
+    - Add CustomDataGridView for report results
+    - Add Generate Report and Export to PDF CustomButtons
+    - _Requirements: 14.1, 14.2, 11.1_
+  
+  - [ ] 14.2 Implement report generation
+    - Wire Generate Report button to call appropriate service method based on report type
+    - For Sales Report, call SalesService.GetSalesByDateRange and display in DataGridView
+    - For Inventory Report, call StockMovementService.GetMovementsByDateRange
+    - For User Activity Report, call AuditService.GetLogsByDateRange
+    - Filter results by logged-in user if role is Cashier
+    - _Requirements: 14.1, 14.2, 14.5_
+  
+  - [ ] 14.3 Implement PDF export
+    - Install QuestPDF NuGet package
+    - Wire Export to PDF button to generate PDF from DataGridView data
+    - Save PDF directly to Documents folder without showing file dialog
+    - Display toast notification with file path on success
+    - _Requirements: 14.3, 14.4_
+
+- [ ] 15. Implement Audit Trail module (Admin only)
+  - [ ] 15.1 Create AuditLogForm
+    - Design form with CustomDataGridView for audit logs list
+    - Add filter dropdowns for User, Action, Table
+    - Add date range pickers for start and end dates
+    - Add search CustomTextBox
+    - Add View Details button to show OldValue and NewValue in a panel
+    - _Requirements: 9.3, 11.1, 13.1_
+  
+  - [ ] 15.2 Implement audit log viewing and filtering
+    - Load all logs using AuditService.GetAllLogs on form load
+    - Wire user dropdown to filter by UserID
+    - Wire action dropdown to filter by Action
+    - Wire table dropdown to filter by TableName
+    - Wire date range pickers to filter by LogDate
+    - Wire search textbox to filter by Action, TableName, or Description
+    - Wire View Details button to display OldValue and NewValue JSON in formatted panel
+    - _Requirements: 9.3, 9.4, 13.1, 13.2_
+
+- [ ] 16. Implement session validation and role-based access control
+  - [ ] 16.1 Add session validation to all forms
+    - Override OnLoad method in BaseDashboardForm to check SessionManager.IsLoggedIn
+    - Redirect to LoginForm if session is invalid
+    - _Requirements: 15.2_
+  
+  - [ ] 16.2 Implement role-based form access
+    - Check SessionManager.RoleCode before opening each form
+    - Hide/disable module buttons in dashboards based on role permissions
+    - For UserManagementForm, only allow access if SessionManager.IsAdmin
+    - For AuditLogForm, only allow access if SessionManager.IsAdmin
+    - For ProductManagementForm, allow access if IsAdmin, IsManager, or IsClerk
+    - For SalesForm, allow access if IsCashier
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 3.6_
+
+- [ ] 17. Final integration and testing
+  - [ ] 17.1 Test complete user workflows
+    - Test login flow for each role (Admin, Manager, Cashier, Clerk)
+    - Test product creation by Clerk, then sale by Cashier
+    - Test stock movement recording and low stock alerts
+    - Test user creation by Admin and login with new user
+    - Test report generation and PDF export
+    - _Requirements: All_
+  
+  - [ ] 17.2 Verify VS Code theme consistency
+    - Review all forms and controls for consistent color scheme
+    - Verify all colors match specification (#1E1E1E, #252526, #007ACC, etc.)
+    - Test hover and active states on all interactive elements
+    - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5_
+  
+  - [ ] 17.3 Verify no popup dialogs
+    - Test all error scenarios to ensure inline error messages display
+    - Test all delete operations to ensure ConfirmationPanel displays instead of MessageBox
+    - Test all success operations to ensure toast notifications display
+    - Search codebase for MessageBox.Show() calls and remove any found
+    - _Requirements: 1.2, 12.2, 12.4, 12.5_
+  
+  - [ ] 17.4 Test audit logging
+    - Perform CRUD operations on all entities
+    - Verify AuditLogs table contains entries for each operation
+    - Verify OldValue and NewValue are stored as JSON
+    - Verify UserID and IPAddress are captured
+    - _Requirements: 9.1, 9.2_
+  
+  - [ ] 17.5 Test database error handling
+    - Disconnect database and test login form error display
+    - Test transaction rollback by simulating errors during sale processing
+    - Verify all errors are logged to file using NLog
+    - Verify no technical error details are shown to users
+    - _Requirements: 10.2, 10.4, 10.5_
