@@ -259,378 +259,379 @@ namespace SyncVerseStudio.Views
         {
             // Navigation header
             var navHeader = new Label
-            {
-                Text = "NAVIGATION",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(148, 163, 184), // slate-400
-                Location = new Point(30, yPos),
-                Size = new Size(260, 25)
-            };
-            sidebarPanel.Controls.Add(navHeader);
-            yPos += 40;
+       {
+ Text = "NAVIGATION",
+       Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+    ForeColor = Color.FromArgb(148, 163, 184), // slate-400
+   Location = new Point(30, yPos),
+        Size = new Size(260, 25)
+   };
+sidebarPanel.Controls.Add(navHeader);
+     yPos += 45;
 
-            // Create role-based menu in column layout
-            switch (role)
-            {
-                case UserRole.Administrator:
-                    // Core Operations Column
-                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Users", IconChar.Users, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Sales", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
-                    yPos += 52;
+     // Create role-based menu with better spacing
+   switch (role)
+        {
+  case UserRole.Administrator:
+            // Core Operations
+              CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+        yPos += 55;
+     CreateModernMenuItem("Users", IconChar.Users, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
+   yPos += 55;
+       CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+                yPos += 55;
+     CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
+       yPos += 55;
+ CreateModernMenuItem("Sales", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
+        yPos += 55;
+             CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
+   yPos += 55;
                     CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Reports", IconChar.FileAlt, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Audit Logs", IconChar.FileText, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
-                    break;
+         yPos += 55;
+  CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+         yPos += 55;
+                  CreateModernMenuItem("Reports", IconChar.FileAlt, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+      yPos += 55;
+    CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
+    yPos += 55;
+         CreateModernMenuItem("Audit Logs", IconChar.FileText, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
+    break;
 
-                case UserRole.Cashier:
-                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
-                    break;
+    case UserRole.Cashier:
+          CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+         yPos += 55;
+          CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
+     yPos += 55;
+ CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
+         yPos += 55;
+            CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
+      break;
 
-                case UserRole.InventoryClerk:
-                    CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
-                    yPos += 52;
-                    CreateModernMenuItem("Stock Reports", IconChar.FileAlt, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
-                    break;
-            }
-        }
-
-        private void CreateModernMenuItem(string text, IconChar icon, Color accentColor, int yPos, Action clickAction)
-        {
-            var menuItem = new IconButton
-            {
-             Text = $" {text}", // Proper spacing for text
-Font = new Font("Segoe UI", 13F, FontStyle.Regular), // Slightly larger font
-                ForeColor = Color.FromArgb(226, 232, 240), // slate-200
-                BackColor = Color.Transparent,
-   FlatStyle = FlatStyle.Flat,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Location = new Point(20, yPos),
-                Size = new Size(280, 48), // Adjusted width for new sidebar width
-      Cursor = Cursors.Hand,
-     IconChar = icon,
-                IconColor = Color.FromArgb(148, 163, 184), // slate-400
-                IconSize = 22, // Slightly larger icon
-                Padding = new Padding(25, 0, 25, 0), // Better padding
-      TextImageRelation = TextImageRelation.ImageBeforeText,
-        Tag = accentColor // Store accent color for later use
-    };
-
-    menuItem.FlatAppearance.BorderSize = 0;
-    
-    // Modern hover and click effects
-    menuItem.MouseEnter += (s, e) =>
-    {
-    if (menuItem.Tag?.ToString() != "selected")
-        {
-            menuItem.BackColor = Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B);
-       menuItem.ForeColor = Color.White;
-        menuItem.IconColor = Color.White;
-        }
-    };
-
-    menuItem.MouseLeave += (s, e) =>
-    {
-      if (menuItem.Tag?.ToString() != "selected")
-        {
-            menuItem.BackColor = Color.Transparent;
-        menuItem.ForeColor = Color.FromArgb(226, 232, 240);
-        menuItem.IconColor = Color.FromArgb(148, 163, 184);
-        }
-    };
-
-    menuItem.Click += (s, e) =>
-    {
-  try
-        {
-     // Get reference to the clicked button
- var clickedButton = (IconButton)s;
-  
-  // Reset all buttons to default state
- foreach (var btn in menuButtons)
-         {
-                btn.BackColor = Color.Transparent;
-         btn.ForeColor = Color.FromArgb(226, 232, 240);
-      btn.IconColor = Color.FromArgb(148, 163, 184);
-             btn.Tag = btn.Tag is Color ? btn.Tag : null; // Keep color, remove selected flag
-            }
-
-        // Set active state for clicked button with single consistent color
-    clickedButton.BackColor = accentColor;
-      clickedButton.ForeColor = Color.White;
-            clickedButton.IconColor = Color.White;
-          clickedButton.Tag = "selected"; // Mark as selected
-
-        clickAction();
-        }
-        catch (Exception ex)
-{
-            MessageBox.Show($"Error: {ex.Message}", "Navigation Error", 
-         MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    };
-
-    menuButtons.Add(menuItem);
-    sidebarPanel.Controls.Add(menuItem);
+        case UserRole.InventoryClerk:
+        CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+      yPos += 55;
+    CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+    yPos += 55;
+                CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+         yPos += 55;
+          CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+  yPos += 55;
+ CreateModernMenuItem("Stock Reports", IconChar.FileAlt, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+    break;
 }
+        }
+
+   private void CreateModernMenuItem(string text, IconChar icon, Color accentColor, int yPos, Action clickAction)
+        {
+       var menuItem = new IconButton
+            {
+ Text = $"   {text}", // Add spacing for better alignment
+              Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+          ForeColor = Color.FromArgb(226, 232, 240), // slate-200
+    BackColor = Color.Transparent,
+          FlatStyle = FlatStyle.Flat,
+                TextAlign = ContentAlignment.MiddleLeft,
+  Location = new Point(15, yPos),
+     Size = new Size(290, 50),
+   Cursor = Cursors.Hand,
+   IconChar = icon,
+         IconColor = Color.FromArgb(148, 163, 184), // slate-400
+    IconSize = 24,
+                Padding = new Padding(15, 0, 15, 0),
+           TextImageRelation = TextImageRelation.ImageBeforeText,
+             ImageAlign = ContentAlignment.MiddleLeft,
+        Tag = accentColor // Store accent color for later use
+            };
+
+       menuItem.FlatAppearance.BorderSize = 0;
+         
+      // Modern hover and click effects
+            menuItem.MouseEnter += (s, e) =>
+            {
+      if (menuItem.Tag?.ToString() != "selected")
+          {
+    menuItem.BackColor = Color.FromArgb(30, 41, 59); // slate-800
+             menuItem.ForeColor = Color.White;
+      menuItem.IconColor = accentColor;
+     }
+        };
+
+            menuItem.MouseLeave += (s, e) =>
+         {
+                if (menuItem.Tag?.ToString() != "selected")
+   {
+           menuItem.BackColor = Color.Transparent;
+        menuItem.ForeColor = Color.FromArgb(226, 232, 240);
+           menuItem.IconColor = Color.FromArgb(148, 163, 184);
+         }
+};
+
+     menuItem.Click += (s, e) =>
+            {
+      try
+        {
+   // Get reference to the clicked button
+        var clickedButton = (IconButton)s;
+       
+     // Reset all buttons to default state
+                    foreach (var btn in menuButtons)
+         {
+        btn.BackColor = Color.Transparent;
+    btn.ForeColor = Color.FromArgb(226, 232, 240);
+        btn.IconColor = Color.FromArgb(148, 163, 184);
+            btn.Tag = btn.Tag is Color ? btn.Tag : null; // Keep color, remove selected flag
+      }
+
+              // Set active state for clicked button
+        clickedButton.BackColor = accentColor;
+          clickedButton.ForeColor = Color.White;
+          clickedButton.IconColor = Color.White;
+  clickedButton.Tag = "selected"; // Mark as selected
+
+     clickAction();
+        }
+              catch (Exception ex)
+     {
+MessageBox.Show($"Error: {ex.Message}", "Navigation Error", 
+         MessageBoxButtons.OK, MessageBoxIcon.Error);
+         }
+        };
+
+   menuButtons.Add(menuItem);
+ sidebarPanel.Controls.Add(menuItem);
+   }
 
         private void CreateSidebarFooter()
         {
-            // Compact logout button - icon only with minimal styling
-            logoutButton = new IconButton
-            {
-                BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(148, 163, 184), // slate-400
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular), // Slightly larger
-                IconChar = IconChar.ArrowRightFromBracket,
-                IconColor = Color.FromArgb(148, 163, 184), // slate-400
-                IconSize = 20, // Slightly larger
-                Text = "   Logout",
+    // Compact logout button - icon only with minimal styling
+        logoutButton = new IconButton
+    {
+         BackColor = Color.Transparent,
+ ForeColor = Color.FromArgb(148, 163, 184), // slate-400
+        FlatStyle = FlatStyle.Flat,
+       Font = new Font("Segoe UI", 10F, FontStyle.Regular), // Slightly larger
+      IconChar = IconChar.ArrowRightFromBracket,
+     IconColor = Color.FromArgb(148, 163, 184), // slate-400
+      IconSize = 20, // Slightly larger
+       Text = "   Logout",
                 TextAlign = ContentAlignment.MiddleLeft,
-                Size = new Size(280, 40), // Adjusted for new sidebar width
-                Location = new Point(20, this.ClientSize.Height - 70),
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-                Cursor = Cursors.Hand,
-                Padding = new Padding(20, 0, 20, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText
+      Size = new Size(280, 40), // Adjusted for new sidebar width
+    Location = new Point(20, this.ClientSize.Height - 70),
+           Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+          Cursor = Cursors.Hand,
+           Padding = new Padding(20, 0, 20, 0),
+     TextImageRelation = TextImageRelation.ImageBeforeText
             };
 
             logoutButton.FlatAppearance.BorderSize = 0;
             
-            // Subtle hover effect
-            logoutButton.MouseEnter += (s, e) =>
-            {
-                logoutButton.BackColor = Color.FromArgb(51, 65, 85); // slate-600
-                logoutButton.ForeColor = Color.FromArgb(248, 113, 113); // red-400
+          // Subtle hover effect
+    logoutButton.MouseEnter += (s, e) =>
+ {
+          logoutButton.BackColor = Color.FromArgb(51, 65, 85); // slate-600
+     logoutButton.ForeColor = Color.FromArgb(248, 113, 113); // red-400
                 logoutButton.IconColor = Color.FromArgb(248, 113, 113); // red-400
-            };
+ };
 
-            logoutButton.MouseLeave += (s, e) =>
+         logoutButton.MouseLeave += (s, e) =>
             {
                 logoutButton.BackColor = Color.Transparent;
-                logoutButton.ForeColor = Color.FromArgb(148, 163, 184); // slate-400
-                logoutButton.IconColor = Color.FromArgb(148, 163, 184); // slate-400
+      logoutButton.ForeColor = Color.FromArgb(148, 163, 184); // slate-400
+    logoutButton.IconColor = Color.FromArgb(148, 163, 184); // slate-400
             };
 
-            logoutButton.Click += LogoutButton_Click;
+       logoutButton.Click += LogoutButton_Click;
 
-            // Update position on resize
+  // Update position on resize
             this.Resize += (s, e) =>
-            {
+  {
                 if (logoutButton != null)
-                    logoutButton.Location = new Point(20, this.ClientSize.Height - 70);
-            };
+           logoutButton.Location = new Point(20, this.ClientSize.Height - 70);
+  };
 
             sidebarPanel.Controls.Add(logoutButton);
 
-            // Version info - compact and subtle
-            var versionLabel = new Label
-            {
-                Text = "v2.1.0",
-                Font = new Font("Segoe UI", 8F, FontStyle.Regular), // Slightly larger
-                ForeColor = Color.FromArgb(71, 85, 105), // slate-600
-                Location = new Point(20, this.ClientSize.Height - 25),
-                Size = new Size(280, 15), // Adjusted for new sidebar width
-                Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
+     // Version info - compact and subtle
+   var versionLabel = new Label
+        {
+        Text = "v2.1.0",
+         Font = new Font("Segoe UI", 8F, FontStyle.Regular), // Slightly larger
+       ForeColor = Color.FromArgb(71, 85, 105), // slate-600
+          Location = new Point(20, this.ClientSize.Height - 25),
+   Size = new Size(280, 15), // Adjusted for new sidebar width
+Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
+       TextAlign = ContentAlignment.MiddleCenter
+ };
 
-            this.Resize += (s, e) =>
-            {
-                if (versionLabel != null)
-                    versionLabel.Location = new Point(20, this.ClientSize.Height - 25);
-            };
+    this.Resize += (s, e) =>
+    {
+            if (versionLabel != null)
+           versionLabel.Location = new Point(20, this.ClientSize.Height - 25);
+     };
 
-            sidebarPanel.Controls.Add(versionLabel);
-        }
+       sidebarPanel.Controls.Add(versionLabel);
+     }
 
         private IconChar GetUserRoleIcon(UserRole role)
         {
             return role switch
-            {
-                UserRole.Administrator => IconChar.Crown,
-                UserRole.Cashier => IconChar.CashRegister,
-                UserRole.InventoryClerk => IconChar.Box,
-                _ => IconChar.User
+      {
+        UserRole.Administrator => IconChar.Crown,
+  UserRole.Cashier => IconChar.CashRegister,
+    UserRole.InventoryClerk => IconChar.Box,
+    _ => IconChar.User
             };
         }
 
-        private Color GetModernRoleColor(UserRole role)
+   private Color GetModernRoleColor(UserRole role)
         {
-            return role switch
-            {
-                UserRole.Administrator => Color.FromArgb(239, 68, 68),   // red-500
-                UserRole.Cashier => Color.FromArgb(34, 197, 94),        // green-500
-                UserRole.InventoryClerk => Color.FromArgb(59, 130, 246), // blue-500
-                _ => Color.FromArgb(107, 114, 128)  // gray-500
+  return role switch
+          {
+         UserRole.Administrator => Color.FromArgb(239, 68, 68),   // red-500
+           UserRole.Cashier => Color.FromArgb(34, 197, 94),        // green-500
+         UserRole.InventoryClerk => Color.FromArgb(59, 130, 246), // blue-500
+      _ => Color.FromArgb(107, 114, 128)  // gray-500
             };
         }
 
-        private void LoadDefaultView(UserRole role)
-        {
+    private void LoadDefaultView(UserRole role)
+      {
             var firstButton = menuButtons.FirstOrDefault();
-            if (firstButton != null)
+    if (firstButton != null)
             {
                 var accentColor = GetModernRoleColor(role);
-                firstButton.BackColor = accentColor;
-                firstButton.ForeColor = Color.White;
-                firstButton.IconColor = Color.White;
-  firstButton.Tag = "selected";
+ firstButton.BackColor = accentColor;
+    firstButton.ForeColor = Color.White;
+   firstButton.IconColor = Color.White;
+                firstButton.Tag = "selected";
     }
-    
-    SafeLoadChildForm(() => new DashboardView(_authService));
-}
+            
+            SafeLoadChildForm(() => new DashboardView(_authService));
+ }
 
         private void SafeLoadChildForm(Func<Form> formFactory)
         {
-            try
-            {
-                // Check if authentication service and current user are valid
+         try
+       {
+      // Check if authentication service and current user are valid
                 if (_authService == null)
-                {
-                    MessageBox.Show("Authentication service is not available.", "System Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+     {
+       MessageBox.Show("Authentication service is not available.", "System Error",
+     MessageBoxButtons.OK, MessageBoxIcon.Error);
+         return;
+     }
 
-                if (_authService.CurrentUser == null)
-                {
-                    MessageBox.Show("No user is currently logged in. Please login again.", "Authentication Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                    return;
-                }
+       if (_authService.CurrentUser == null)
+     {
+   MessageBox.Show("No user is currently logged in. Please login again.", "Authentication Error",
+          MessageBoxButtons.OK, MessageBoxIcon.Warning);
+  return;
+              }
 
                 // Try to create the form
-                Form childForm;
-                try
+     Form childForm;
+    try
                 {
-                    childForm = formFactory();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Form Creation Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+       childForm = formFactory();
+       }
+ catch (Exception ex)
+          {
+MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Form Creation Error",
+          MessageBoxButtons.OK, MessageBoxIcon.Error);
+    return;
+       }
 
                 // Try to load the form
-                try
-                {
-                    LoadChildForm(childForm);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error loading form: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Form Loading Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    try { childForm?.Dispose(); } catch { }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Unexpected error: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "System Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+    try
+      {
+       LoadChildForm(childForm);
+    }
+         catch (Exception ex)
+           {
+            MessageBox.Show($"Error loading form: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "Form Loading Error",
+   MessageBoxButtons.OK, MessageBoxIcon.Error);
+           try { childForm?.Dispose(); } catch { }
+   }
         }
-
-        private void LoadChildForm(Form childForm)
-        {
-            if (_currentChildForm != null)
-            {
-                try
-                {
-                    _currentChildForm.Hide();
-                    _currentChildForm.Close();
-                    _currentChildForm.Dispose();
-                }
-                catch { }
-                finally { _currentChildForm = null; }
+      catch (Exception ex)
+          {
+          MessageBox.Show($"Unexpected error: {ex.Message}\n\nStack Trace:\n{ex.StackTrace}", "System Error",
+    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+     }
+
+     private void LoadChildForm(Form childForm)
+        {
+         if (_currentChildForm != null)
+       {
+  try
+          {
+          _currentChildForm.Hide();
+      _currentChildForm.Close();
+        _currentChildForm.Dispose();
+                }
+        catch { }
+             finally { _currentChildForm = null; }
+         }
 
             _currentChildForm = childForm;
             childForm.TopLevel = false;
-            childForm.FormBorderStyle = FormBorderStyle.None;
-            childForm.Dock = DockStyle.Fill;
+      childForm.FormBorderStyle = FormBorderStyle.None;
+    childForm.Dock = DockStyle.Fill;
 
-            contentPanel.Controls.Clear();
-            contentPanel.Controls.Add(childForm);
-            childForm.Show();
-        }
+   contentPanel.Controls.Clear();
+          contentPanel.Controls.Add(childForm);
+        childForm.Show();
+    }
 
         private async void LogoutButton_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var result = MessageBox.Show(
-                    "Are you sure you want to logout?",
-                    "Confirm Logout",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Question);
+   try
+        {
+    var result = MessageBox.Show(
+ "Are you sure you want to logout?",
+          "Confirm Logout",
+      MessageBoxButtons.YesNo,
+  MessageBoxIcon.Question);
 
-                if (result == DialogResult.Yes)
-                {
-                    await _authService.LogoutAsync();
-                    this.Close();
-                }
-            }
+          if (result == DialogResult.Yes)
+  {
+  await _authService.LogoutAsync();
+        this.Close();
+      }
+          }
             catch (Exception ex)
-            {
-                MessageBox.Show($"{ex.Message}", "Logout Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+    {
+         MessageBox.Show($"{ex.Message}", "Logout Error",
+         MessageBoxButtons.OK, MessageBoxIcon.Error);
+ }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
-        {
-            try
-            {
-                _currentChildForm?.Close();
-                _currentChildForm?.Dispose();
-            }
-            catch { }
-            base.OnFormClosed(e);
+ {
+       try
+{
+        _currentChildForm?.Close();
+       _currentChildForm?.Dispose();
+   }
+      catch { }
+  base.OnFormClosed(e);
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
+ protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            try { _currentChildForm?.Hide(); } catch { }
-            base.OnFormClosing(e);
-        }
+         try { _currentChildForm?.Hide(); } catch { }
+    base.OnFormClosing(e);
+      }
 
-        protected override void Dispose(bool disposing)
+      protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                logoPictureBox?.Image?.Dispose();
-                logoPictureBox?.Dispose();
+         logoPictureBox?.Image?.Dispose();
+      logoPictureBox?.Dispose();
             }
-            base.Dispose(disposing);
+  base.Dispose(disposing);
         }
     }
 }
