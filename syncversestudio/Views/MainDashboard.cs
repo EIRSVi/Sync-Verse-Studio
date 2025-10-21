@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using FontAwesome.Sharp;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -24,9 +25,13 @@ namespace SyncVerseStudio.Views
 
         public MainDashboard(AuthenticationService authService)
         {
-            _authService = authService;
-            InitializeComponent();
-            LoadUserInterface();
+  _authService = authService;
+   InitializeComponent();
+            
+     // Set application icon using helper
+    IconHelper.SetFormIcon(this);
+            
+  LoadUserInterface();
         }
 
         private void InitializeComponent()

@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Views;
+using SyncVerseStudio.Helpers;
 
 namespace SyncVerseStudio
 {
@@ -14,6 +15,9 @@ namespace SyncVerseStudio
         {
             InitializeComponent();
             _authService = new AuthenticationService();
+
+            // Set application icon using helper
+            IconHelper.SetFormIcon(this);
 
             // Wire up events
             this.loginButton.Click += LoginButton_Click;
