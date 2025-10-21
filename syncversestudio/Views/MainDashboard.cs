@@ -2,7 +2,6 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
-using SyncVerseStudio.Helpers;
 using FontAwesome.Sharp;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -29,7 +28,7 @@ namespace SyncVerseStudio.Views
    InitializeComponent();
             
      // Set application icon using helper
-    IconHelper.SetFormIcon(this);
+    // SyncVerseStudio.Helpers.IconHelper.SetFormIcon(this);
             
   LoadUserInterface();
         }
@@ -55,7 +54,7 @@ namespace SyncVerseStudio.Views
             this.MinimizeBox = true;
             this.Name = "MainDashboard";
             this.StartPosition = FormStartPosition.CenterScreen;
-            this.Text = "SyncVerse Studio - Modern Dashboard";
+            this.Text = "SYNCVERSE Studio - Dashboard";
             this.MinimumSize = new Size(1366, 768);
             this.WindowState = FormWindowState.Maximized;
             this.Icon = SystemIcons.Application;
@@ -267,7 +266,7 @@ namespace SyncVerseStudio.Views
        {
  Text = "NAVIGATION",
        Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-    ForeColor = Color.FromArgb(148, 163, 184), // slate-400
+    ForeColor = Color.FromArgb(148,163,184), // slate-400
    Location = new Point(30, yPos),
         Size = new Size(260, 25)
    };
@@ -275,53 +274,47 @@ sidebarPanel.Controls.Add(navHeader);
      yPos += 45;
 
      // Create role-based menu with better spacing
-   switch (role)
-        {
-  case UserRole.Administrator:
-            // Core Operations
-              CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
-        yPos += 55;
-     CreateModernMenuItem("Users", IconChar.Users, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
-   yPos += 55;
-       CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
-                yPos += 55;
-     CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
-       yPos += 55;
- CreateModernMenuItem("Sales", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
-        yPos += 55;
-             CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
-   yPos += 55;
-                    CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
-         yPos += 55;
-  CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
-         yPos += 55;
-                  CreateModernMenuItem("Reports", IconChar.FileAlt, Color.FromArgb(168, 85, 247), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
-      yPos += 55;
-    CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
-    yPos += 55;
-         CreateModernMenuItem("Audit Logs", IconChar.FileText, Color.FromArgb(245, 158, 11), yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
-    break;
+ switch (role)
+ {
+ case UserRole.Administrator:
+ // Core Operations (Point of Sale, Sales and Reports removed for Administrator)
+ CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Users", IconChar.Users, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(168,85,247), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168,85,247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245,158,11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
+ yPos +=55;
+ CreateModernMenuItem("Audit Logs", IconChar.FileText, Color.FromArgb(245,158,11), yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
+ break;
 
-    case UserRole.Cashier:
-          CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
-         yPos += 55;
-          CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
+ case UserRole.Cashier:
+ CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+ yPos += 55;
+ CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
      yPos += 55;
- CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
+ CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
          yPos += 55;
             CreateModernMenuItem("Customers", IconChar.UserFriends, Color.FromArgb(34, 197, 94), yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
       break;
 
         case UserRole.InventoryClerk:
-        CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+        CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
       yPos += 55;
-    CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+    CreateModernMenuItem("Products", IconChar.Box, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
     yPos += 55;
-                CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+                CreateModernMenuItem("Categories", IconChar.Tags, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
          yPos += 55;
-          CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+          CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
   yPos += 55;
- CreateModernMenuItem("Stock Reports", IconChar.FileAlt, Color.FromArgb(59, 130, 246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+ CreateModernMenuItem("Stock Reports", IconChar.FileAlt, Color.FromArgb(59,130,246), yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
     break;
 }
         }
@@ -639,4 +632,4 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
   base.Dispose(disposing);
         }
     }
-}
+}}

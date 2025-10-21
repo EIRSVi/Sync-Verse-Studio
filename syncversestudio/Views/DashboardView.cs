@@ -70,7 +70,6 @@ namespace SyncVerseStudio.Views
 
             await CreateDashboardHeader(mainContainer);
             CreateLiveMetricsSection(mainContainer);
-            CreateQuickActionsSection(mainContainer);
 
             this.Controls.Add(mainContainer);
         }
@@ -162,82 +161,6 @@ namespace SyncVerseStudio.Views
 
             CreateLiveMetricCards();
             container.Controls.Add(_cardsContainer);
-        }
-
-        private void CreateQuickActionsSection(Panel container)
-        {
-            var actionsTitle = new Label
-            {
-                Text = "Quick Actions",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(0, 600),
-                AutoSize = true
-            };
-            container.Controls.Add(actionsTitle);
-
-            var actionsPanel = new FlowLayoutPanel
-            {
-                Location = new Point(0, 640),
-                Size = new Size(container.Width - 60, 150),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
-                BackColor = Color.Transparent,
-                WrapContents = true,
-                AutoSize = false
-            };
-
-            var user = _authService.CurrentUser;
-            if (user != null)
-            {
-                switch (user.Role)
-                {
-                    case Models.UserRole.Administrator:
-                        CreateActionButton("Add New Product", Color.FromArgb(59, 130, 246), actionsPanel);
-                        CreateActionButton("Manage Users", Color.FromArgb(168, 85, 247), actionsPanel);
-                        CreateActionButton("View Reports", Color.FromArgb(34, 197, 94), actionsPanel);
-                        CreateActionButton("System Settings", Color.FromArgb(156, 163, 175), actionsPanel);
-                        break;
-
-                    case Models.UserRole.Cashier:
-                        CreateActionButton("New Sale", Color.FromArgb(34, 197, 94), actionsPanel);
-                        CreateActionButton("Customer Lookup", Color.FromArgb(59, 130, 246), actionsPanel);
-                        CreateActionButton("Sales History", Color.FromArgb(168, 85, 247), actionsPanel);
-                        break;
-
-                    case Models.UserRole.InventoryClerk:
-                        CreateActionButton("Add Product", Color.FromArgb(59, 130, 246), actionsPanel);
-                        CreateActionButton("Update Stock", Color.FromArgb(245, 158, 11), actionsPanel);
-                        CreateActionButton("Low Stock Alert", Color.FromArgb(239, 68, 68), actionsPanel);
-                        CreateActionButton("Stock Report", Color.FromArgb(34, 197, 94), actionsPanel);
-                        break;
-                }
-            }
-
-            container.Controls.Add(actionsPanel);
-        }
-
-        private void CreateActionButton(string text, Color bgColor, FlowLayoutPanel parent)
-        {
-            var button = new Button
-            {
-                Text = text,
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                ForeColor = Color.White,
-                BackColor = bgColor,
-                FlatStyle = FlatStyle.Flat,
-                Size = new Size(200, 45),
-                Margin = new Padding(10),
-                Cursor = Cursors.Hand
-            };
-
-            button.FlatAppearance.BorderSize = 0;
-            button.FlatAppearance.MouseOverBackColor = Color.FromArgb(
-                Math.Max(0, bgColor.R - 20),
-                Math.Max(0, bgColor.G - 20),
-                Math.Max(0, bgColor.B - 20)
-            );
-
-            parent.Controls.Add(button);
         }
 
         private void CreateLiveMetricCards()

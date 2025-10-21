@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>logo.png</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -24,10 +23,6 @@
     <Content Include="logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="logo.png" />
   </ItemGroup>
 
 </Project>

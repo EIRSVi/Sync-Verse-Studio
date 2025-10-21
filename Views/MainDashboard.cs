@@ -222,17 +222,11 @@ namespace SyncVerseStudio.Views
                     yPos += 50;
                     AddMenuItem("Products", FontAwesome.Sharp.IconChar.Box, yPos, () => LoadChildForm(new ProductManagementView(_authService)));
                     yPos += 50;
-                    AddMenuItem("Point of Sale", FontAwesome.Sharp.IconChar.CashRegister, yPos, () => LoadChildForm(new PointOfSaleView(_authService)));
-                    yPos += 50;
-                    AddMenuItem("Sales Management", FontAwesome.Sharp.IconChar.ChartArea, yPos, () => LoadChildForm(new SalesManagementView(_authService)));
-                    yPos += 50;
                     AddMenuItem("Customer Management", FontAwesome.Sharp.IconChar.UserFriends, yPos, () => LoadChildForm(new CustomerManagementView(_authService)));
                     yPos += 50;
                     AddMenuItem("Categories", FontAwesome.Sharp.IconChar.Tags, yPos, () => LoadChildForm(new CategoryManagementView(_authService)));
                     yPos += 50;
                     AddMenuItem("Suppliers", FontAwesome.Sharp.IconChar.Truck, yPos, () => LoadChildForm(new SupplierManagementView(_authService)));
-                    yPos += 50;
-                    AddMenuItem("Reports", FontAwesome.Sharp.IconChar.ChartBar, yPos, () => LoadChildForm(new ReportsView(_authService)));
                     yPos += 50;
                     AddMenuItem("Analytics", FontAwesome.Sharp.IconChar.ChartPie, yPos, () => LoadChildForm(new AnalyticsView(_authService)));
                     yPos += 50;

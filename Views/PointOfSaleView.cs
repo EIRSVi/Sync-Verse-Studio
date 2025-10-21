@@ -1,3 +1,4 @@
+using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Data;
@@ -18,6 +19,7 @@ namespace SyncVerseStudio.Views
         private Label totalLabel;
         private List<CartItem> cartItems = new List<CartItem>();
         private decimal totalAmount = 0;
+        private TextBox orderTitleTextBox;
 
         public PointOfSaleView(AuthenticationService authService)
         {
@@ -60,6 +62,26 @@ namespace SyncVerseStudio.Views
                 TextAlign = ContentAlignment.MiddleLeft
             };
             headerPanel.Controls.Add(titleLabel);
+
+            // Order Title input
+            var orderTitleLabel = new Label
+            {
+                Text = "Order Title:",
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(15, 23, 42),
+                Location = new Point(350, 25),
+                Size = new Size(80, 20)
+            };
+            headerPanel.Controls.Add(orderTitleLabel);
+
+            orderTitleTextBox = new TextBox
+            {
+                Font = new Font("Segoe UI", 10F),
+                Location = new Point(430, 20),
+                Size = new Size(250, 30),
+                PlaceholderText = "Enter order title (optional)"
+            };
+            headerPanel.Controls.Add(orderTitleTextBox);
 
             // Product Search Panel (Left Side)
             productSearchPanel = new Panel
@@ -534,11 +556,15 @@ namespace SyncVerseStudio.Views
         {
             try
             {
+                var orderTitle = orderTitleTextBox?.Text?.Trim() ?? "";
+                var displayTitle = string.IsNullOrEmpty(orderTitle) ? "(no title)" : orderTitle;
+
                 // Here you would implement the actual payment processing
-                MessageBox.Show($"Payment of ${totalAmount:F2} processed successfully via {paymentMethod}!", 
+                MessageBox.Show($"Payment of ${totalAmount:F2} processed successfully via {paymentMethod}!\nOrder Title: {displayTitle}", 
                     "Payment Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 
                 ClearCart();
+                if (orderTitleTextBox != null) orderTitleTextBox.Text = "";
             }
             catch (Exception ex)
             {
@@ -559,7 +585,11 @@ namespace SyncVerseStudio.Views
                 return;
             }
 
-            MessageBox.Show("Sale held successfully!", "Hold Sale", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var orderTitle = orderTitleTextBox?.Text?.Trim() ?? "";
+            var displayTitle = string.IsNullOrEmpty(orderTitle) ? "(no title)" : orderTitle;
+
+            MessageBox.Show($"Sale held successfully!\nOrder Title: {displayTitle}", "Hold Sale", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            // Note: In a full implementation, this would save the cart state to a held sales table
             ClearCart();
         }
 
