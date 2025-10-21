@@ -102,26 +102,38 @@ namespace SyncVerseStudio.Views
                 }
             };
 
+            // Welcome message without role
             var welcomeLabel = new Label
             {
                 Text = $"Welcome back, {user.FirstName}!",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(30, 20),
+                Location = new Point(30, 30),
                 Size = new Size(600, 38)
             };
             headerPanel.Controls.Add(welcomeLabel);
 
+            // Time zone status indicator (right side)
+            var statusPanel = new Panel
+            {
+                Size = new Size(250, 32),
+                Location = new Point(headerPanel.Width - 280, 35),
+                Anchor = AnchorStyles.Top | AnchorStyles.Right,
+                BackColor = Color.FromArgb(34, 197, 94) // green-500
+            };
+
             var statusLabel = new Label
             {
-                Text = $"? LIVE • Updated {DateTime.Now:HH:mm:ss}",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(34, 197, 94),
-                Location = new Point(30, 65),
-                Size = new Size(300, 20),
+                Text = DateTime.Now.ToString("HH:mm:ss"),
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = Color.White,
+                Location = new Point(15, 6),
+                Size = new Size(220, 20),
+                TextAlign = ContentAlignment.MiddleLeft,
                 Name = "LiveStatusLabel"
             };
-            headerPanel.Controls.Add(statusLabel);
+            statusPanel.Controls.Add(statusLabel);
+            headerPanel.Controls.Add(statusPanel);
 
             container.Controls.Add(headerPanel);
         }
@@ -254,28 +266,109 @@ namespace SyncVerseStudio.Views
 
         private void CreateDataOverviewSection(Panel container)
         {
-            var activityTitle = new Label
+            var graphTitle = new Label
             {
-                Text = "Recent Activity",
+                Text = "Sales Analytics",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(15, 23, 42),
                 Location = new Point(0, 600),
                 AutoSize = true
             };
-            container.Controls.Add(activityTitle);
+            container.Controls.Add(graphTitle);
 
-            var activityList = new ListBox
+            // Create a simple chart-like visualization
+            var chartPanel = new Panel
             {
                 Location = new Point(0, 640),
                 Size = new Size(container.Width - 60, 200),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
-                BorderStyle = BorderStyle.None,
                 BackColor = Color.White,
-                Font = new Font("Segoe UI", 11F),
-                Name = "ActivityListBox"
+                Name = "ChartPanel"
             };
 
-            container.Controls.Add(activityList);
+            chartPanel.Paint += (s, e) =>
+            {
+                var graphics = e.Graphics;
+                var rect = chartPanel.ClientRectangle;
+                
+                // Draw chart background
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    graphics.FillRectangle(brush, rect);
+                }
+
+                // Draw grid lines
+                using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
+                {
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        int y = rect.Height * i / 6;
+                        graphics.DrawLine(pen, 40, y, rect.Width - 20, y);
+                    }
+                    
+                    for (int i = 1; i <= 7; i++)
+                    {
+                        int x = 40 + (rect.Width - 60) * i / 8;
+                        graphics.DrawLine(pen, x, 20, x, rect.Height - 30);
+                    }
+                }
+
+                // Draw sample sales data as bars
+                var random = new Random(42); // Fixed seed for consistent display
+                var barWidth = (rect.Width - 100) / 7;
+                var colors = new Color[]
+                {
+                    Color.FromArgb(59, 130, 246),   // blue
+                    Color.FromArgb(34, 197, 94),    // green
+                    Color.FromArgb(168, 85, 247),   // purple
+                    Color.FromArgb(245, 158, 11),   // yellow
+                    Color.FromArgb(239, 68, 68),    // red
+                    Color.FromArgb(34, 197, 94),    // green
+                    Color.FromArgb(59, 130, 246)    // blue
+                };
+
+                for (int i = 0; i < 7; i++)
+                {
+                    var height = random.Next(50, rect.Height - 60);
+                    var x = 50 + i * barWidth + (barWidth - 30) / 2;
+                    var y = rect.Height - 40 - height;
+                    
+                    using (var brush = new SolidBrush(colors[i]))
+                    {
+                        graphics.FillRectangle(brush, x, y, 30, height);
+                    }
+                    
+                    // Draw day labels
+                    var dayLabels = new[] { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
+                    using (var textBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                    {
+                        var textSize = graphics.MeasureString(dayLabels[i], new Font("Segoe UI", 9F));
+                        graphics.DrawString(dayLabels[i], new Font("Segoe UI", 9F), textBrush, 
+                            x + 15 - textSize.Width / 2, rect.Height - 25);
+                    }
+                }
+
+                // Draw Y-axis labels
+                using (var textBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                {
+                    var font = new Font("Segoe UI", 8F);
+                    for (int i = 0; i <= 5; i++)
+                    {
+                        var value = $"${i * 200}";
+                        var y = rect.Height - 40 - (rect.Height - 60) * i / 5;
+                        graphics.DrawString(value, font, textBrush, 5, y - 6);
+                    }
+                }
+
+                // Chart title
+                using (var titleBrush = new SolidBrush(Color.FromArgb(15, 23, 42)))
+                {
+                    var titleFont = new Font("Segoe UI", 12F, FontStyle.Bold);
+                    graphics.DrawString("Weekly Sales Overview", titleFont, titleBrush, 50, 5);
+                }
+            };
+
+            container.Controls.Add(chartPanel);
         }
 
         private async Task LoadDashboardDataAsync()
@@ -289,7 +382,6 @@ namespace SyncVerseStudio.Views
                 if (user == null) return;
 
                 await LoadLiveMetrics(user.Role);
-                await LoadRecentActivity();
                 UpdateLiveStatus();
             }
             catch (Exception ex)
@@ -381,44 +473,6 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private async Task LoadRecentActivity()
-        {
-            if (_context == null) return;
-
-            try
-            {
-                var recentLogs = await _context.AuditLogs
-                    .Include(a => a.User)
-                    .OrderByDescending(a => a.Timestamp)
-                    .Take(10)
-                    .ToListAsync();
-
-                this.Invoke(new Action(() =>
-                {
-                    var activityList = this.Controls.Find("ActivityListBox", true).FirstOrDefault() as ListBox;
-                    if (activityList != null)
-                    {
-                        activityList.Items.Clear();
-                        foreach (var log in recentLogs)
-                        {
-                            var userName = log.User?.FullName ?? "System";
-                            var timeAgo = GetTimeAgo(log.Timestamp);
-                            activityList.Items.Add($"• {userName} - {log.Action} ({timeAgo})");
-                        }
-                        
-                        if (!recentLogs.Any())
-                        {
-                            activityList.Items.Add("• No recent activities");
-                        }
-                    }
-                }));
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading activity: {ex.Message}");
-            }
-        }
-
         private void UpdateCardValue(string title, string value)
         {
             if (_cardValueLabels.TryGetValue(title, out var label))
@@ -434,7 +488,7 @@ namespace SyncVerseStudio.Views
                 var statusLabel = this.Controls.Find("LiveStatusLabel", true).FirstOrDefault() as Label;
                 if (statusLabel != null)
                 {
-                    statusLabel.Text = $"? LIVE • Updated {DateTime.Now:HH:mm:ss}";
+                    statusLabel.Text = DateTime.Now.ToString("HH:mm:ss");
                 }
             }));
         }
