@@ -84,7 +84,7 @@ namespace SyncVerseStudio.Views
             
             // Modern dark gradient
             using (var brush = new LinearGradientBrush(rect, 
-                Color.FromArgb(15, 23, 42),    // slate-900
+                Color.FromArgb(15, 23, 42),  // slate-900
                 Color.FromArgb(30, 41, 59),    // slate-800
                 LinearGradientMode.Vertical))
             {
@@ -100,9 +100,9 @@ namespace SyncVerseStudio.Views
             // Inner glow effect
             using (var pen = new Pen(Color.FromArgb(30, 100, 149, 237), 1))
             {
-                e.Graphics.DrawLine(pen, rect.Width - 1, 0, rect.Width - 1, rect.Height);
+              e.Graphics.DrawLine(pen, rect.Width - 1, 0, rect.Width - 1, rect.Height);
             }
-        }
+}
 
         private void LoadUserInterface()
         {
@@ -137,123 +137,123 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.FromArgb(30, 41, 59), // slate-800
                 Location = new Point(0, yPos),
-                Size = new Size(320, 110), // Increased height for better logo/text visibility
+   Size = new Size(320, 110), // Increased height for better logo/text visibility
                 Padding = new Padding(25, 25, 25, 25) // Increased padding
             };
 
             // Create the logo PictureBox - larger size
             logoPictureBox = new PictureBox
-            {
-                Location = new Point(25, 25),
-                Size = new Size(60, 60), // Increased from 50x50
-                BackColor = Color.Transparent,
-                SizeMode = PictureBoxSizeMode.Zoom
-            };
+  {
+        Location = new Point(25, 25),
+        Size = new Size(60, 60), // Increased from 50x50
+      BackColor = Color.Transparent,
+        SizeMode = PictureBoxSizeMode.Zoom
+};
 
-            // Load GitHub logo asynchronously without blocking UI
-            Task.Run(async () =>
+    // Load GitHub logo asynchronously without blocking UI
+  Task.Run(async () =>
+    {
+        try
+{
+        using (var client = new HttpClient())
+       {
+       client.Timeout = TimeSpan.FromSeconds(10);
+            var imageBytes = await client.GetByteArrayAsync("https://github.com/eirsvi.png");
+   using (var ms = new MemoryStream(imageBytes))
+ {
+            var image = Image.FromStream(ms);
+      var bitmap = new Bitmap(image);
+        
+           // Update UI on main thread
+         this.Invoke(new Action(() =>
+         {
+ if (logoPictureBox != null && !logoPictureBox.IsDisposed)
             {
-                try
-                {
-                    using (var client = new HttpClient())
-                    {
-                        client.Timeout = TimeSpan.FromSeconds(10);
-                        var imageBytes = await client.GetByteArrayAsync("https://github.com/eirsvi.png");
-                        using (var ms = new MemoryStream(imageBytes))
-                        {
-                            var image = Image.FromStream(ms);
-                            var bitmap = new Bitmap(image);
-                            
-                            // Update UI on main thread
-                            this.Invoke(new Action(() =>
-                            {
-                                if (logoPictureBox != null && !logoPictureBox.IsDisposed)
-                                {
-                                    logoPictureBox.Image?.Dispose(); // Dispose old image if any
-                                    logoPictureBox.Image = bitmap;
-                                }
-                            }));
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    // On error, set a fallback icon on main thread
-                    this.Invoke(new Action(() =>
-                    {
-                        if (logoPictureBox != null && !logoPictureBox.IsDisposed)
-                        {
-                            // Remove the PictureBox and add a fallback icon
-                            brandPanel.Controls.Remove(logoPictureBox);
-                            var fallbackIcon = new IconPictureBox
-                            {
-                                IconChar = IconChar.User,
-                                IconColor = Color.FromArgb(56, 189, 248),
-                                IconSize = 50, // Increased size
-                                Location = new Point(25, 25),
-                                Size = new Size(60, 60), // Increased size
-                                BackColor = Color.Transparent
-                            };
-                            brandPanel.Controls.Add(fallbackIcon);
-                        }
-                    }));
-                    
-                    Console.WriteLine($"Error loading GitHub logo: {ex.Message}");
-                }
-            });
-
-            brandPanel.Controls.Add(logoPictureBox);
-
-            // Brand name - larger and more prominent
-            var brandLabel = new Label
-            {
-                Text = "SyncVerse Studio",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold), // Increased font size
-                ForeColor = Color.FromArgb(248, 250, 252), // slate-50
-                Location = new Point(95, 25), // Adjusted position
-                Size = new Size(200, 35), // Increased size
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-            brandPanel.Controls.Add(brandLabel);
-
-            // Tagline - more visible
-            var taglineLabel = new Label
-            {
-                Text = "POS SYSTEM",
-                Font = new Font("Segoe UI", 11F, FontStyle.Regular), // Increased font size
-                ForeColor = Color.FromArgb(148, 163, 184), // slate-400
-                Location = new Point(95, 60), // Adjusted position
-                Size = new Size(200, 20), // Increased size
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-            brandPanel.Controls.Add(taglineLabel);
-
-            sidebarPanel.Controls.Add(brandPanel);
-            yPos += 110; // Adjusted for new height
-
-            // Gradient separator
-            var separator = new Panel
-            {
-                BackColor = Color.FromArgb(56, 189, 248),
-                Location = new Point(25, yPos),
-                Size = new Size(270, 3) // Adjusted width for new sidebar width
-            };
-            
-            separator.Paint += (s, e) =>
-            {
-                using (var brush = new LinearGradientBrush(
-                    new Rectangle(0, 0, 270, 3),
-                    Color.FromArgb(56, 189, 248),
-                    Color.FromArgb(147, 51, 234),
-                    LinearGradientMode.Horizontal))
-                {
-                    e.Graphics.FillRectangle(brush, 0, 0, 270, 3);
-                }
-            };
-            
-            sidebarPanel.Controls.Add(separator);
-            yPos += 40; // Space after separator
+       logoPictureBox.Image?.Dispose(); // Dispose old image if any
+     logoPictureBox.Image = bitmap;
+      }
+           }));
+         }
+            }
         }
+   catch (Exception ex)
+        {
+            // On error, set a fallback icon on main thread
+ this.Invoke(new Action(() =>
+            {
+   if (logoPictureBox != null && !logoPictureBox.IsDisposed)
+      {
+                    // Remove the PictureBox and add a fallback icon
+         brandPanel.Controls.Remove(logoPictureBox);
+     var fallbackIcon = new IconPictureBox
+         {
+            IconChar = IconChar.User,
+   IconColor = Color.FromArgb(56, 189, 248),
+         IconSize = 50, // Increased size
+      Location = new Point(25, 25),
+     Size = new Size(60, 60), // Increased size
+         BackColor = Color.Transparent
+      };
+            brandPanel.Controls.Add(fallbackIcon);
+          }
+ }));
+       
+  Console.WriteLine($"Error loading GitHub logo: {ex.Message}");
+        }
+    });
+
+    brandPanel.Controls.Add(logoPictureBox);
+
+    // Brand name - larger and more prominent
+    var brandLabel = new Label
+    {
+        Text = "SyncVerse Studio",
+        Font = new Font("Segoe UI", 20F, FontStyle.Bold), // Increased font size
+     ForeColor = Color.FromArgb(248, 250, 252), // slate-50
+        Location = new Point(95, 25), // Adjusted position
+        Size = new Size(200, 35), // Increased size
+ TextAlign = ContentAlignment.MiddleLeft
+    };
+  brandPanel.Controls.Add(brandLabel);
+
+    // Tagline - more visible
+    var taglineLabel = new Label
+    {
+  Text = "POS SYSTEM",
+        Font = new Font("Segoe UI", 11F, FontStyle.Regular), // Increased font size
+        ForeColor = Color.FromArgb(148, 163, 184), // slate-400
+        Location = new Point(95, 60), // Adjusted position
+        Size = new Size(200, 20), // Increased size
+        TextAlign = ContentAlignment.MiddleLeft
+    };
+    brandPanel.Controls.Add(taglineLabel);
+
+    sidebarPanel.Controls.Add(brandPanel);
+    yPos += 110; // Adjusted for new height
+
+    // Gradient separator
+    var separator = new Panel
+    {
+        BackColor = Color.FromArgb(56, 189, 248),
+  Location = new Point(25, yPos),
+    Size = new Size(270, 3) // Adjusted width for new sidebar width
+    };
+    
+    separator.Paint += (s, e) =>
+    {
+        using (var brush = new LinearGradientBrush(
+            new Rectangle(0, 0, 270, 3),
+      Color.FromArgb(56, 189, 248),
+            Color.FromArgb(147, 51, 234),
+      LinearGradientMode.Horizontal))
+      {
+            e.Graphics.FillRectangle(brush, 0, 0, 270, 3);
+        }
+ };
+    
+    sidebarPanel.Controls.Add(separator);
+    yPos += 40; // Space after separator
+}
 
         private void CreateNavigationMenu(UserRole role, ref int yPos)
         {
@@ -325,80 +325,80 @@ namespace SyncVerseStudio.Views
         {
             var menuItem = new IconButton
             {
-                Text = $"      {text}", // Proper spacing for text
-                Font = new Font("Segoe UI", 13F, FontStyle.Regular), // Slightly larger font
+             Text = $" {text}", // Proper spacing for text
+Font = new Font("Segoe UI", 13F, FontStyle.Regular), // Slightly larger font
                 ForeColor = Color.FromArgb(226, 232, 240), // slate-200
                 BackColor = Color.Transparent,
-                FlatStyle = FlatStyle.Flat,
+   FlatStyle = FlatStyle.Flat,
                 TextAlign = ContentAlignment.MiddleLeft,
                 Location = new Point(20, yPos),
                 Size = new Size(280, 48), // Adjusted width for new sidebar width
-                Cursor = Cursors.Hand,
-                IconChar = icon,
+      Cursor = Cursors.Hand,
+     IconChar = icon,
                 IconColor = Color.FromArgb(148, 163, 184), // slate-400
                 IconSize = 22, // Slightly larger icon
                 Padding = new Padding(25, 0, 25, 0), // Better padding
-                TextImageRelation = TextImageRelation.ImageBeforeText,
-                Tag = accentColor // Store accent color for later use
-            };
+      TextImageRelation = TextImageRelation.ImageBeforeText,
+        Tag = accentColor // Store accent color for later use
+    };
 
-            menuItem.FlatAppearance.BorderSize = 0;
-            
-            // Modern hover and click effects
-            menuItem.MouseEnter += (s, e) =>
-            {
-                if (menuItem.Tag?.ToString() != "selected")
-                {
-                    menuItem.BackColor = Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B);
-                    menuItem.ForeColor = Color.White;
-                    menuItem.IconColor = Color.White;
-                }
-            };
-
-            menuItem.MouseLeave += (s, e) =>
-            {
-                if (menuItem.Tag?.ToString() != "selected")
-                {
-                    menuItem.BackColor = Color.Transparent;
-                    menuItem.ForeColor = Color.FromArgb(226, 232, 240);
-                    menuItem.IconColor = Color.FromArgb(148, 163, 184);
-                }
-            };
-
-            menuItem.Click += (s, e) =>
-            {
-                try
-                {
-                    // Get reference to the clicked button
-                    var clickedButton = (IconButton)s;
-                    
-                    // Reset all buttons to default state
-                    foreach (var btn in menuButtons)
-                    {
-                        btn.BackColor = Color.Transparent;
-                        btn.ForeColor = Color.FromArgb(226, 232, 240);
-                        btn.IconColor = Color.FromArgb(148, 163, 184);
-                        btn.Tag = btn.Tag is Color ? btn.Tag : null; // Keep color, remove selected flag
-                    }
-
-                    // Set active state for clicked button with single consistent color
-                    clickedButton.BackColor = accentColor;
-                    clickedButton.ForeColor = Color.White;
-                    clickedButton.IconColor = Color.White;
-                    clickedButton.Tag = "selected"; // Mark as selected
-
-                    clickAction();
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Navigation Error", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            };
-
-            menuButtons.Add(menuItem);
-            sidebarPanel.Controls.Add(menuItem);
+    menuItem.FlatAppearance.BorderSize = 0;
+    
+    // Modern hover and click effects
+    menuItem.MouseEnter += (s, e) =>
+    {
+    if (menuItem.Tag?.ToString() != "selected")
+        {
+            menuItem.BackColor = Color.FromArgb(40, accentColor.R, accentColor.G, accentColor.B);
+       menuItem.ForeColor = Color.White;
+        menuItem.IconColor = Color.White;
         }
+    };
+
+    menuItem.MouseLeave += (s, e) =>
+    {
+      if (menuItem.Tag?.ToString() != "selected")
+        {
+            menuItem.BackColor = Color.Transparent;
+        menuItem.ForeColor = Color.FromArgb(226, 232, 240);
+        menuItem.IconColor = Color.FromArgb(148, 163, 184);
+        }
+    };
+
+    menuItem.Click += (s, e) =>
+    {
+  try
+        {
+     // Get reference to the clicked button
+ var clickedButton = (IconButton)s;
+  
+  // Reset all buttons to default state
+ foreach (var btn in menuButtons)
+         {
+                btn.BackColor = Color.Transparent;
+         btn.ForeColor = Color.FromArgb(226, 232, 240);
+      btn.IconColor = Color.FromArgb(148, 163, 184);
+             btn.Tag = btn.Tag is Color ? btn.Tag : null; // Keep color, remove selected flag
+            }
+
+        // Set active state for clicked button with single consistent color
+    clickedButton.BackColor = accentColor;
+      clickedButton.ForeColor = Color.White;
+            clickedButton.IconColor = Color.White;
+          clickedButton.Tag = "selected"; // Mark as selected
+
+        clickAction();
+        }
+        catch (Exception ex)
+{
+            MessageBox.Show($"Error: {ex.Message}", "Navigation Error", 
+         MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    };
+
+    menuButtons.Add(menuItem);
+    sidebarPanel.Controls.Add(menuItem);
+}
 
         private void CreateSidebarFooter()
         {
@@ -502,11 +502,11 @@ namespace SyncVerseStudio.Views
                 firstButton.BackColor = accentColor;
                 firstButton.ForeColor = Color.White;
                 firstButton.IconColor = Color.White;
-                firstButton.Tag = "selected";
-            }
-            
-            SafeLoadChildForm(() => new DashboardView(_authService));
-        }
+  firstButton.Tag = "selected";
+    }
+    
+    SafeLoadChildForm(() => new DashboardView(_authService));
+}
 
         private void SafeLoadChildForm(Func<Form> formFactory)
         {
