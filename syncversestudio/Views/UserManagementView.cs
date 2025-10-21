@@ -120,30 +120,30 @@ namespace SyncVerseStudio.Views
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
             topPanel.Controls.Add(statusFilter);
 
-            // Buttons with FontAwesome icons
-            int buttonX = 590;
+                // Buttons without FontAwesome icons
+                int buttonX = 590;
             
-            addButton = CreateIconButton("   Add User", IconChar.UserPlus, Color.FromArgb(24, 119, 18), buttonX, 55, 120);
-            addButton.Click += AddButton_Click;
-            buttonX += 130;
+                addButton = CreateIconButton("Add User", IconChar.None, Color.FromArgb(24, 119, 18), buttonX, 55, 120);
+                addButton.Click += AddButton_Click;
+                buttonX += 130;
 
-            editButton = CreateIconButton("   Edit", IconChar.UserEdit, Color.FromArgb(37, 99, 102), buttonX, 55, 90);
-            editButton.Click += EditButton_Click;
-            buttonX += 100;
+                editButton = CreateIconButton("Edit", IconChar.None, Color.FromArgb(37, 99, 102), buttonX, 55, 90);
+                editButton.Click += EditButton_Click;
+                buttonX += 100;
 
-            deleteButton = CreateIconButton("   Delete", IconChar.UserTimes, Color.FromArgb(255, 0, 80), buttonX, 55, 100);
-            deleteButton.Click += DeleteButton_Click;
-            buttonX += 110;
+                deleteButton = CreateIconButton("Delete", IconChar.None, Color.FromArgb(255, 0, 80), buttonX, 55, 100);
+                deleteButton.Click += DeleteButton_Click;
+                buttonX += 110;
 
-            refreshButton = CreateIconButton("   Refresh", IconChar.Sync, Color.FromArgb(117, 117, 117), buttonX, 55, 110);
-            refreshButton.Click += RefreshButton_Click;
+                refreshButton = CreateIconButton("Refresh", IconChar.None, Color.FromArgb(117, 117, 117), buttonX, 55, 110);
+                refreshButton.Click += RefreshButton_Click;
 
-            topPanel.Controls.AddRange(new Control[] {
-                addButton, editButton, deleteButton, refreshButton
-            });
+                topPanel.Controls.AddRange(new Control[] {
+                    addButton, editButton, deleteButton, refreshButton
+                });
 
-            this.Controls.Add(topPanel);
-        }
+                this.Controls.Add(topPanel);
+            }
 
         private IconButton CreateIconButton(string text, IconChar icon, Color backgroundColor, int x, int y, int width)
         {
@@ -152,18 +152,14 @@ namespace SyncVerseStudio.Views
                 Text = text,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 BackColor = backgroundColor,
-                ForeColor = Color.White,
+                ForeColor = Color.Black,
                 FlatStyle = FlatStyle.Flat,
                 Location = new Point(x, y),
                 Size = new Size(width, 35),
                 Cursor = Cursors.Hand,
-                IconChar = icon,
-                IconColor = Color.White,
-                IconSize = 18,
-                TextAlign = ContentAlignment.MiddleRight,
-                ImageAlign = ContentAlignment.MiddleLeft,
+                IconChar = IconChar.None,
+                TextAlign = ContentAlignment.MiddleCenter,
                 Padding = new Padding(10, 0, 10, 0),
-                TextImageRelation = TextImageRelation.ImageBeforeText,
                 FlatAppearance = { BorderSize = 0 }
             };
         }
@@ -174,7 +170,7 @@ namespace SyncVerseStudio.Views
             var gridPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(226, 244, 255), // PattenBlue - same as CategoryManagementView
+                //BackColor = Color.FromArgb(226, 244, 255), // PattenBlue - same as CategoryManagementView
                 Padding = new Padding(10, 200, 10, 10) // Left, Top, Right, Bottom - same as CategoryManagementView
             };
 

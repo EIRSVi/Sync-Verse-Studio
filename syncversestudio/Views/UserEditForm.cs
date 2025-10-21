@@ -1,4 +1,4 @@
-using System.Drawing;
+﻿using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
@@ -44,7 +44,7 @@ namespace SyncVerseStudio.Views
             this.MinimizeBox = false;
             this.Name = "UserEditForm";
             this.StartPosition = FormStartPosition.CenterParent;
-            this.Text = _userId.HasValue ? "?? Edit User" : "? Add User";
+            this.Text = _userId.HasValue ? "Edit User" : " Add User";
 
             CreateControls();
         }
@@ -61,7 +61,7 @@ namespace SyncVerseStudio.Views
             // Title
             titleLabel = new Label
             {
-                Text = _userId.HasValue ? "?? Edit User Account" : "?? Create New User Account",
+                Text = _userId.HasValue ? "Edit User Account" : "Create New User Account",
                 Font = new System.Drawing.Font("Segoe UI", 16F, FontStyle.Bold),
                 ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
                 Location = new Point(leftMargin, yPos),
@@ -71,7 +71,7 @@ namespace SyncVerseStudio.Views
             yPos += 50;
 
             // Username
-            AddLabel("?? Username *", leftMargin, yPos);
+            AddLabel("Username *", leftMargin, yPos);
             yPos += labelHeight + 5;
             usernameTextBox = new TextBox
             {
@@ -83,8 +83,8 @@ namespace SyncVerseStudio.Views
             yPos += controlHeight + spacing;
 
             // First Name and Last Name row
-            AddLabel("?? First Name *", leftMargin, yPos);
-            AddLabel("?? Last Name *", leftMargin + 200, yPos);
+            AddLabel("First Name *", leftMargin, yPos);
+            AddLabel("Last Name *", leftMargin + 200, yPos);
             yPos += labelHeight + 5;
 
             firstNameTextBox = new TextBox
@@ -105,7 +105,7 @@ namespace SyncVerseStudio.Views
             yPos += controlHeight + spacing;
 
             // Email
-            AddLabel("?? Email Address *", leftMargin, yPos);
+            AddLabel("Email Address *", leftMargin, yPos);
             yPos += labelHeight + 5;
             emailTextBox = new TextBox
             {
@@ -117,7 +117,7 @@ namespace SyncVerseStudio.Views
             yPos += controlHeight + spacing;
 
             // Role
-            AddLabel("?? User Role *", leftMargin, yPos);
+            AddLabel(" User Role *", leftMargin, yPos);
             yPos += labelHeight + 5;
             roleCombo = new ComboBox
             {
@@ -127,9 +127,9 @@ namespace SyncVerseStudio.Views
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             roleCombo.Items.AddRange(new object[] { 
-                "?? Administrator", 
-                "?? Cashier", 
-                "?? Inventory Clerk" 
+                "Administrator", 
+                "Cashier", 
+                "Inventory Clerk" 
             });
             this.Controls.Add(roleCombo);
             yPos += controlHeight + spacing;
@@ -137,7 +137,7 @@ namespace SyncVerseStudio.Views
             // Password section
             if (!_userId.HasValue) // Only show password fields for new users
             {
-                AddLabel("?? Password *", leftMargin, yPos);
+                AddLabel("Password *", leftMargin, yPos);
                 yPos += labelHeight + 5;
                 passwordTextBox = new TextBox
                 {
@@ -149,7 +149,7 @@ namespace SyncVerseStudio.Views
                 this.Controls.Add(passwordTextBox);
                 yPos += controlHeight + 10;
 
-                AddLabel("?? Confirm Password *", leftMargin, yPos);
+                AddLabel("Confirm Password *", leftMargin, yPos);
                 yPos += labelHeight + 5;
                 confirmPasswordTextBox = new TextBox
                 {
@@ -163,7 +163,7 @@ namespace SyncVerseStudio.Views
 
                 passwordHintLabel = new Label
                 {
-                    Text = "?? Password must be at least 6 characters long",
+                    Text = "Password must be at least 6 characters long",
                     Font = new System.Drawing.Font("Segoe UI", 8F, FontStyle.Italic),
                     ForeColor = System.Drawing.Color.FromArgb(117, 117, 117),
                     Location = new Point(leftMargin, yPos),
@@ -189,7 +189,7 @@ namespace SyncVerseStudio.Views
             // Buttons
             cancelButton = new Button
             {
-                Text = "? Cancel",
+                Text = "Cancel",
                 Location = new Point(leftMargin + 150, yPos),
                 Size = new Size(80, 35),
                 BackColor = System.Drawing.Color.FromArgb(158, 158, 158),
@@ -203,7 +203,7 @@ namespace SyncVerseStudio.Views
 
             saveButton = new Button
             {
-                Text = "?? Save",
+                Text = "Save",
                 Location = new Point(leftMargin + 240, yPos),
                 Size = new Size(80, 35),
                 BackColor = System.Drawing.Color.FromArgb(24, 119, 18),
@@ -270,7 +270,7 @@ namespace SyncVerseStudio.Views
             try
             {
                 saveButton.Enabled = false;
-                saveButton.Text = "?? Saving...";
+                saveButton.Text = "Saving...";
 
                 var role = roleCombo.SelectedIndex switch
                 {
@@ -342,7 +342,7 @@ namespace SyncVerseStudio.Views
             finally
             {
                 saveButton.Enabled = true;
-                saveButton.Text = "?? Save";
+                saveButton.Text = " Save";
             }
         }
 

@@ -116,28 +116,87 @@ namespace SyncVerseStudio.Views
             sidebarPanel.Controls.Clear();
             int yPos = 20;
 
-            // Logo/Title
-            var titleLabel = new Label
+            // Logo Image
+            var logoPanel = new Panel
             {
-                Text = "SyncVerse",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = Color.White,
-                Location = new Point(20, yPos),
-                Size = new Size(240, 40),
-                TextAlign = ContentAlignment.MiddleLeft
+                Location = new Point(15, yPos),
+                Size = new Size(250, 60),
+                BackColor = Color.Transparent
             };
-            sidebarPanel.Controls.Add(titleLabel);
-            
-            var subtitleLabel = new Label
+
+            try
             {
-                Text = "POS SYSTEM",
-                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-                ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(20, yPos + 35),
-                Size = new Size(240, 20),
-                TextAlign = ContentAlignment.MiddleLeft
-            };
-            sidebarPanel.Controls.Add(subtitleLabel);
+                // Load logo image from assets
+                var logoPath = Path.Combine(Application.StartupPath, "assets", "img", "logo.png");
+                if (File.Exists(logoPath))
+                {
+                    var logoPictureBox = new PictureBox
+                    {
+                        Image = Image.FromFile(logoPath),
+                        SizeMode = PictureBoxSizeMode.Zoom,
+                        Location = new Point(0, 5),
+                        Size = new Size(50, 50),
+                        BackColor = Color.Transparent
+                    };
+                    logoPanel.Controls.Add(logoPictureBox);
+
+                    // Title next to logo
+                    var titleLabel = new Label
+                    {
+                        Text = "SyncVerse",
+                        Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                        ForeColor = Color.White,
+                        Location = new Point(60, 8),
+                        Size = new Size(180, 30),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        BackColor = Color.Transparent
+                    };
+
+                    var subtitleLabel = new Label
+                    {
+                        Text = "POS SYSTEM",
+                        Font = new Font("Segoe UI", 9F, FontStyle.Regular),
+                        ForeColor = Color.FromArgb(148, 163, 184),
+                        Location = new Point(60, 35),
+                        Size = new Size(180, 20),
+                        TextAlign = ContentAlignment.MiddleLeft,
+                        BackColor = Color.Transparent
+                    };
+
+                    logoPanel.Controls.Add(titleLabel);
+                    logoPanel.Controls.Add(subtitleLabel);
+                }
+                else
+                {
+                    // Fallback to text if logo not found
+                    var titleLabel = new Label
+                    {
+                        Text = "SyncVerse",
+                        Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                        ForeColor = Color.White,
+                        Location = new Point(5, 10),
+                        Size = new Size(240, 40),
+                        TextAlign = ContentAlignment.MiddleLeft
+                    };
+                    logoPanel.Controls.Add(titleLabel);
+                }
+            }
+            catch
+            {
+                // Fallback to text if there's any error loading the image
+                var titleLabel = new Label
+                {
+                    Text = "SyncVerse",
+                    Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    Location = new Point(5, 10),
+                    Size = new Size(240, 40),
+                    TextAlign = ContentAlignment.MiddleLeft
+                };
+                logoPanel.Controls.Add(titleLabel);
+            }
+
+            sidebarPanel.Controls.Add(logoPanel);
             yPos += 80;
 
             // Navigation section
@@ -228,29 +287,29 @@ namespace SyncVerseStudio.Views
             menuButton.FlatAppearance.BorderSize = 0;
             menuButton.FlatAppearance.MouseOverBackColor = isActive ? Color.FromArgb(59, 130, 246) : Color.FromArgb(71, 85, 105);
 
-            // Create icon
+            // Create icon - positioned at the very beginning (left edge)
             var iconButton = new FontAwesome.Sharp.IconButton
             {
                 IconChar = icon,
                 IconColor = isActive ? Color.White : Color.FromArgb(203, 213, 225),
-                IconSize = 20,
+                IconSize = 18,
                 BackColor = Color.Transparent,
                 FlatStyle = FlatStyle.Flat,
-                Location = new Point(25, yPos + 12),
-                Size = new Size(24, 24),
+                Location = new Point(25, yPos + 13), // Start from left beginning
+                Size = new Size(18, 18),
                 Enabled = false,
                 TabStop = false
             };
             iconButton.FlatAppearance.BorderSize = 0;
 
-            // Create text label
+            // Create text label - positioned with proper spacing from icon
             var textLabel = new Label
             {
                 Text = text,
                 Font = new Font("Segoe UI", 11F, isActive ? FontStyle.Bold : FontStyle.Regular),
                 ForeColor = isActive ? Color.White : Color.FromArgb(203, 213, 225),
                 BackColor = Color.Transparent,
-                Location = new Point(55, yPos + 12),
+                Location = new Point(55, yPos + 12), // 30px spacing from icon start (25 + 18 + 12 = 55)
                 Size = new Size(200, 21),
                 TextAlign = ContentAlignment.MiddleLeft,
                 UseMnemonic = false

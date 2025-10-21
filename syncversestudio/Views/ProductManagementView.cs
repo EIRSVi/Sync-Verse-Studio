@@ -38,7 +38,7 @@ namespace SyncVerseStudio.Views
             CreateTopPanel();
             CreateProductsGrid();
         }
-
+        //Padding = new Padding(10, 200, 10, 10)
         private void CreateTopPanel()
         {
             topPanel = new Panel
@@ -121,7 +121,9 @@ namespace SyncVerseStudio.Views
         {
             productsGrid = new DataGridView
             {
-                Dock = DockStyle.Fill,
+                Location = new Point(0, 200),
+                Size = new Size(1000, 500),
+                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
                 BackgroundColor = System.Drawing.Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
@@ -133,6 +135,8 @@ namespace SyncVerseStudio.Views
                 Font = new Font("Segoe UI", 9F),
                 RowHeadersVisible = false,
                 GridColor = System.Drawing.Color.FromArgb(230, 230, 230),
+                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
+                ColumnHeadersHeight = 40,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = System.Drawing.Color.White,
@@ -147,7 +151,8 @@ namespace SyncVerseStudio.Views
                     ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
                     Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                     Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(5)
+                    Padding = new Padding(5),
+                    WrapMode = DataGridViewTriState.True
                 }
             };
 
