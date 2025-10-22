@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Services;
+using SyncVerseStudio.Helpers;
 using FontAwesome.Sharp;
 
 namespace SyncVerseStudio.Views
@@ -52,7 +53,7 @@ namespace SyncVerseStudio.Views
             // Form settings
             this.Text = "Cashier Dashboard";
             this.Size = new Size(1400, 900);
-            this.BackColor = Color.FromArgb(248, 250, 252);
+            this.BackColor = BrandTheme.Background;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
 
@@ -61,14 +62,14 @@ namespace SyncVerseStudio.Views
             {
                 Dock = DockStyle.Top,
                 Height = 100,
-                BackColor = Color.FromArgb(34, 197, 94),
+                BackColor = BrandTheme.HeaderBackground,
                 Padding = new Padding(30, 20, 30, 20)
             };
 
             var welcomeIcon = new IconPictureBox
             {
                 IconChar = IconChar.CashRegister,
-                IconColor = Color.White,
+                IconColor = BrandTheme.HeaderText,
                 IconSize = 40,
                 Location = new Point(30, 30),
                 Size = new Size(40, 40)
@@ -77,8 +78,8 @@ namespace SyncVerseStudio.Views
             var welcomeLabel = new Label
             {
                 Text = $"Welcome back, {_authService.CurrentUser.FullName}!",
-                Font = new Font("Segoe UI", 22, FontStyle.Bold),
-                ForeColor = Color.White,
+                Font = BrandTheme.TitleFont,
+                ForeColor = BrandTheme.HeaderText,
                 Location = new Point(80, 20),
                 AutoSize = true
             };
@@ -86,8 +87,8 @@ namespace SyncVerseStudio.Views
             var roleLabel = new Label
             {
                 Text = "Cashier Dashboard - Point of Sale Operations",
-                Font = new Font("Segoe UI", 11),
-                ForeColor = Color.FromArgb(220, 252, 231),
+                Font = BrandTheme.BodyFont,
+                ForeColor = BrandTheme.CoolWhite,
                 Location = new Point(80, 55),
                 AutoSize = true
             };
@@ -95,8 +96,8 @@ namespace SyncVerseStudio.Views
             var timeLabel = new Label
             {
                 Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy - hh:mm tt"),
-                Font = new Font("Segoe UI", 10),
-                ForeColor = Color.White,
+                Font = BrandTheme.SmallFont,
+                ForeColor = BrandTheme.HeaderText,
                 Location = new Point(1050, 35),
                 AutoSize = true
             };

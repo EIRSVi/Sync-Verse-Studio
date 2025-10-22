@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Services;
+using SyncVerseStudio.Helpers;
 using FontAwesome.Sharp;
 using System.Drawing.Printing;
 
@@ -50,7 +51,7 @@ namespace SyncVerseStudio.Views
             // Form settings
             this.Text = "Point of Sale";
             this.Size = new Size(1600, 900);
-            this.BackColor = Color.FromArgb(248, 250, 252);
+            this.BackColor = BrandTheme.Background;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
 
@@ -96,14 +97,14 @@ namespace SyncVerseStudio.Views
             {
                 Location = new Point(0, 0),
                 Size = new Size(700, 70),
-                BackColor = Color.FromArgb(34, 197, 94)
+                BackColor = BrandTheme.LimeGreen
             };
 
             var titleLabel = new Label
             {
-                Text = "🛒 Products",
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
-                ForeColor = Color.White,
+                Text = "Products",
+                Font = BrandTheme.SubtitleFont,
+                ForeColor = BrandTheme.Charcoal,
                 Location = new Point(15, 20),
                 AutoSize = true
             };
@@ -122,8 +123,10 @@ namespace SyncVerseStudio.Views
             {
                 Location = new Point(0, 10),
                 Size = new Size(450, 35),
-                Font = new Font("Segoe UI", 12),
-                PlaceholderText = "🔍 Search products..."
+                Font = BrandTheme.BodyFont,
+                PlaceholderText = "Search products...",
+                BackColor = BrandTheme.CoolWhite,
+                ForeColor = BrandTheme.PrimaryText
             };
             searchBox.TextChanged += (s, e) => LoadProducts(searchBox.Text);
 
@@ -131,8 +134,10 @@ namespace SyncVerseStudio.Views
             {
                 Location = new Point(460, 10),
                 Size = new Size(180, 35),
-                Font = new Font("Segoe UI", 11),
-                DropDownStyle = ComboBoxStyle.DropDownList
+                Font = BrandTheme.BodyFont,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                BackColor = BrandTheme.CoolWhite,
+                ForeColor = BrandTheme.PrimaryText
             };
             categoryFilter.Items.Add("All Categories");
             categoryFilter.SelectedIndex = 0;
@@ -167,14 +172,14 @@ namespace SyncVerseStudio.Views
             {
                 Location = new Point(0, 0),
                 Size = new Size(470, 60),
-                BackColor = Color.FromArgb(30, 41, 59)
+                BackColor = BrandTheme.OceanBlue
             };
 
             var titleLabel = new Label
             {
-                Text = "🛍️ Shopping Cart",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.White,
+                Text = "Shopping Cart",
+                Font = BrandTheme.SubtitleFont,
+                ForeColor = BrandTheme.HeaderText,
                 Location = new Point(15, 18),
                 AutoSize = true
             };
@@ -309,29 +314,29 @@ namespace SyncVerseStudio.Views
 
             cashRadio = new RadioButton
             {
-                Text = "💵 Cash",
+                Text = "Cash",
                 Location = new Point(15, 40),
                 Size = new Size(120, 30),
-                Font = new Font("Segoe UI", 11),
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Checked = true
             };
             cashRadio.CheckedChanged += (s, e) => { if (cashRadio.Checked) cashAmountBox.Enabled = true; };
 
             cardRadio = new RadioButton
             {
-                Text = "💳 Card",
+                Text = "Card",
                 Location = new Point(145, 40),
                 Size = new Size(120, 30),
-                Font = new Font("Segoe UI", 11)
+                Font = new Font("Segoe UI", 11, FontStyle.Bold)
             };
             cardRadio.CheckedChanged += (s, e) => { if (cardRadio.Checked) { cashAmountBox.Enabled = false; UpdateChange(); } };
 
             mobileRadio = new RadioButton
             {
-                Text = "📱 Mobile",
+                Text = "Mobile",
                 Location = new Point(275, 40),
                 Size = new Size(120, 30),
-                Font = new Font("Segoe UI", 11)
+                Font = new Font("Segoe UI", 11, FontStyle.Bold)
             };
             mobileRadio.CheckedChanged += (s, e) => { if (mobileRadio.Checked) { cashAmountBox.Enabled = false; UpdateChange(); } };
 
@@ -368,10 +373,10 @@ namespace SyncVerseStudio.Views
             // Action Buttons
             var checkoutButton = new Button
             {
-                Text = "💳 COMPLETE SALE",
+                Text = "COMPLETE SALE",
                 Location = new Point(10, 700),
                 Size = new Size(450, 55),
-                BackColor = Color.FromArgb(34, 197, 94),
+                BackColor = BrandTheme.OceanBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
@@ -382,10 +387,10 @@ namespace SyncVerseStudio.Views
 
             var clearButton = new Button
             {
-                Text = "🗑️ Clear Cart",
+                Text = "CLEAR CART",
                 Location = new Point(10, 765),
                 Size = new Size(220, 45),
-                BackColor = Color.FromArgb(239, 68, 68),
+                BackColor = BrandTheme.Charcoal,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
@@ -396,11 +401,11 @@ namespace SyncVerseStudio.Views
 
             var holdButton = new Button
             {
-                Text = "⏸️ Hold",
+                Text = "HOLD",
                 Location = new Point(240, 765),
                 Size = new Size(220, 45),
-                BackColor = Color.FromArgb(249, 115, 22),
-                ForeColor = Color.White,
+                BackColor = BrandTheme.LimeGreen,
+                ForeColor = BrandTheme.Charcoal,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Cursor = Cursors.Hand
@@ -431,12 +436,23 @@ namespace SyncVerseStudio.Views
                 BackColor = Color.FromArgb(59, 130, 246)
             };
 
+            var titleIcon = new IconPictureBox
+            {
+                IconChar = IconChar.Receipt,
+                IconColor = Color.White,
+                IconSize = 24,
+                Location = new Point(15, 18),
+                Size = new Size(24, 24),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(titleIcon);
+
             var titleLabel = new Label
             {
-                Text = "📊 Recent Sales",
+                Text = "Recent Sales",
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(15, 18),
+                Location = new Point(45, 18),
                 AutoSize = true
             };
 
@@ -830,12 +846,12 @@ namespace SyncVerseStudio.Views
 
                 // Show success
                 var change = amountPaid - total;
-                MessageBox.Show($"✓ Sale Completed!\n\n" +
+                MessageBox.Show($"SALE COMPLETED\n\n" +
                     $"Invoice: {sale.InvoiceNumber}\n" +
                     $"Total: ${total:N2}\n" +
                     $"Paid: ${amountPaid:N2}\n" +
                     $"Change: ${change:N2}", 
-                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    "Transaction Complete", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Clear and refresh
                 _cart.Clear();

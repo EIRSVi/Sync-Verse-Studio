@@ -1,8 +1,10 @@
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using Microsoft.EntityFrameworkCore;
 using FontAwesome.Sharp;
+using SyncVerseStudio.Helpers;
 
 namespace SyncVerseStudio.Views
 {
@@ -48,7 +50,7 @@ namespace SyncVerseStudio.Views
             SuspendLayout();
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.FromArgb(248, 250, 252);
+            BackColor = BrandTheme.Background;
             ClientSize = new Size(1400, 900);
             FormBorderStyle = FormBorderStyle.None;
             Name = "DashboardView";
@@ -63,7 +65,7 @@ namespace SyncVerseStudio.Views
             var mainContainer = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(248, 250, 252),
+                BackColor = BrandTheme.Background,
                 AutoScroll = true,
                 Padding = new Padding(30, 25, 30, 30)
             };
@@ -81,55 +83,127 @@ namespace SyncVerseStudio.Views
 
             var headerPanel = new Panel
             {
-                BackColor = Color.White,
+                BackColor = BrandTheme.CoolWhite,
                 Location = new Point(0, 0),
-                Size = new Size(container.Width - 60, 120),
+                Size = new Size(container.Width - 60, 100),
                 Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
                 Padding = new Padding(30, 20, 30, 20)
             };
 
-            headerPanel.Paint += (s, e) =>
+            // Logo
+            var logoPic = new PictureBox
             {
-                var rect = headerPanel.ClientRectangle;
-                using (var shadowBrush = new SolidBrush(Color.FromArgb(15, 0, 0, 0)))
-                {
-                    e.Graphics.FillRectangle(shadowBrush, new Rectangle(2, 2, rect.Width, rect.Height));
-                }
-                using (var brush = new SolidBrush(Color.White))
-                {
-                    e.Graphics.FillRectangle(brush, rect);
-                }
+                Size = new Size(60, 60),
+                Location = new Point(30, 30),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.Transparent
             };
+
+            try
+            {
+                var logoPath = Path.Combine(Application.StartupPath, "..", "..", "..", BrandTheme.LogoPath);
+                if (File.Exists(logoPath))
+                {
+                    logoPic.Image = Image.FromFile(logoPath);
+                }
+                else
+                {
+                    // Fallback icon
+                    var fallbackIcon = new IconPictureBox
+                    {
+                        IconChar = IconChar.Store,
+                        IconColor = BrandTheme.LimeGreen,
+                        IconSize = 50,
+                        Location = new Point(30, 30),
+                        Size = new Size(60, 60),
+                        BackColor = Color.Transparent
+                    };
+                    headerPanel.Controls.Add(fallbackIcon);
+                }
+            }
+            catch
+            {
+                var fallbackIcon = new IconPictureBox
+                {
+                    IconChar = IconChar.Store,
+                    IconColor = BrandTheme.LimeGreen,
+                    IconSize = 50,
+                    Location = new Point(30, 30),
+                    Size = new Size(60, 60),
+                    BackColor = Color.Transparent
+                };
+                headerPanel.Controls.Add(fallbackIcon);
+            }
+
+            if (logoPic.Image != null)
+            {
+                headerPanel.Controls.Add(logoPic);
+            }
 
             // Welcome message
             var welcomeLabel = new Label
             {
-                Text = $"Welcome back, {user.FirstName}!",
+                Text = $"Welcome, {user.FirstName}!",
                 Font = new Font("Segoe UI", 24F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(30, 30),
-                Size = new Size(600, 38)
+                ForeColor = Color.White,
+                Location = new Point(110, 25),
+                Size = new Size(600, 38),
+                BackColor = Color.Transparent
             };
             headerPanel.Controls.Add(welcomeLabel);
 
-            // Time status indicator
+            var subtitleLabel = new Label
+            {
+                Text = "Administrator Dashboard - System",
+                Font = new Font("Segoe UI", 11F),
+                ForeColor = BrandTheme.CoolWhite,
+                Location = new Point(110, 65),
+                AutoSize = true,
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(subtitleLabel);
+
+            // Time status indicator with rounded corners
             var statusPanel = new Panel
             {
-                Size = new Size(200, 32),
-                Location = new Point(headerPanel.Width - 230, 35),
+                Size = new Size(180, 50),
+                Location = new Point(headerPanel.Width - 210, 35),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BackColor = Color.FromArgb(34, 197, 94)
+                BackColor = BrandTheme.LimeGreen
             };
+
+            statusPanel.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                var rect = statusPanel.ClientRectangle;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), 15))
+                using (var brush = new SolidBrush(BrandTheme.LimeGreen))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+
+            var statusIcon = new IconPictureBox
+            {
+                IconChar = IconChar.Clock,
+                IconColor = BrandTheme.Charcoal,
+                IconSize = 24,
+                Location = new Point(15, 13),
+                Size = new Size(24, 24),
+                BackColor = Color.Transparent
+            };
+            statusPanel.Controls.Add(statusIcon);
 
             var statusLabel = new Label
             {
                 Text = DateTime.Now.ToString("HH:mm:ss"),
                 Font = new Font("Segoe UI", 14F, FontStyle.Bold),
-                ForeColor = Color.White,
-                Location = new Point(15, 6),
-                Size = new Size(170, 20),
+                ForeColor = BrandTheme.Charcoal,
+                Location = new Point(45, 13),
+                Size = new Size(125, 24),
                 TextAlign = ContentAlignment.MiddleLeft,
-                Name = "LiveStatusLabel"
+                Name = "LiveStatusLabel",
+                BackColor = Color.Transparent
             };
             statusPanel.Controls.Add(statusLabel);
             headerPanel.Controls.Add(statusPanel);
@@ -142,21 +216,32 @@ namespace SyncVerseStudio.Views
             var metricsTitle = new Label
             {
                 Text = "Live System Metrics",
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(15, 23, 42),
-                Location = new Point(0, 140),
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                ForeColor = Color.Black,
+                Location = new Point(0, 120),
                 AutoSize = true
             };
             container.Controls.Add(metricsTitle);
 
+            var metricsSubtitle = new Label
+            {
+                Text = "Real-time data updates every 15 seconds",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = BrandTheme.Charcoal,
+                Location = new Point(0, 145),
+                AutoSize = true
+            };
+            container.Controls.Add(metricsSubtitle);
+
             _cardsContainer = new FlowLayoutPanel
             {
-                Location = new Point(0, 180),
-                Size = new Size(container.Width - 60, 400),
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right,
+                Location = new Point(0, 175),
+                Size = new Size(container.Width - 60, 600),
+                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom,
                 BackColor = Color.Transparent,
                 WrapContents = true,
-                AutoSize = false
+                AutoSize = false,
+                AutoScroll = false
             };
 
             CreateLiveMetricCards();
@@ -178,26 +263,26 @@ namespace SyncVerseStudio.Views
             switch (user.Role)
             {
                 case Models.UserRole.Administrator:
-                    CreateLiveCard("Products", "0", IconChar.Box, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Categories", "0", IconChar.Tags, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Customers", "0", IconChar.Users, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Sales Today", "$0.00", IconChar.DollarSign, Color.FromArgb(239, 68, 68), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Suppliers", "0", IconChar.Truck, Color.FromArgb(245, 158, 11), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Users", "0", IconChar.UserTie, Color.FromArgb(156, 163, 175), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Products", "0", IconChar.Box, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Categories", "0", IconChar.Tags, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Customers", "0", IconChar.Users, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Sales Today", "$0.00", IconChar.DollarSign, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Suppliers", "0", IconChar.Truck, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Users", "0", IconChar.UserTie, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
                     break;
 
                 case Models.UserRole.Cashier:
-                    CreateLiveCard("Today's Sales", "$0.00", IconChar.DollarSign, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Transactions", "0", IconChar.Receipt, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Customers", "0", IconChar.Users, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Average Sale", "$0.00", IconChar.ChartLine, Color.FromArgb(245, 158, 11), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Today's Sales", "$0.00", IconChar.DollarSign, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Transactions", "0", IconChar.Receipt, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Customers", "0", IconChar.Users, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Average Sale", "$0.00", IconChar.ChartLine, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
                     break;
 
                 case Models.UserRole.InventoryClerk:
-                    CreateLiveCard("Products", "0", IconChar.Box, Color.FromArgb(59, 130, 246), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Low Stock", "0", IconChar.ExclamationTriangle, Color.FromArgb(239, 68, 68), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Categories", "0", IconChar.Tags, Color.FromArgb(168, 85, 247), cardWidth, cardHeight, cardMargin);
-                    CreateLiveCard("Stock Value", "$0.00", IconChar.Gem, Color.FromArgb(34, 197, 94), cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Products", "0", IconChar.Box, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Low Stock", "0", IconChar.ExclamationTriangle, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Categories", "0", IconChar.Tags, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
+                    CreateLiveCard("Stock Value", "$0.00", IconChar.Gem, BrandTheme.OceanBlue, cardWidth, cardHeight, cardMargin);
                     break;
             }
         }
@@ -209,19 +294,45 @@ namespace SyncVerseStudio.Views
                 Size = new Size(width, height),
                 Margin = new Padding(margin / 2),
                 BackColor = bgColor,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                Tag = bgColor
             };
 
+            // Rounded corners with shadow
             card.Paint += (s, e) =>
             {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                 var rect = card.ClientRectangle;
-                using (var shadowBrush = new SolidBrush(Color.FromArgb(30, 0, 0, 0)))
+                int radius = 20;
+
+                // Shadow
+                using (var shadowPath = GetRoundedRectPath(new Rectangle(6, 6, rect.Width - 2, rect.Height - 2), radius))
+                using (var shadowBrush = new SolidBrush(Color.FromArgb(40, 0, 0, 0)))
                 {
-                    e.Graphics.FillRectangle(shadowBrush, new Rectangle(4, 4, rect.Width, rect.Height));
+                    e.Graphics.FillPath(shadowBrush, shadowPath);
                 }
+
+                // Card background
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), radius))
                 using (var brush = new SolidBrush(bgColor))
                 {
-                    e.Graphics.FillRectangle(brush, rect);
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+
+            // Icon with circular background
+            var iconContainer = new Panel
+            {
+                Size = new Size(70, 70),
+                Location = new Point(20, 20),
+                BackColor = Color.FromArgb(50, 255, 255, 255)
+            };
+            iconContainer.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                using (var brush = new SolidBrush(Color.FromArgb(50, 255, 255, 255)))
+                {
+                    e.Graphics.FillEllipse(brush, 0, 0, 70, 70);
                 }
             };
 
@@ -229,35 +340,71 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = icon,
                 IconColor = Color.White,
-                IconSize = 48,
-                Location = new Point(25, 25),
-                Size = new Size(60, 60),
+                IconSize = 40,
+                Location = new Point(15, 15),
+                Size = new Size(40, 40),
                 BackColor = Color.Transparent
             };
-            card.Controls.Add(iconPic);
+            iconContainer.Controls.Add(iconPic);
+            card.Controls.Add(iconContainer);
 
             var titleLabel = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-                ForeColor = Color.White,
-                Location = new Point(100, 30),
-                Size = new Size(width - 120, 25)
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(250, 250, 250),
+                Location = new Point(20, 100),
+                Size = new Size(width - 40, 22),
+                BackColor = Color.Transparent
             };
             card.Controls.Add(titleLabel);
 
             var valueLabel = new Label
             {
                 Text = value,
-                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
                 ForeColor = Color.White,
-                Location = new Point(100, 55),
-                Size = new Size(width - 120, 35)
+                Location = new Point(20, 55),
+                Size = new Size(width - 110, 40),
+                BackColor = Color.Transparent,
+                TextAlign = ContentAlignment.MiddleRight
             };
             card.Controls.Add(valueLabel);
             _cardValueLabels[title] = valueLabel;
 
+            // Hover animation
+            card.MouseEnter += (s, e) =>
+            {
+                card.Size = new Size(width + 5, height + 5);
+                card.BackColor = LightenColor(bgColor, 20);
+            };
+            card.MouseLeave += (s, e) =>
+            {
+                card.Size = new Size(width, height);
+                card.BackColor = bgColor;
+            };
+
             _cardsContainer.Controls.Add(card);
+        }
+
+        private System.Drawing.Drawing2D.GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
+        {
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private Color LightenColor(Color color, int amount)
+        {
+            return Color.FromArgb(
+                Math.Min(255, color.R + amount),
+                Math.Min(255, color.G + amount),
+                Math.Min(255, color.B + amount)
+            );
         }
 
         private async Task LoadDashboardDataAsync()

@@ -14,7 +14,7 @@ A POS system built with .NET 8 and Windows Forms featuring role-based authentica
 8. Troubleshooting
 
 ---
-
+https://raw.githubusercontent.com/EIRSVi/eirsvi/d8339235bb1765d461e284ab51bd1223d4345dce/assets/brand/mainlogo.svg 
 ## Installation and Setup
 
 ### Quick Start
@@ -52,8 +52,8 @@ Update the connection string in `Data\ApplicationDbContext.cs` (OnConfiguring me
 
 | Field | Value |
 |-------|-------| 
-| Username | `vi` |
-| Password | `vi` |
+| Username | `` |
+| Password | `` |
 | Role | Administrator |
 
 ---
@@ -76,39 +76,11 @@ Update the connection string in `Data\ApplicationDbContext.cs` (OnConfiguring me
 ### Project Structure
 
 ```
-syncversestudio/
-├── Data/
-│   ├── ApplicationDbContext.cs          # EF Core DbContext with entity configuration
-│   └── Migrations/                      # Entity Framework migrations
-├── Models/                              # Entity and business model classes
-│   ├── User.cs
-│   ├── Product.cs
-│   ├── Sale.cs
-│   ├── Customer.cs
-│   ├── Category.cs
-│   ├── Supplier.cs
-│   ├── SaleItem.cs
-│   ├── InventoryMovement.cs
-│   └── AuditLog.cs
-├── Services/                            # Business logic layer
-│   ├── AuthenticationService.cs
-│   ├── SalesService.cs
-│   ├── InventoryService.cs
-│   └── ReportService.cs
-├── Views/                               # Windows Forms UI
-│   ├── LoginForm.cs
-│   ├── MainDashboard.cs
-│   ├── POSForm.cs
-│   ├── InventoryForm.cs
-│   └── AdminPanel.cs
-├── Helpers/                             # Utility and helper classes
-│   ├── BarcodeHelper.cs
-│   ├── ValidationHelper.cs
-│   ├── ReportHelper.cs
-│   └── EncryptionHelper.cs
-├── Form1.cs                             # Main application entry form
-├── Program.cs                           # Application entry point
-└── syncversestudio.csproj              # Project configuration file
+dotnet clean
+dotnet restore
+dotnet build
+dotnet run --project syncversestudio
+
 ```
 
 ---

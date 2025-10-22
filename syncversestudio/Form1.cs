@@ -33,7 +33,6 @@ namespace SyncVerseStudio
         private async void LoginForm_Load(object sender, EventArgs e)
         {
             await InitializeDatabase();
-            CenterLoginPanel(); // Center on load
             
             // Focus on username field
             usernameTextBox.Focus();
