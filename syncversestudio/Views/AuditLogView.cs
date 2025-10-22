@@ -1,7 +1,9 @@
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
 using FontAwesome.Sharp;
 
@@ -12,12 +14,16 @@ namespace SyncVerseStudio.Views
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _context;
         private DataGridView auditGrid;
-        private Panel topPanel, statsPanel;
-        private IconButton refreshButton, exportButton, clearButton, filterButton;
+        private Panel statsCardsPanel;
         private TextBox searchBox;
         private ComboBox actionFilter, userFilter;
         private DateTimePicker fromDatePicker, toDatePicker;
-        private Label totalLogsLabel, todayLogsLabel, successLabel, failedLabel;
+        
+        // Blue theme colors
+        private readonly Color BlueLight = Color.FromArgb(158, 236, 255);  // #9EECFF
+        private readonly Color BlueMedium = Color.FromArgb(48, 148, 255);  // #3094FF
+        private readonly Color BlueDark = Color.FromArgb(30, 120, 220);
+        private readonly Color BlueVeryLight = Color.FromArgb(230, 248, 255);
 
         public AuditLogView(AuthenticationService authService)
         {
@@ -33,503 +39,673 @@ namespace SyncVerseStudio.Views
         {
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.BackColor = Color.FromArgb(245, 245, 250);
-            this.ClientSize = new Size(1200, 800);
+            this.BackColor = Color.White;
+            this.ClientSize = new Size(1400, 900);
             this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "AuditLogView";
             this.Text = "Audit Log Management";
-            this.Padding = new Padding(0);
+            this.Padding = new Padding(40, 30, 40, 40);
 
-            CreateTopPanel();
-            CreateStatsPanel();
+            CreateHeader();
+            CreateStatsCards();
+            CreateFiltersPanel();
             CreateAuditGrid();
         }
 
-        private void CreateTopPanel()
+        private void CreateHeader()
         {
-            topPanel = new Panel
+            var headerPanel = new Panel
             {
-                BackColor = Color.White,
-                Dock = DockStyle.Top,
-                Height = 120, // Reduced from 140
-                Padding = new Padding(25, 12, 25, 12) // Reduced padding
-            };
-
-            // Title with icon
-            var titleIconPic = new IconPictureBox
-            {
-                IconChar = IconChar.History,
-                IconColor = Color.FromArgb(103, 58, 183),
-                IconSize = 32, // Reduced from 36
-                Location = new Point(25, 15),
-                Size = new Size(38, 38),
+                Location = new Point(40, 30),
+                Size = new Size(1320, 80),
                 BackColor = Color.Transparent
             };
-            topPanel.Controls.Add(titleIconPic);
 
+            // Modern title with gradient underline
             var titleLabel = new Label
             {
                 Text = "System Audit Logs",
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold), // Reduced from 20F
-                ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(70, 16),
-                Size = new Size(320, 34)
+                Font = new Font("Segoe UI", 28F, FontStyle.Bold),
+                ForeColor = BlueDark,
+                Location = new Point(0, 0),
+                Size = new Size(500, 45),
+                BackColor = Color.Transparent
             };
-            topPanel.Controls.Add(titleLabel);
+            headerPanel.Controls.Add(titleLabel);
 
             var subtitleLabel = new Label
             {
-                Text = "Monitor all system activities and user actions",
-                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular), // Slightly smaller
-                ForeColor = Color.FromArgb(117, 117, 117),
-                Location = new Point(70, 48),
-                Size = new Size(380, 20)
-            };
-            topPanel.Controls.Add(subtitleLabel);
-
-            // Search bar with icon overlay
-            var searchPanel = new Panel
-            {
-                Location = new Point(25, 78), // Adjusted Y position
-                Size = new Size(300, 34), // Slightly smaller
-                BackColor = Color.FromArgb(248, 249, 250),
-                BorderStyle = BorderStyle.FixedSingle
-            };
-
-            var searchIcon = new IconPictureBox
-            {
-                IconChar = IconChar.Search,
-                IconColor = Color.FromArgb(117, 117, 117),
-                IconSize = 16,
-                Location = new Point(10, 8),
-                Size = new Size(20, 20),
+                Text = "Monitor all system activities and user actions in real-time",
+                Font = new Font("Segoe UI", 11F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                Location = new Point(0, 50),
+                Size = new Size(600, 25),
                 BackColor = Color.Transparent
             };
-            searchPanel.Controls.Add(searchIcon);
+            headerPanel.Controls.Add(subtitleLabel);
 
-            searchBox = new TextBox
+            // Action buttons on the right
+            var exportBtn = new Button
             {
-                PlaceholderText = "Search logs...", // Shorter placeholder
-                Font = new Font("Segoe UI", 10F),
-                Location = new Point(38, 6),
-                Size = new Size(255, 24),
-                BorderStyle = BorderStyle.None,
-                BackColor = Color.FromArgb(248, 249, 250)
-            };
-            searchBox.TextChanged += SearchBox_TextChanged;
-            searchPanel.Controls.Add(searchBox);
-            topPanel.Controls.Add(searchPanel);
-
-            // Date range filters
-            var dateIcon = new IconPictureBox
-            {
-                IconChar = IconChar.CalendarAlt,
-                IconColor = Color.FromArgb(103, 58, 183),
-                IconSize = 18,
-                Location = new Point(340, 83),
-                Size = new Size(22, 22),
-                BackColor = Color.Transparent
-            };
-            topPanel.Controls.Add(dateIcon);
-
-            fromDatePicker = new DateTimePicker
-            {
-                Font = new Font("Segoe UI", 9.5F),
-                Location = new Point(368, 80),
-                Size = new Size(120, 26),
-                Format = DateTimePickerFormat.Short,
-                Value = DateTime.Today.AddDays(-30)
-            };
-            fromDatePicker.ValueChanged += DateFilter_Changed;
-            topPanel.Controls.Add(fromDatePicker);
-
-            var dateArrow = new Label
-            {
-                Text = "?",
-                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(117, 117, 117),
-                Location = new Point(493, 80),
-                Size = new Size(18, 26),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            topPanel.Controls.Add(dateArrow);
-
-            toDatePicker = new DateTimePicker
-            {
-                Font = new Font("Segoe UI", 9.5F),
-                Location = new Point(516, 80),
-                Size = new Size(120, 26),
-                Format = DateTimePickerFormat.Short,
-                Value = DateTime.Today
-            };
-            toDatePicker.ValueChanged += DateFilter_Changed;
-            topPanel.Controls.Add(toDatePicker);
-
-            // Action and User filters
-            actionFilter = new ComboBox
-            {
-                Font = new Font("Segoe UI", 9.5F),
-                Location = new Point(650, 80),
-                Size = new Size(140, 26),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                FlatStyle = FlatStyle.Flat
-            };
-            actionFilter.SelectedIndexChanged += ActionFilter_SelectedIndexChanged;
-            topPanel.Controls.Add(actionFilter);
-
-            userFilter = new ComboBox
-            {
-                Font = new Font("Segoe UI", 9.5F),
-                Location = new Point(805, 80),
-                Size = new Size(140, 26),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                FlatStyle = FlatStyle.Flat
-            };
-            userFilter.SelectedIndexChanged += UserFilter_SelectedIndexChanged;
-            topPanel.Controls.Add(userFilter);
-
-            // Icon-only action buttons - smaller
-            int buttonX = 965;
-            
-            refreshButton = CreateIconOnlyButton(IconChar.SyncAlt, Color.FromArgb(33, 150, 243), "Refresh", buttonX, 76);
-            refreshButton.Click += RefreshButton_Click;
-            buttonX += 46;
-
-            exportButton = CreateIconOnlyButton(IconChar.FileExport, Color.FromArgb(76, 175, 80), "Export to CSV", buttonX, 76);
-            exportButton.Click += ExportButton_Click;
-            buttonX += 46;
-
-            clearButton = CreateIconOnlyButton(IconChar.TrashAlt, Color.FromArgb(255, 152, 0), "Clear Old Logs", buttonX, 76);
-            clearButton.Click += ClearButton_Click;
-
-            topPanel.Controls.AddRange(new Control[] { refreshButton, exportButton, clearButton });
-
-            this.Controls.Add(topPanel);
-        }
-
-        private IconButton CreateIconOnlyButton(IconChar icon, Color color, string tooltip, int x, int y)
-        {
-            var button = new IconButton
-            {
-                IconChar = icon,
-                IconColor = Color.White,
-                IconSize = 20, // Reduced from 22
-                BackColor = color,
+                Text = "📊 Export",
+                Location = new Point(1050, 15),
+                Size = new Size(120, 40),
+                BackColor = BlueMedium,
+                ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Location = new Point(x, y),
-                Size = new Size(38, 38), // Reduced from 42x42
-                Cursor = Cursors.Hand,
-                FlatAppearance = { BorderSize = 0 },
-                TextAlign = ContentAlignment.MiddleCenter,
-                ImageAlign = ContentAlignment.MiddleCenter
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
+            exportBtn.FlatAppearance.BorderSize = 0;
+            exportBtn.Click += ExportButton_Click;
+            headerPanel.Controls.Add(exportBtn);
 
-            // Tooltip
-            var toolTip = new ToolTip();
-            toolTip.SetToolTip(button, tooltip);
-
-            // Hover effects
-            button.MouseEnter += (s, e) =>
+            var refreshBtn = new Button
             {
-                button.BackColor = ControlPaint.Light(color, 0.2f);
-                button.FlatAppearance.BorderSize = 2;
-                button.FlatAppearance.BorderColor = color;
+                Text = "🔄 Refresh",
+                Location = new Point(1180, 15),
+                Size = new Size(120, 40),
+                BackColor = Color.FromArgb(107, 114, 128),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Cursor = Cursors.Hand
             };
+            refreshBtn.FlatAppearance.BorderSize = 0;
+            refreshBtn.Click += RefreshButton_Click;
+            headerPanel.Controls.Add(refreshBtn);
 
-            button.MouseLeave += (s, e) =>
-            {
-                button.BackColor = color;
-                button.FlatAppearance.BorderSize = 0;
-            };
-
-            return button;
+            this.Controls.Add(headerPanel);
         }
 
-        private void CreateStatsPanel()
+        private void CreateStatsCards()
         {
-            statsPanel = new Panel
+            statsCardsPanel = new FlowLayoutPanel
             {
-                Dock = DockStyle.Top,
-                Height = 85, // Reduced from 100
-                BackColor = Color.FromArgb(245, 245, 250),
-                Padding = new Padding(25, 10, 25, 10) // Reduced padding
+                Location = new Point(40, 130),
+                Size = new Size(1320, 120),
+                BackColor = Color.Transparent,
+                WrapContents = false,
+                AutoScroll = false
             };
 
-            // Total Logs Card
-            var totalCard = CreateStatCard("Total Logs", "0", IconChar.Database, Color.FromArgb(103, 58, 183), 25);
-            totalLogsLabel = totalCard.Controls.OfType<Label>().First(l => l.Name == "ValueLabel");
-            statsPanel.Controls.Add(totalCard);
+            // Card 1: Total Logs
+            CreateStatCard("Total Logs", "0", IconChar.Database, Color.FromArgb(99, 102, 241), 0);
+            
+            // Card 2: Today's Activity
+            CreateStatCard("Today's Activity", "0", IconChar.CalendarDay, BlueMedium, 1);
+            
+            // Card 3: Success Rate
+            CreateStatCard("Success Rate", "0%", IconChar.CheckCircle, Color.FromArgb(34, 197, 94), 2);
+            
+            // Card 4: Failed Actions
+            CreateStatCard("Failed Actions", "0", IconChar.ExclamationTriangle, Color.FromArgb(239, 68, 68), 3);
 
-            // Today's Logs Card
-            var todayCard = CreateStatCard("Today", "0", IconChar.CalendarDay, Color.FromArgb(33, 150, 243), 280);
-            todayLogsLabel = todayCard.Controls.OfType<Label>().First(l => l.Name == "ValueLabel");
-            statsPanel.Controls.Add(todayCard);
-
-            // Success Count Card
-            var successCard = CreateStatCard("Success", "0", IconChar.CheckCircle, Color.FromArgb(76, 175, 80), 535);
-            successLabel = successCard.Controls.OfType<Label>().First(l => l.Name == "ValueLabel");
-            statsPanel.Controls.Add(successCard);
-
-            // Failed Count Card
-            var failedCard = CreateStatCard("Failed", "0", IconChar.TimesCircle, Color.FromArgb(244, 67, 54), 790);
-            failedLabel = failedCard.Controls.OfType<Label>().First(l => l.Name == "ValueLabel");
-            statsPanel.Controls.Add(failedCard);
-
-            this.Controls.Add(statsPanel);
+            this.Controls.Add(statsCardsPanel);
         }
 
-        private Panel CreateStatCard(string title, string value, IconChar icon, Color color, int x)
+        private void CreateStatCard(string title, string value, IconChar icon, Color accentColor, int index)
         {
             var card = new Panel
             {
-                Location = new Point(x, 8), // Adjusted Y position
-                Size = new Size(240, 65), // Reduced from 75
+                Size = new Size(310, 110),
+                Margin = new Padding(0, 0, 20, 0),
                 BackColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle
+                Tag = new { Title = title, Value = value }
             };
 
-            // Left accent bar
-            var accent = new Panel
+            // Card paint for rounded corners and shadow
+            card.Paint += (s, e) =>
             {
-                Location = new Point(0, 0),
-                Size = new Size(4, 65), // Thinner accent bar
-                BackColor = color
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                var rect = card.ClientRectangle;
+                
+                // Shadow
+                using (var shadowPath = GetRoundedRectPath(new Rectangle(2, 2, rect.Width - 2, rect.Height - 2), 12))
+                using (var shadowBrush = new SolidBrush(Color.FromArgb(15, 0, 0, 0)))
+                {
+                    e.Graphics.FillPath(shadowBrush, shadowPath);
+                }
+                
+                // Card background
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), 12))
+                using (var brush = new SolidBrush(Color.White))
+                using (var pen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                {
+                    e.Graphics.FillPath(brush, path);
+                    e.Graphics.DrawPath(pen, path);
+                }
+                
+                // Accent bar on left
+                using (var accentBrush = new SolidBrush(accentColor))
+                {
+                    e.Graphics.FillRectangle(accentBrush, 0, 15, 4, 80);
+                }
             };
-            card.Controls.Add(accent);
+
+            // Icon with circular background
+            var iconBg = new Panel
+            {
+                Size = new Size(50, 50),
+                Location = new Point(20, 30),
+                BackColor = Color.Transparent
+            };
+            iconBg.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var brush = new SolidBrush(Color.FromArgb(30, accentColor)))
+                {
+                    e.Graphics.FillEllipse(brush, 0, 0, 50, 50);
+                }
+            };
+            card.Controls.Add(iconBg);
 
             var iconPic = new IconPictureBox
             {
                 IconChar = icon,
-                IconColor = color,
-                IconSize = 28, // Reduced from 32
-                Location = new Point(15, 16),
-                Size = new Size(32, 32),
+                IconColor = accentColor,
+                IconSize = 26,
+                Location = new Point(12, 12),
+                Size = new Size(26, 26),
                 BackColor = Color.Transparent
             };
-            card.Controls.Add(iconPic);
+            iconBg.Controls.Add(iconPic);
 
+            // Title
             var titleLabel = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular), // Smaller font
-                ForeColor = Color.FromArgb(117, 117, 117),
-                Location = new Point(58, 14),
-                Size = new Size(170, 18)
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Regular),
+                ForeColor = Color.FromArgb(100, 100, 100),
+                Location = new Point(85, 30),
+                Size = new Size(210, 20),
+                BackColor = Color.Transparent
             };
             card.Controls.Add(titleLabel);
 
+            // Value
             var valueLabel = new Label
             {
-                Name = "ValueLabel",
                 Text = value,
-                Font = new Font("Segoe UI", 18F, FontStyle.Bold), // Reduced from 20F
-                ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(58, 30),
-                Size = new Size(170, 28)
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(85, 48),
+                Size = new Size(210, 40),
+                BackColor = Color.Transparent,
+                Name = title.Replace(" ", "") + "Label"
             };
             card.Controls.Add(valueLabel);
 
-            return card;
+            statsCardsPanel.Controls.Add(card);
+        }
+
+        private void CreateFiltersPanel()
+        {
+            var filtersPanel = new Panel
+            {
+                Location = new Point(40, 270),
+                Size = new Size(1320, 70),
+                BackColor = BlueVeryLight
+            };
+
+            filtersPanel.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(filtersPanel.ClientRectangle, 12))
+                using (var brush = new SolidBrush(BlueVeryLight))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+
+            // Search box
+            searchBox = new TextBox
+            {
+                Location = new Point(20, 20),
+                Size = new Size(280, 30),
+                Font = new Font("Segoe UI", 10F),
+                BorderStyle = BorderStyle.FixedSingle,
+                PlaceholderText = "🔍 Search logs..."
+            };
+            searchBox.TextChanged += SearchBox_TextChanged;
+            filtersPanel.Controls.Add(searchBox);
+
+            // Action filter
+            var actionLabel = new Label
+            {
+                Text = "Action:",
+                Location = new Point(320, 23),
+                Size = new Size(60, 25),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = BlueDark
+            };
+            filtersPanel.Controls.Add(actionLabel);
+
+            actionFilter = new ComboBox
+            {
+                Location = new Point(380, 20),
+                Size = new Size(150, 30),
+                Font = new Font("Segoe UI", 10F),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            actionFilter.SelectedIndexChanged += ActionFilter_SelectedIndexChanged;
+            filtersPanel.Controls.Add(actionFilter);
+
+            // User filter
+            var userLabel = new Label
+            {
+                Text = "User:",
+                Location = new Point(550, 23),
+                Size = new Size(50, 25),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = BlueDark
+            };
+            filtersPanel.Controls.Add(userLabel);
+
+            userFilter = new ComboBox
+            {
+                Location = new Point(600, 20),
+                Size = new Size(150, 30),
+                Font = new Font("Segoe UI", 10F),
+                DropDownStyle = ComboBoxStyle.DropDownList
+            };
+            userFilter.SelectedIndexChanged += UserFilter_SelectedIndexChanged;
+            filtersPanel.Controls.Add(userFilter);
+
+            // Date range
+            var fromLabel = new Label
+            {
+                Text = "From:",
+                Location = new Point(770, 23),
+                Size = new Size(50, 25),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = BlueDark
+            };
+            filtersPanel.Controls.Add(fromLabel);
+
+            fromDatePicker = new DateTimePicker
+            {
+                Location = new Point(820, 20),
+                Size = new Size(180, 30),
+                Font = new Font("Segoe UI", 9.5F),
+                Format = DateTimePickerFormat.Short
+            };
+            fromDatePicker.ValueChanged += DateFilter_Changed;
+            filtersPanel.Controls.Add(fromDatePicker);
+
+            var toLabel = new Label
+            {
+                Text = "To:",
+                Location = new Point(1020, 23),
+                Size = new Size(30, 25),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
+                ForeColor = BlueDark
+            };
+            filtersPanel.Controls.Add(toLabel);
+
+            toDatePicker = new DateTimePicker
+            {
+                Location = new Point(1050, 20),
+                Size = new Size(180, 30),
+                Font = new Font("Segoe UI", 9.5F),
+                Format = DateTimePickerFormat.Short
+            };
+            toDatePicker.ValueChanged += DateFilter_Changed;
+            filtersPanel.Controls.Add(toDatePicker);
+
+            // Clear filters button
+            var clearBtn = new Button
+            {
+                Text = "✕ Clear",
+                Location = new Point(1245, 18),
+                Size = new Size(60, 34),
+                BackColor = Color.FromArgb(239, 68, 68),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            clearBtn.FlatAppearance.BorderSize = 0;
+            clearBtn.Click += ClearButton_Click;
+            filtersPanel.Controls.Add(clearBtn);
+
+            this.Controls.Add(filtersPanel);
         }
 
         private void CreateAuditGrid()
         {
-            // Create a wrapper panel with padding
-            var gridPanel = new Panel
+            var gridContainer = new Panel
             {
-                Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(226, 244, 255), // Patten Blue background
-                Padding = new Padding(10, 200, 10, 10) // Left, Top, Right, Bottom - 200px padding from top
+                Location = new Point(40, 360),
+                Size = new Size(1320, 500),
+                BackColor = Color.White
+            };
+
+            gridContainer.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(gridContainer.ClientRectangle, 12))
+                using (var brush = new SolidBrush(Color.White))
+                using (var pen = new Pen(Color.FromArgb(230, 230, 230), 1))
+                {
+                    e.Graphics.FillPath(brush, path);
+                    e.Graphics.DrawPath(pen, path);
+                }
             };
 
             auditGrid = new DataGridView
             {
-                Dock = DockStyle.Fill,
+                Location = new Point(15, 15),
+                Size = new Size(1290, 470),
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9F),
                 RowHeadersVisible = false,
-                GridColor = Color.FromArgb(226, 244, 255), // Patten Blue
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
-                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.FromArgb(226, 244, 255) // Patten Blue
-                },
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.White,
-                    ForeColor = Color.FromArgb(33, 33, 33),
-                    SelectionBackColor = Color.FromArgb(118, 189, 255), // Malibu
-                    SelectionForeColor = Color.White,
-                    Padding = new Padding(8, 4, 8, 4),
-                    WrapMode = DataGridViewTriState.False,
-                    Font = new Font("Segoe UI", 9F),
-                    Alignment = DataGridViewContentAlignment.MiddleCenter // Center all text
-                },
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.FromArgb(226, 244, 255), // Patten Blue
-                    ForeColor = Color.FromArgb(60, 60, 60),
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-                    Alignment = DataGridViewContentAlignment.MiddleCenter, // Center headers
-                    Padding = new Padding(8, 6, 8, 6)
-                },
+                MultiSelect = false,
+                AutoGenerateColumns = false,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
                 EnableHeadersVisualStyles = false,
-                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
-                ColumnHeadersHeight = 36,
-                RowTemplate = { Height = 32 },
-                AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.None
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal,
+                GridColor = Color.FromArgb(240, 240, 240),
+                Font = new Font("Segoe UI", 10F)
             };
 
-            // Columns WITHOUT Action column - removed as requested
-            auditGrid.Columns.AddRange(new DataGridViewColumn[]
+            // Modern blue-themed styling
+            auditGrid.DefaultCellStyle = new DataGridViewCellStyle
             {
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "Id", 
-                    HeaderText = "ID", 
-                    Width = 50, 
-                    Visible = false 
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "Timestamp", 
-                    HeaderText = "Timestamp",
-                    FillWeight = 15,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "User", 
-                    HeaderText = "User", 
-                    FillWeight = 18,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "Action", 
-                    HeaderText = "Action", 
-                    FillWeight = 17,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "Table", 
-                    HeaderText = "Table", 
-                    FillWeight = 12,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "Details", 
-                    HeaderText = "Details", 
-                    FillWeight = 28,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
-                },
-                new DataGridViewTextBoxColumn 
-                { 
-                    Name = "IpAddress", 
-                    HeaderText = "IP Address", 
-                    FillWeight = 10,
-                    DefaultCellStyle = new DataGridViewCellStyle 
-                    { 
-                        Alignment = DataGridViewContentAlignment.MiddleCenter
-                    }
+                Font = new Font("Segoe UI", 10F),
+                Padding = new Padding(12, 10, 12, 10),
+                SelectionBackColor = Color.FromArgb(200, 230, 255),
+                SelectionForeColor = BlueDark,
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(50, 50, 50),
+                Alignment = DataGridViewContentAlignment.MiddleLeft
+            };
+
+            auditGrid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = Color.FromArgb(248, 252, 255),
+                SelectionBackColor = Color.FromArgb(200, 230, 255),
+                SelectionForeColor = BlueDark
+            };
+
+            // Blue gradient header
+            auditGrid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = BlueMedium,
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
+                Padding = new Padding(12, 12, 12, 12),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                SelectionBackColor = BlueMedium,
+                SelectionForeColor = Color.White
+            };
+
+            auditGrid.ColumnHeadersHeight = 50;
+            auditGrid.RowTemplate.Height = 55;
+
+            // Hover effect
+            auditGrid.CellMouseEnter += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    auditGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = BlueVeryLight;
                 }
-                // REMOVED: Action button column as requested
+            };
+
+            auditGrid.CellMouseLeave += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    auditGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = 
+                        e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(248, 252, 255);
+                }
+            };
+
+            // Setup columns
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Timestamp",
+                HeaderText = "⏰ Timestamp",
+                Width = 180,
+                DataPropertyName = "Timestamp"
             });
 
-            // Format timestamp column to be more compact
-            auditGrid.Columns["Timestamp"].DefaultCellStyle.Format = "MM/dd HH:mm";
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "User",
+                HeaderText = "👤 User",
+                Width = 150,
+                DataPropertyName = "User"
+            });
 
-            gridPanel.Controls.Add(auditGrid);
-            this.Controls.Add(gridPanel);
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Action",
+                HeaderText = "⚡ Action",
+                Width = 180,
+                DataPropertyName = "Action"
+            });
+
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Table",
+                HeaderText = "📊 Table",
+                Width = 120,
+                DataPropertyName = "Table"
+            });
+
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "Details",
+                HeaderText = "📝 Details",
+                Width = 250,
+                DataPropertyName = "Details"
+            });
+
+            auditGrid.Columns.Add(new DataGridViewTextBoxColumn
+            {
+                Name = "IPAddress",
+                HeaderText = "🌐 IP Address",
+                Width = 140,
+                DataPropertyName = "IPAddress"
+            });
+
+            gridContainer.Controls.Add(auditGrid);
+            this.Controls.Add(gridContainer);
         }
 
-        private async void LoadAuditLogs()
+        private GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        private void SearchBox_TextChanged(object sender, EventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void ActionFilter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void UserFilter_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void DateFilter_Changed(object sender, EventArgs e)
+        {
+            ApplyFilters();
+        }
+
+        private void RefreshButton_Click(object sender, EventArgs e)
+        {
+            LoadAuditLogs();
+            LoadStatistics();
+        }
+
+        private void ExportButton_Click(object sender, EventArgs e)
+        {
+            using (var exportDialog = new Form())
+            {
+                exportDialog.Text = "Export Audit Logs";
+                exportDialog.Size = new Size(400, 200);
+                exportDialog.StartPosition = FormStartPosition.CenterParent;
+                exportDialog.FormBorderStyle = FormBorderStyle.FixedDialog;
+                exportDialog.MaximizeBox = false;
+                exportDialog.MinimizeBox = false;
+
+                var label = new Label
+                {
+                    Text = "Select export format:",
+                    Location = new Point(30, 30),
+                    Size = new Size(340, 25),
+                    Font = new Font("Segoe UI", 11F, FontStyle.Bold)
+                };
+                exportDialog.Controls.Add(label);
+
+                var pdfBtn = new Button
+                {
+                    Text = "📄 Export as PDF",
+                    Location = new Point(30, 70),
+                    Size = new Size(150, 45),
+                    BackColor = Color.FromArgb(220, 38, 38),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                pdfBtn.FlatAppearance.BorderSize = 0;
+                pdfBtn.Click += (s, ev) =>
+                {
+                    exportDialog.DialogResult = DialogResult.OK;
+                    exportDialog.Tag = "PDF";
+                    exportDialog.Close();
+                };
+                exportDialog.Controls.Add(pdfBtn);
+
+                var excelBtn = new Button
+                {
+                    Text = "📊 Export as Excel",
+                    Location = new Point(200, 70),
+                    Size = new Size(150, 45),
+                    BackColor = Color.FromArgb(34, 197, 94),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                    Cursor = Cursors.Hand
+                };
+                excelBtn.FlatAppearance.BorderSize = 0;
+                excelBtn.Click += (s, ev) =>
+                {
+                    exportDialog.DialogResult = DialogResult.OK;
+                    exportDialog.Tag = "EXCEL";
+                    exportDialog.Close();
+                };
+                exportDialog.Controls.Add(excelBtn);
+
+                if (exportDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string format = exportDialog.Tag?.ToString() ?? "EXCEL";
+                    if (format == "PDF")
+                        ExportToPDF();
+                    else
+                        ExportToExcel();
+                }
+            }
+        }
+
+        private void ClearButton_Click(object sender, EventArgs e)
+        {
+            searchBox.Clear();
+            actionFilter.SelectedIndex = 0;
+            userFilter.SelectedIndex = 0;
+            fromDatePicker.Value = DateTime.Now.AddDays(-30);
+            toDatePicker.Value = DateTime.Now;
+            ApplyFilters();
+        }
+
+        private void LoadFilters()
+        {
+            // Load action types
+            actionFilter.Items.Add("All Actions");
+            actionFilter.Items.Add("LOGIN_SUCCESS");
+            actionFilter.Items.Add("LOGIN_FAILED");
+            actionFilter.Items.Add("LOGOUT");
+            actionFilter.Items.Add("CREATE");
+            actionFilter.Items.Add("UPDATE");
+            actionFilter.Items.Add("DELETE");
+            actionFilter.SelectedIndex = 0;
+
+            // Load users
+            userFilter.Items.Add("All Users");
+            var users = _context.Users.Select(u => u.Username).Distinct().ToList();
+            foreach (var user in users)
+            {
+                userFilter.Items.Add(user);
+            }
+            userFilter.SelectedIndex = 0;
+
+            // Set default date range
+            fromDatePicker.Value = DateTime.Now.AddDays(-30);
+            toDatePicker.Value = DateTime.Now;
+        }
+
+        private void LoadAuditLogs()
         {
             try
             {
-                var fromDate = fromDatePicker.Value.Date;
-                var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
-
-                var logs = await _context.AuditLogs
+                var logs = _context.AuditLogs
                     .Include(a => a.User)
-                    .Where(a => a.Timestamp >= fromDate && a.Timestamp <= toDate)
                     .OrderByDescending(a => a.Timestamp)
-                    .Take(500)
-                    .ToListAsync();
-
-                auditGrid.Rows.Clear();
-
-                foreach (var log in logs)
-                {
-                    var userName = log.User?.FullName ?? "System";
-                    var displayDetails = log.NewValues ?? "No details";
-                    
-                    // Truncate long details for clean display
-                    if (displayDetails.Length > 80)
+                    .Take(1000)
+                    .Select(a => new
                     {
-                        displayDetails = displayDetails.Substring(0, 77) + "...";
-                    }
+                        Timestamp = a.Timestamp.ToString("MM/dd/yyyy HH:mm:ss"),
+                        User = a.User != null ? a.User.Username : "System",
+                        Action = a.Action,
+                        Table = a.TableName,
+                        Details = (a.OldValues ?? "") + " → " + (a.NewValues ?? ""),
+                        IPAddress = a.IpAddress ?? "N/A"
+                    })
+                    .ToList();
 
-                    var rowIndex = auditGrid.Rows.Add(
-                        log.Id,
-                        log.Timestamp,
-                        userName,
-                        log.Action,
-                        log.TableName ?? "System",
-                        displayDetails,
-                        log.IpAddress ?? "N/A"
-                        // REMOVED: Button column
-                    );
-                }
+                auditGrid.DataSource = logs;
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading audit logs: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading audit logs: {ex.Message}", "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private async void LoadStatistics()
+        private void LoadStatistics()
         {
             try
             {
-                var totalCount = await _context.AuditLogs.CountAsync();
-                var todayCount = await _context.AuditLogs
-                    .CountAsync(a => a.Timestamp.Date == DateTime.Today);
-                var successCount = await _context.AuditLogs
-                    .CountAsync(a => a.Action.Contains("SUCCESS"));
-                var failedCount = await _context.AuditLogs
-                    .CountAsync(a => a.Action.Contains("FAILED") || a.Action.Contains("ERROR"));
+                var totalLogs = _context.AuditLogs.Count();
+                var todayLogs = _context.AuditLogs.Count(a => a.Timestamp.Date == DateTime.Today);
+                var successLogs = _context.AuditLogs.Count(a => a.Action.Contains("SUCCESS"));
+                var failedLogs = _context.AuditLogs.Count(a => a.Action.Contains("FAILED"));
+                
+                var successRate = totalLogs > 0 ? (successLogs * 100.0 / totalLogs) : 0;
 
-                // Display real data without leading zeros
-                totalLogsLabel.Text = totalCount.ToString();
-                todayLogsLabel.Text = todayCount.ToString();
-                successLabel.Text = successCount.ToString();
-                failedLabel.Text = failedCount.ToString();
+                // Update stat cards
+                UpdateStatCard("TotalLogsLabel", totalLogs.ToString("N0"));
+                UpdateStatCard("Today'sActivityLabel", todayLogs.ToString("N0"));
+                UpdateStatCard("SuccessRateLabel", $"{successRate:F1}%");
+                UpdateStatCard("FailedActionsLabel", failedLogs.ToString("N0"));
             }
             catch (Exception ex)
             {
@@ -537,227 +713,205 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private async void LoadFilters()
+        private void UpdateStatCard(string labelName, string value)
         {
-            try
+            var label = statsCardsPanel.Controls.Find(labelName, true).FirstOrDefault() as Label;
+            if (label != null)
             {
-                var actions = await _context.AuditLogs
-                    .Select(a => a.Action)
-                    .Distinct()
-                    .OrderBy(a => a)
-                    .ToListAsync();
-
-                actionFilter.Items.Clear();
-                actionFilter.Items.Add("All Actions");
-                actionFilter.Items.AddRange(actions.ToArray());
-                actionFilter.SelectedIndex = 0;
-
-                var users = await _context.Users
-                    .Select(u => new { u.Id, u.FullName })
-                    .OrderBy(u => u.FullName)
-                    .ToListAsync();
-
-                userFilter.Items.Clear();
-                userFilter.Items.Add("All Users");
-                foreach (var user in users)
-                {
-                    userFilter.Items.Add(user.FullName);
-                }
-                userFilter.SelectedIndex = 0;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading filters: {ex.Message}");
+                label.Text = value;
             }
         }
 
-        private void SearchBox_TextChanged(object sender, EventArgs e)
-        {
-            FilterLogs();
-        }
-
-        private void ActionFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            FilterLogs();
-        }
-
-        private void UserFilter_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            FilterLogs();
-        }
-
-        private void DateFilter_Changed(object sender, EventArgs e)
-        {
-            LoadAuditLogs();
-            LoadStatistics();
-        }
-
-        private async void FilterLogs()
+        private void ApplyFilters()
         {
             try
             {
-                var searchTerm = searchBox.Text.ToLower();
-                var selectedAction = actionFilter.SelectedItem?.ToString();
-                var selectedUser = userFilter.SelectedItem?.ToString();
+                var query = _context.AuditLogs.Include(a => a.User).AsQueryable();
 
-                var fromDate = fromDatePicker.Value.Date;
-                var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
-
-                var query = _context.AuditLogs
-                    .Include(a => a.User)
-                    .Where(a => a.Timestamp >= fromDate && a.Timestamp <= toDate);
-
-                if (!string.IsNullOrEmpty(searchTerm))
+                // Search filter
+                if (!string.IsNullOrWhiteSpace(searchBox.Text))
                 {
-                    query = query.Where(a => 
+                    var searchTerm = searchBox.Text.ToLower();
+                    query = query.Where(a =>
                         a.Action.ToLower().Contains(searchTerm) ||
+                        a.TableName.ToLower().Contains(searchTerm) ||
+                        (a.OldValues != null && a.OldValues.ToLower().Contains(searchTerm)) ||
                         (a.NewValues != null && a.NewValues.ToLower().Contains(searchTerm)) ||
-                        (a.TableName != null && a.TableName.ToLower().Contains(searchTerm)) ||
-                        (a.User != null && (a.User.FirstName + " " + a.User.LastName).ToLower().Contains(searchTerm)));
+                        (a.User != null && a.User.Username.ToLower().Contains(searchTerm)));
                 }
 
-                if (!string.IsNullOrEmpty(selectedAction) && selectedAction != "All Actions")
+                // Action filter
+                if (actionFilter.SelectedIndex > 0)
                 {
+                    var selectedAction = actionFilter.SelectedItem.ToString();
                     query = query.Where(a => a.Action == selectedAction);
                 }
 
-                if (!string.IsNullOrEmpty(selectedUser) && selectedUser != "All Users")
+                // User filter
+                if (userFilter.SelectedIndex > 0)
                 {
-                    query = query.Where(a => a.User != null && 
-                        (a.User.FirstName + " " + a.User.LastName) == selectedUser);
+                    var selectedUser = userFilter.SelectedItem.ToString();
+                    query = query.Where(a => a.User != null && a.User.Username == selectedUser);
                 }
 
-                var logs = await query.OrderByDescending(a => a.Timestamp).Take(500).ToListAsync();
+                // Date range filter
+                query = query.Where(a => a.Timestamp >= fromDatePicker.Value.Date &&
+                                        a.Timestamp <= toDatePicker.Value.Date.AddDays(1));
 
-                auditGrid.Rows.Clear();
-
-                foreach (var log in logs)
-                {
-                    var userName = log.User?.FullName ?? "System";
-                    var displayDetails = log.NewValues ?? "No details";
-                    
-                    if (displayDetails.Length > 80)
+                var logs = query
+                    .OrderByDescending(a => a.Timestamp)
+                    .Take(1000)
+                    .Select(a => new
                     {
-                        displayDetails = displayDetails.Substring(0, 77) + "...";
-                    }
+                        Timestamp = a.Timestamp.ToString("MM/dd/yyyy HH:mm:ss"),
+                        User = a.User != null ? a.User.Username : "System",
+                        Action = a.Action,
+                        Table = a.TableName,
+                        Details = (a.OldValues ?? "") + " → " + (a.NewValues ?? ""),
+                        IPAddress = a.IpAddress ?? "N/A"
+                    })
+                    .ToList();
 
-                    auditGrid.Rows.Add(
-                        log.Id,
-                        log.Timestamp,
-                        userName,
-                        log.Action,
-                        log.TableName ?? "System",
-                        displayDetails,
-                        log.IpAddress ?? "N/A"
-                    );
-                }
+                auditGrid.DataSource = logs;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error filtering logs: {ex.Message}");
+                MessageBox.Show($"Error applying filters: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void RefreshButton_Click(object sender, EventArgs e)
-        {
-            LoadAuditLogs();
-            LoadFilters();
-            LoadStatistics();
-        }
-
-        private async void ExportButton_Click(object sender, EventArgs e)
+        private void ExportToExcel()
         {
             try
             {
                 var saveDialog = new SaveFileDialog
                 {
-                    Filter = "CSV files (*.csv)|*.csv",
-                    DefaultExt = "csv",
-                    FileName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv"
+                    Filter = "CSV Files (*.csv)|*.csv",
+                    FileName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+                    Title = "Export Audit Logs to Excel"
                 };
 
                 if (saveDialog.ShowDialog() == DialogResult.OK)
                 {
-                    exportButton.Enabled = false;
-
-                    var logs = await _context.AuditLogs
+                    var logs = _context.AuditLogs
                         .Include(a => a.User)
-                        .Where(a => a.Timestamp >= fromDatePicker.Value.Date && 
-                                   a.Timestamp <= toDatePicker.Value.Date.AddDays(1))
                         .OrderByDescending(a => a.Timestamp)
-                        .ToListAsync();
+                        .ToList();
 
-                    using (var writer = new StreamWriter(saveDialog.FileName))
+                    using (var writer = new System.IO.StreamWriter(saveDialog.FileName))
                     {
-                        writer.WriteLine("Timestamp,User,Action,Module,Details,IP");
+                        // Write header with full user information
+                        writer.WriteLine("Timestamp,User,Role,Email,Action,Table,Details,IP Address,Old Values,New Values");
 
+                        // Write data
                         foreach (var log in logs)
                         {
-                            var userName = log.User?.FullName ?? "System";
-                            var details = log.NewValues?.Replace("\"", "\"\"") ?? "";
-                            
-                            writer.WriteLine($"\"{log.Timestamp:yyyy-MM-dd HH:mm:ss}\",\"{userName}\",\"{log.Action}\",\"{log.TableName ?? ""}\",\"{details}\",\"{log.IpAddress ?? ""}\"");
+                            var timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                            var username = log.User?.Username ?? "System";
+                            var role = log.User != null ? log.User.Role.ToString() : "N/A";
+                            var email = log.User?.Email ?? "N/A";
+                            var action = log.Action;
+                            var table = log.TableName ?? "N/A";
+                            var details = EscapeCsv((log.OldValues ?? "") + " → " + (log.NewValues ?? ""));
+                            var ipAddress = log.IpAddress ?? "N/A";
+                            var oldValues = EscapeCsv(log.OldValues ?? "N/A");
+                            var newValues = EscapeCsv(log.NewValues ?? "N/A");
+
+                            writer.WriteLine($"{timestamp},{username},{role},{email},{action},{table},{details},{ipAddress},{oldValues},{newValues}");
                         }
                     }
 
-                    MessageBox.Show($"Exported successfully!", "Success", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    MessageBox.Show($"Audit logs exported successfully to:\n{saveDialog.FileName}", 
+                        "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error: {ex.Message}", "Export Error", 
+                MessageBox.Show($"Error exporting to Excel: {ex.Message}", "Export Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                exportButton.Enabled = true;
             }
         }
 
-        private async void ClearButton_Click(object sender, EventArgs e)
+        private void ExportToPDF()
         {
-            var result = MessageBox.Show("Delete logs older than 90 days?", 
-                "Confirm", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-
-            if (result == DialogResult.Yes)
+            try
             {
-                try
+                var saveDialog = new SaveFileDialog
                 {
-                    clearButton.Enabled = false;
+                    Filter = "Text Files (*.txt)|*.txt",
+                    FileName = $"AuditLog_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
+                    Title = "Export Audit Logs to PDF (Text Format)"
+                };
 
-                    var cutoffDate = DateTime.Now.AddDays(-90);
-                    var oldLogs = await _context.AuditLogs
-                        .Where(a => a.Timestamp < cutoffDate)
-                        .ToListAsync();
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    var logs = _context.AuditLogs
+                        .Include(a => a.User)
+                        .OrderByDescending(a => a.Timestamp)
+                        .ToList();
 
-                    if (oldLogs.Any())
+                    using (var writer = new System.IO.StreamWriter(saveDialog.FileName))
                     {
-                        _context.AuditLogs.RemoveRange(oldLogs);
-                        await _context.SaveChangesAsync();
+                        writer.WriteLine("═══════════════════════════════════════════════════════════════════════");
+                        writer.WriteLine("                    SYSTEM AUDIT LOG REPORT");
+                        writer.WriteLine($"                Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                        writer.WriteLine("═══════════════════════════════════════════════════════════════════════");
+                        writer.WriteLine();
+                        writer.WriteLine($"Total Records: {logs.Count}");
+                        writer.WriteLine();
 
-                        MessageBox.Show($"Deleted {oldLogs.Count:N0} entries.", "Success", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        foreach (var log in logs)
+                        {
+                            writer.WriteLine("───────────────────────────────────────────────────────────────────────");
+                            writer.WriteLine($"Timestamp:    {log.Timestamp:yyyy-MM-dd HH:mm:ss}");
+                            writer.WriteLine($"User:         {log.User?.Username ?? "System"}");
+                            writer.WriteLine($"Role:         {(log.User != null ? log.User.Role.ToString() : "N/A")}");
+                            writer.WriteLine($"Email:        {log.User?.Email ?? "N/A"}");
+                            writer.WriteLine($"Action:       {log.Action}");
+                            writer.WriteLine($"Table:        {log.TableName ?? "N/A"}");
+                            writer.WriteLine($"IP Address:   {log.IpAddress ?? "N/A"}");
+                            
+                            if (!string.IsNullOrEmpty(log.OldValues))
+                            {
+                                writer.WriteLine($"Old Values:   {log.OldValues}");
+                            }
+                            
+                            if (!string.IsNullOrEmpty(log.NewValues))
+                            {
+                                writer.WriteLine($"New Values:   {log.NewValues}");
+                            }
+                            
+                            writer.WriteLine();
+                        }
 
-                        LoadAuditLogs();
-                        LoadStatistics();
+                        writer.WriteLine("═══════════════════════════════════════════════════════════════════════");
+                        writer.WriteLine("                         END OF REPORT");
+                        writer.WriteLine("═══════════════════════════════════════════════════════════════════════");
                     }
-                    else
-                    {
-                        MessageBox.Show("No old logs found.", "Info", 
-                            MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Error: {ex.Message}", "Error", 
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                finally
-                {
-                    clearButton.Enabled = true;
+
+                    MessageBox.Show($"Audit logs exported successfully to:\n{saveDialog.FileName}\n\nNote: For true PDF format, please use a PDF library.", 
+                        "Export Successful", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
             }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to PDF: {ex.Message}", "Export Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private string EscapeCsv(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+                return "";
+
+            if (value.Contains(",") || value.Contains("\"") || value.Contains("\n"))
+            {
+                return "\"" + value.Replace("\"", "\"\"") + "\"";
+            }
+
+            return value;
         }
 
         protected override void Dispose(bool disposing)

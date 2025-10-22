@@ -21,6 +21,8 @@ namespace SyncVerseStudio.Models
 
         public string? NewValues { get; set; }
 
+        public string? Details { get; set; }
+
         public DateTime Timestamp { get; set; } = DateTime.Now;
 
         [StringLength(45)]

@@ -60,41 +60,52 @@ namespace SyncVerseStudio.Helpers
 
 
 
-        // UI Element Colors
-        public static readonly Color Background = CoolWhite;
-        public static readonly Color PrimaryText = DarkGray;
-        public static readonly Color SecondaryText = Color.FromArgb(90, 90, 90);
-        public static readonly Color AccentPrimary = DarkGray;
-        public static readonly Color AccentSecondary = LimeGreen;
+        // UI Element Colors - Clean White Theme
+        public static readonly Color Background = Color.White;                       // Clean white background
+        public static readonly Color PrimaryText = Color.FromArgb(30, 30, 30);      // Almost black text
+        public static readonly Color SecondaryText = Color.FromArgb(100, 100, 100); // Gray text
+        public static readonly Color AccentPrimary = Color.FromArgb(34, 197, 94);   // Green accent
+        public static readonly Color AccentSecondary = Color.FromArgb(59, 130, 246);// Blue accent
         public static readonly Color CardBackground = Color.White;
-        public static readonly Color BorderColor = Color.FromArgb(180, 200, 220);
+        public static readonly Color BorderColor = Color.FromArgb(230, 230, 230);   // Light gray border
 
-        // Button Colors
-        public static readonly Color ButtonPrimary = LimeGreen;                      // #5FED83 - Green button
-        public static readonly Color ButtonSecondary = MediumBlue;                   // #3094FF - Blue button
-        public static readonly Color ButtonDanger = Color.FromArgb(220, 60, 60);
-        public static readonly Color ButtonWarning = Color.FromArgb(255, 165, 0);
+        // Button Colors - Consistent Brand Colors
+        public static readonly Color ButtonAdd = Color.FromArgb(34, 197, 94);       // Green - Add/Create
+        public static readonly Color ButtonEdit = Color.FromArgb(59, 130, 246);     // Blue - Edit
+        public static readonly Color ButtonDelete = Color.FromArgb(239, 68, 68);    // Red - Delete
+        public static readonly Color ButtonRefresh = Color.FromArgb(107, 114, 128); // Gray - Refresh/Cancel
+        public static readonly Color ButtonExport = Color.FromArgb(168, 85, 247);   // Purple - Export
         public static readonly Color ButtonText = Color.White;
 
         // Status Colors
-        public static readonly Color Success = LimeGreen;                            // #5FED83
-        public static readonly Color Error = Color.FromArgb(220, 60, 60);
-        public static readonly Color Warning = Color.FromArgb(255, 165, 0);
-        public static readonly Color Info = MediumBlue;                              // #3094FF
+        public static readonly Color Success = Color.FromArgb(34, 197, 94);         // Green
+        public static readonly Color Error = Color.FromArgb(239, 68, 68);           // Red
+        public static readonly Color Warning = Color.FromArgb(249, 115, 22);        // Orange
+        public static readonly Color Info = Color.FromArgb(59, 130, 246);           // Blue
         
-        // Icon Colors
-        public static readonly Color IconDark = DarkGray;                            // Dark icons
-        public static readonly Color IconBlue = LightBlue;                           // #9EECFF - Table data icons
+        // Table Colors - Clean and Consistent
+        public static readonly Color TableHeaderBg = Color.FromArgb(249, 250, 251); // Very light gray
+        public static readonly Color TableHeaderText = Color.FromArgb(30, 30, 30);  // Dark text
+        public static readonly Color TableRowEven = Color.White;
+        public static readonly Color TableRowOdd = Color.FromArgb(249, 250, 251);   // Alternating row
+        public static readonly Color TableRowHover = Color.FromArgb(243, 244, 246); // Hover state
+        public static readonly Color TableRowSelected = Color.FromArgb(219, 234, 254); // Selected row (light blue)
+        public static readonly Color TableBorder = Color.FromArgb(229, 231, 235);   // Border color
 
         // Sidebar/Navigation
-        public static readonly Color SidebarBackground = DarkGray;
-        public static readonly Color SidebarText = CoolWhite;
-        public static readonly Color SidebarHover = HoverColor;
-        public static readonly Color SidebarActive = PurpleHover;
+        public static readonly Color SidebarBackground = Color.FromArgb(215, 232, 250); // Light blue
+        public static readonly Color SidebarText = Color.FromArgb(60, 60, 60);      // Dark text
+        public static readonly Color SidebarHover = Color.FromArgb(255, 0, 80);     // Pink hover
+        public static readonly Color SidebarActive = Color.FromArgb(255, 0, 80);    // Pink active
 
-        // Header
-        public static readonly Color HeaderBackground = DarkGray;
-        public static readonly Color HeaderText = Color.White;
+        // Page Header
+        public static readonly Color PageHeaderBg = Color.White;
+        public static readonly Color PageHeaderText = Color.FromArgb(30, 30, 30);
+        public static readonly Color PageSubtitleText = Color.FromArgb(100, 100, 100);
+        
+        // Legacy compatibility
+        public static readonly Color HeaderBackground = Color.White;
+        public static readonly Color HeaderText = Color.FromArgb(30, 30, 30);
 
         // Fonts
         public static readonly Font TitleFont = new Font("Segoe UI", 22, FontStyle.Bold);
@@ -114,28 +125,39 @@ namespace SyncVerseStudio.Helpers
         public const string BrandTagline = "POS SYSTEM";
 
         /// <summary>
-        /// Apply standard button styling
+        /// Apply standard button styling with consistent brand colors
         /// </summary>
-        public static void StyleButton(Button button, bool isPrimary = true)
+        public static void StyleButton(Button button, string buttonType = "add")
         {
-            button.BackColor = isPrimary ? ButtonPrimary : ButtonSecondary;
+            // Set color based on button type
+            Color bgColor = buttonType.ToLower() switch
+            {
+                "add" or "create" or "save" => ButtonAdd,
+                "edit" or "update" => ButtonEdit,
+                "delete" or "remove" => ButtonDelete,
+                "refresh" or "cancel" or "close" => ButtonRefresh,
+                "export" or "print" => ButtonExport,
+                _ => ButtonAdd
+            };
+            
+            button.BackColor = bgColor;
             button.ForeColor = ButtonText;
             button.FlatStyle = FlatStyle.Flat;
-            button.Font = ButtonFont;
+            button.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             button.Cursor = Cursors.Hand;
             button.FlatAppearance.BorderSize = 0;
+            button.Height = 36;
+            button.Padding = new Padding(16, 0, 16, 0);
             
-            button.MouseEnter += (s, e) =>
-            {
-                button.BackColor = isPrimary ? 
-                    Color.FromArgb(45, 25, 230) : 
-                    Color.FromArgb(80, 230, 180);
-            };
+            // Hover effect - slightly darker
+            Color hoverColor = Color.FromArgb(
+                Math.Max(0, bgColor.R - 20),
+                Math.Max(0, bgColor.G - 20),
+                Math.Max(0, bgColor.B - 20)
+            );
             
-            button.MouseLeave += (s, e) =>
-            {
-                button.BackColor = isPrimary ? ButtonPrimary : ButtonSecondary;
-            };
+            button.MouseEnter += (s, e) => { button.BackColor = hoverColor; };
+            button.MouseLeave += (s, e) => { button.BackColor = bgColor; };
         }
 
         /// <summary>
@@ -158,40 +180,78 @@ namespace SyncVerseStudio.Helpers
         }
 
         /// <summary>
-        /// Apply standard DataGridView styling
+        /// Apply standard DataGridView styling - Clean white theme
         /// </summary>
         public static void StyleDataGridView(DataGridView grid)
         {
-            grid.BackgroundColor = CardBackground;
+            grid.BackgroundColor = Color.White;
             grid.BorderStyle = BorderStyle.None;
             grid.AllowUserToAddRows = false;
             grid.AllowUserToDeleteRows = false;
             grid.ReadOnly = true;
             grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             grid.RowHeadersVisible = false;
+            grid.MultiSelect = false;
+            grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            grid.EnableHeadersVisualStyles = false;
+            grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
+            grid.GridColor = TableBorder;
             
+            // Default cell style
             grid.DefaultCellStyle = new DataGridViewCellStyle
             {
-                Font = BodyFont,
-                Padding = new Padding(5),
-                SelectionBackColor = Color.FromArgb(180, 210, 240),
+                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+                Padding = new Padding(12, 8, 12, 8),
+                SelectionBackColor = TableRowSelected,
                 SelectionForeColor = PrimaryText,
-                BackColor = CardBackground,
-                ForeColor = PrimaryText
-            };
-            
-            grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = CoolWhite,
+                BackColor = Color.White,
                 ForeColor = PrimaryText,
-                Font = HeaderFont,
-                Padding = new Padding(8),
                 Alignment = DataGridViewContentAlignment.MiddleLeft
             };
             
-            grid.ColumnHeadersHeight = 40;
-            grid.RowTemplate.Height = 45;
-            grid.EnableHeadersVisualStyles = false;
+            // Alternating row style
+            grid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+            {
+                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+                Padding = new Padding(12, 8, 12, 8),
+                BackColor = TableRowOdd,
+                ForeColor = PrimaryText,
+                SelectionBackColor = TableRowSelected,
+                SelectionForeColor = PrimaryText
+            };
+            
+            // Column header style
+            grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
+            {
+                BackColor = TableHeaderBg,
+                ForeColor = TableHeaderText,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Padding = new Padding(12, 10, 12, 10),
+                Alignment = DataGridViewContentAlignment.MiddleLeft,
+                SelectionBackColor = TableHeaderBg,
+                SelectionForeColor = TableHeaderText
+            };
+            
+            grid.ColumnHeadersHeight = 45;
+            grid.RowTemplate.Height = 50;
+            
+            // Hover effect
+            grid.CellMouseEnter += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    grid.Rows[e.RowIndex].DefaultCellStyle.BackColor = TableRowHover;
+                }
+            };
+            
+            grid.CellMouseLeave += (s, e) =>
+            {
+                if (e.RowIndex >= 0)
+                {
+                    grid.Rows[e.RowIndex].DefaultCellStyle.BackColor = 
+                        e.RowIndex % 2 == 0 ? Color.White : TableRowOdd;
+                }
+            };
         }
 
         /// <summary>
@@ -212,6 +272,120 @@ namespace SyncVerseStudio.Helpers
         {
             label.Font = isHeader ? HeaderFont : BodyFont;
             label.ForeColor = PrimaryText;
+        }
+
+        /// <summary>
+        /// Create a standard page header with title and subtitle
+        /// </summary>
+        public static Panel CreatePageHeader(string title, string subtitle = "")
+        {
+            var headerPanel = new Panel
+            {
+                BackColor = PageHeaderBg,
+                Height = string.IsNullOrEmpty(subtitle) ? 80 : 100,
+                Dock = DockStyle.Top,
+                Padding = new Padding(40, 20, 40, 20)
+            };
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 24F, FontStyle.Bold),
+                ForeColor = PageHeaderText,
+                AutoSize = true,
+                Location = new Point(40, 20)
+            };
+            headerPanel.Controls.Add(titleLabel);
+
+            if (!string.IsNullOrEmpty(subtitle))
+            {
+                var subtitleLabel = new Label
+                {
+                    Text = subtitle,
+                    Font = new Font("Segoe UI", 11F, FontStyle.Regular),
+                    ForeColor = PageSubtitleText,
+                    AutoSize = true,
+                    Location = new Point(40, 55)
+                };
+                headerPanel.Controls.Add(subtitleLabel);
+            }
+
+            return headerPanel;
+        }
+
+        /// <summary>
+        /// Create a standard button panel for CRUD operations
+        /// </summary>
+        public static Panel CreateButtonPanel(params (string text, string type, EventHandler onClick)[] buttons)
+        {
+            var buttonPanel = new Panel
+            {
+                Height = 60,
+                Dock = DockStyle.Top,
+                BackColor = Color.White,
+                Padding = new Padding(40, 12, 40, 12)
+            };
+
+            int xPos = 40;
+            foreach (var (text, type, onClick) in buttons)
+            {
+                var button = new Button
+                {
+                    Text = text,
+                    Location = new Point(xPos, 12),
+                    Size = new Size(120, 36),
+                    TabIndex = 0
+                };
+                StyleButton(button, type);
+                button.Click += onClick;
+                buttonPanel.Controls.Add(button);
+                xPos += 130;
+            }
+
+            return buttonPanel;
+        }
+
+        /// <summary>
+        /// Create a standard search panel
+        /// </summary>
+        public static Panel CreateSearchPanel(TextBox searchBox, params Control[] additionalControls)
+        {
+            var searchPanel = new Panel
+            {
+                Height = 60,
+                Dock = DockStyle.Top,
+                BackColor = Color.White,
+                Padding = new Padding(40, 12, 40, 12)
+            };
+
+            searchBox.Location = new Point(40, 15);
+            searchBox.Size = new Size(300, 30);
+            searchBox.Font = new Font("Segoe UI", 10F);
+            searchBox.PlaceholderText = "Search...";
+            searchPanel.Controls.Add(searchBox);
+
+            int xPos = 360;
+            foreach (var control in additionalControls)
+            {
+                control.Location = new Point(xPos, 12);
+                searchPanel.Controls.Add(control);
+                xPos += control.Width + 10;
+            }
+
+            return searchPanel;
+        }
+
+        /// <summary>
+        /// Create a standard content container for tables
+        /// </summary>
+        public static Panel CreateContentContainer()
+        {
+            return new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(40, 20, 40, 40)
+            };
         }
     }
 }
