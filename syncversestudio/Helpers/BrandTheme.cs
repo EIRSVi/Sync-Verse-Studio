@@ -11,10 +11,10 @@ namespace SyncVerseStudio.Helpers
         public static readonly Color CoolWhite = Color.FromArgb(215, 232, 250);      // #D7E8FA
         public static readonly Color DarkGray = Color.FromArgb(45, 45, 45);          // #2D2D2D - Dark color
         public static readonly Color LimeGreen = Color.FromArgb(95, 237, 131);       // #5FED83 - Green 3
-        public static readonly Color LightGreen = Color.FromArgb(191, 255, 209);     // #BFFFD1 - Green 1
+        public static readonly Color LightGreen = Color.FromArgb(191, 255, 209);     // #BFFFD1 - Green 1  #ecfff2ff 
         public static readonly Color LightBlue = Color.FromArgb(158, 236, 255);      // #9EECFF - Blue 1
         public static readonly Color MediumBlue = Color.FromArgb(48, 148, 255);      // #3094FF - Blue 2
-        public static readonly Color HoverColor = Color.FromArgb(246, 248, 250);     // #f6f8fa
+        public static readonly Color HoverColor = Color.FromArgb(246, 248, 250);     // #ddddddff
         public static readonly Color PurpleHover = Color.FromArgb(80, 29, 175);      // #501DAF
 
 // Logo URLs
@@ -83,14 +83,14 @@ namespace SyncVerseStudio.Helpers
         public static readonly Color Warning = Color.FromArgb(249, 115, 22);        // Orange
         public static readonly Color Info = Color.FromArgb(59, 130, 246);           // Blue
         
-        // Table Colors - New Blue Theme
-        public static readonly Color TableHeaderBg = Color.FromArgb(158, 236, 255); // #9EECFF - Blue 1
-        public static readonly Color TableHeaderText = Color.FromArgb(30, 30, 30);  // Dark text
-        public static readonly Color TableRowEven = Color.White;
-        public static readonly Color TableRowOdd = Color.FromArgb(240, 250, 255);   // Very light blue
-        public static readonly Color TableRowHover = Color.FromArgb(158, 236, 255); // #9EECFF - Blue 1
-        public static readonly Color TableRowSelected = Color.FromArgb(48, 148, 255); // #3094FF - Blue 2
-        public static readonly Color TableBorder = Color.FromArgb(158, 236, 255);   // #9EECFF - Blue 1
+        // Table Colors - MINIMAL THEME WITH ACTIVE ROW SELECTION
+        public static readonly Color TableHeaderBg = Color.White; // White header background
+        public static readonly Color TableHeaderText = Color.Black;  // Black text only
+        public static readonly Color TableRowEven = Color.White; // White background
+        public static readonly Color TableRowOdd = Color.White;   // White background (no alternating)
+        public static readonly Color TableRowHover = Color.White; // White background (no hover color)
+        public static readonly Color TableRowSelected = Color.FromArgb(221, 221, 221); // #dddddd - Light gray for active row
+        public static readonly Color TableBorder = Color.Black;   // Black borders only
 
         // Sidebar/Navigation
         public static readonly Color SidebarBackground = Color.FromArgb(215, 232, 250); // Light blue
@@ -180,79 +180,98 @@ namespace SyncVerseStudio.Helpers
         }
 
         /// <summary>
-        /// Apply standard DataGridView styling - Clean white theme
+        /// Apply standard DataGridView styling - Clean theme with active row selection
         /// </summary>
         public static void StyleDataGridView(DataGridView grid)
         {
+            // Basic grid settings
             grid.BackgroundColor = Color.White;
             grid.BorderStyle = BorderStyle.FixedSingle;
             grid.AllowUserToAddRows = false;
             grid.AllowUserToDeleteRows = false;
             grid.ReadOnly = true;
-            grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            grid.SelectionMode = DataGridViewSelectionMode.FullRowSelect; // Full row selection for active row
             grid.RowHeadersVisible = false;
             grid.MultiSelect = false;
             grid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             grid.EnableHeadersVisualStyles = false;
             grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
-            grid.GridColor = TableBorder;
+            grid.GridColor = Color.Black; // Black borders only
+            grid.Cursor = Cursors.Hand; // Hand cursor for clickable rows
             
-            // Default cell style - Bold text
+            // Remove all event handlers first to prevent conflicts
+            grid.CellMouseEnter -= StyleDataGridView_CellMouseEnter;
+            grid.CellMouseLeave -= StyleDataGridView_CellMouseLeave;
+            
+            // Active row selection color - light gray background with black text
+            var activeRowColor = Color.FromArgb(221, 221, 221); // #dddddd
+            
+            // Default cell style - White background, black text
             grid.DefaultCellStyle = new DataGridViewCellStyle
             {
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Font = new Font("JetBrains Mono", 10F, FontStyle.Regular),
                 Padding = new Padding(12, 8, 12, 8),
-                SelectionBackColor = TableRowSelected,
-                SelectionForeColor = Color.White,
-                BackColor = Color.White,
-                ForeColor = PrimaryText,
+                SelectionBackColor = activeRowColor, // Light gray background when selected
+                SelectionForeColor = Color.Black, // Black text when selected
+                BackColor = Color.White, // White background
+                ForeColor = Color.Black, // Black text
                 Alignment = DataGridViewContentAlignment.MiddleLeft
             };
             
-            // Alternating row style - Bold text
+            // Alternating row style - Same as default
             grid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
             {
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Font = new Font("JetBrains Mono", 10F, FontStyle.Regular),
                 Padding = new Padding(12, 8, 12, 8),
-                BackColor = TableRowOdd,
-                ForeColor = PrimaryText,
-                SelectionBackColor = TableRowSelected,
-                SelectionForeColor = Color.White
+                BackColor = Color.White, // White background
+                ForeColor = Color.Black, // Black text
+                SelectionBackColor = activeRowColor, // Light gray background when selected
+                SelectionForeColor = Color.Black // Black text when selected
             };
             
-            // Column header style
+            // Column header style - Bold text, WHITE background ONLY, NO selection colors
             grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {
-                BackColor = TableHeaderBg,
-                ForeColor = Color.White, // White text on blue header
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                BackColor = Color.White, // FORCE white header background
+                ForeColor = Color.Black, // Black text only
+                Font = new Font("JetBrains Mono", 10F, FontStyle.Bold), // Bold headers
                 Padding = new Padding(12, 10, 12, 10),
                 Alignment = DataGridViewContentAlignment.MiddleLeft,
-                SelectionBackColor = TableHeaderBg,
-                SelectionForeColor = Color.White
+                SelectionBackColor = Color.White, // FORCE white - headers cannot be selected
+                SelectionForeColor = Color.Black // Black text always
             };
+            
+            // Explicitly disable header selection and force white background
+            grid.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
+            grid.EnableHeadersVisualStyles = false; // Disable system header styles
             
             grid.ColumnHeadersHeight = 45;
             grid.RowTemplate.Height = 50;
             
-            // Hover effect
-            grid.CellMouseEnter += (s, e) =>
+            // Force header background to stay white - override any system styling
+            grid.ColumnHeadersDefaultCellStyle.BackColor = Color.White;
+            grid.ColumnHeadersDefaultCellStyle.SelectionBackColor = Color.White;
+            
+            // Add paint event to ensure headers stay white
+            grid.Paint += (sender, e) =>
             {
-                if (e.RowIndex >= 0)
+                // Force all column headers to have white background
+                foreach (DataGridViewColumn column in grid.Columns)
                 {
-                    grid.Rows[e.RowIndex].DefaultCellStyle.BackColor = TableRowHover;
+                    column.HeaderCell.Style.BackColor = Color.White;
+                    column.HeaderCell.Style.SelectionBackColor = Color.White;
+                    column.HeaderCell.Style.ForeColor = Color.Black;
+                    column.HeaderCell.Style.SelectionForeColor = Color.Black;
                 }
             };
             
-            grid.CellMouseLeave += (s, e) =>
-            {
-                if (e.RowIndex >= 0)
-                {
-                    grid.Rows[e.RowIndex].DefaultCellStyle.BackColor = 
-                        e.RowIndex % 2 == 0 ? Color.White : TableRowOdd;
-                }
-            };
+            // Force refresh to apply changes
+            grid.Refresh();
         }
+        
+        // Dummy event handlers to prevent errors when removing
+        private static void StyleDataGridView_CellMouseEnter(object sender, DataGridViewCellEventArgs e) { }
+        private static void StyleDataGridView_CellMouseLeave(object sender, DataGridViewCellEventArgs e) { }
 
         /// <summary>
         /// Apply standard TextBox styling

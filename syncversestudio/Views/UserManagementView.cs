@@ -147,12 +147,12 @@ namespace SyncVerseStudio.Views
                 Padding = new Padding(10, 200, 10, 10)
             };
             
-            // Add rounded border to panel
+            // Add rounded border to panel with larger radius
             gridPanel.Paint += (s, e) =>
             {
                 var rect = new Rectangle(10, 200, gridPanel.Width - 20, gridPanel.Height - 210);
-                using (var pen = new Pen(BrandTheme.TableBorder, 2))
-                using (var path = GetRoundedRectangle(rect, 10))
+                using (var pen = new Pen(BrandTheme.TableBorder, 3))
+                using (var path = GetRoundedRectangle(rect, 20))
                 {
                     e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                     e.Graphics.DrawPath(pen, path);
@@ -161,50 +161,11 @@ namespace SyncVerseStudio.Views
 
             usersGrid = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                RowHeadersVisible = false,
-                GridColor = BrandTheme.TableBorder,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.White,
-                    ForeColor = BrandTheme.PrimaryText,
-                    SelectionBackColor = BrandTheme.TableRowSelected,
-                    SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8),
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
-                },
-                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = BrandTheme.TableRowOdd,
-                    ForeColor = BrandTheme.PrimaryText,
-                    SelectionBackColor = BrandTheme.TableRowSelected,
-                    SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8),
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
-                },
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = BrandTheme.TableHeaderBg,
-                    ForeColor = Color.White,
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                    Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(12, 10, 12, 10)
-                },
-                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
-                ColumnHeadersHeight = 45,
-                RowTemplate = { Height = 50 },
-                EnableHeadersVisualStyles = false,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+                Dock = DockStyle.Fill
             };
+            
+            // Apply standard BrandTheme styling - same as AuditLogView
+            BrandTheme.StyleDataGridView(usersGrid);
 
             // Configure columns - simplified like CategoryManagementView
             usersGrid.Columns.AddRange(new DataGridViewColumn[]
@@ -268,12 +229,9 @@ namespace SyncVerseStudio.Views
                         user.CreatedAt
                     );
 
-                    // Color code inactive users - same style as CategoryManagementView
-                    if (!user.IsActive)
-                    {
-                        usersGrid.Rows[rowIndex].DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 235, 235);
-                        usersGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(139, 0, 0);
-                    }
+                    // Keep white background for all rows
+                    usersGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
+                    usersGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
             }
             catch (Exception ex)

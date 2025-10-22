@@ -127,15 +127,15 @@ namespace SyncVerseStudio.Views
                 Padding = new Padding(10, 200, 10, 10)
             };
             
-            // Add rounded border to panel
+            // Add rounded border to panel with larger radius
             gridPanel.Paint += (s, e) =>
             {
                 var rect = new Rectangle(10, 200, gridPanel.Width - 20, gridPanel.Height - 210);
-                using (var pen = new Pen(BrandTheme.TableBorder, 2))
+                using (var pen = new Pen(BrandTheme.TableBorder, 3))
                 {
                     e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
                     var path = new System.Drawing.Drawing2D.GraphicsPath();
-                    int radius = 10;
+                    int radius = 20;
                     path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
                     path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
                     path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
@@ -147,50 +147,11 @@ namespace SyncVerseStudio.Views
 
             productsGrid = new DataGridView
             {
-                Dock = DockStyle.Fill,
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                MultiSelect = false,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                RowHeadersVisible = false,
-                GridColor = BrandTheme.TableBorder,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.White,
-                    ForeColor = BrandTheme.PrimaryText,
-                    SelectionBackColor = BrandTheme.TableRowSelected,
-                    SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8),
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
-                },
-                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = BrandTheme.TableRowOdd,
-                    ForeColor = BrandTheme.PrimaryText,
-                    SelectionBackColor = BrandTheme.TableRowSelected,
-                    SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8),
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
-                },
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = BrandTheme.TableHeaderBg,
-                    ForeColor = Color.White,
-                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                    Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(12, 10, 12, 10)
-                },
-                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
-                ColumnHeadersHeight = 45,
-                RowTemplate = { Height = 50 },
-                EnableHeadersVisualStyles = false,
-                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
+                Dock = DockStyle.Fill
             };
+            
+            // Apply standard BrandTheme styling - same as AuditLogView
+            BrandTheme.StyleDataGridView(productsGrid);
 
             // Configure columns
             productsGrid.Columns.AddRange(new DataGridViewColumn[]
@@ -242,12 +203,9 @@ namespace SyncVerseStudio.Views
                         status
                     );
 
-                    // Color code low stock items
-                    if (product.IsLowStock)
-                    {
-                        productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 235, 235);
-                        productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(139, 0, 0);
-                    }
+                    // Keep white background for all rows
+                    productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
+                    productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
             }
             catch (Exception ex)
@@ -336,10 +294,9 @@ namespace SyncVerseStudio.Views
                         status
                     );
 
-                    if (product.IsLowStock)
-                    {
-                        productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = System.Drawing.Color.FromArgb(255, 235, 235);
-                    }
+                    // Keep white background for all rows
+                    productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
+                    productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
             }
             catch (Exception ex)

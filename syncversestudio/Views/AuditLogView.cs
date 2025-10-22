@@ -413,57 +413,8 @@ namespace SyncVerseStudio.Views
                 Font = new Font("Segoe UI", 10F)
             };
 
-            // Modern blue-themed styling
-            auditGrid.DefaultCellStyle = new DataGridViewCellStyle
-            {
-                Font = new Font("Segoe UI", 10F),
-                Padding = new Padding(12, 10, 12, 10),
-                SelectionBackColor = Color.FromArgb(200, 230, 255),
-                SelectionForeColor = BlueDark,
-                BackColor = Color.White,
-                ForeColor = Color.FromArgb(50, 50, 50),
-                Alignment = DataGridViewContentAlignment.MiddleLeft
-            };
-
-            auditGrid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = Color.FromArgb(248, 252, 255),
-                SelectionBackColor = Color.FromArgb(200, 230, 255),
-                SelectionForeColor = BlueDark
-            };
-
-            // Blue gradient header
-            auditGrid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-            {
-                BackColor = BlueMedium,
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 10.5F, FontStyle.Bold),
-                Padding = new Padding(12, 12, 12, 12),
-                Alignment = DataGridViewContentAlignment.MiddleLeft,
-                SelectionBackColor = BlueMedium,
-                SelectionForeColor = Color.White
-            };
-
-            auditGrid.ColumnHeadersHeight = 50;
-            auditGrid.RowTemplate.Height = 55;
-
-            // Hover effect
-            auditGrid.CellMouseEnter += (s, e) =>
-            {
-                if (e.RowIndex >= 0)
-                {
-                    auditGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = BlueVeryLight;
-                }
-            };
-
-            auditGrid.CellMouseLeave += (s, e) =>
-            {
-                if (e.RowIndex >= 0)
-                {
-                    auditGrid.Rows[e.RowIndex].DefaultCellStyle.BackColor = 
-                        e.RowIndex % 2 == 0 ? Color.White : Color.FromArgb(248, 252, 255);
-                }
-            };
+            // Apply standard BrandTheme styling - no header background, black borders, hover cursor
+            BrandTheme.StyleDataGridView(auditGrid);
 
             // Setup columns
             auditGrid.Columns.Add(new DataGridViewTextBoxColumn
