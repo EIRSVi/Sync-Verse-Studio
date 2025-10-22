@@ -2,8 +2,8 @@ using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
-using FontAwesome.Sharp;
 
 namespace SyncVerseStudio.Views
 {
@@ -13,7 +13,7 @@ namespace SyncVerseStudio.Views
         private readonly ApplicationDbContext _context;
         private DataGridView usersGrid;
         private Panel topPanel;
-        private IconButton addButton, editButton, deleteButton, refreshButton;
+        private Button addButton, editButton, deleteButton, refreshButton;
         private TextBox searchBox;
         private ComboBox roleFilter, statusFilter;
 
@@ -50,43 +50,19 @@ namespace SyncVerseStudio.Views
                 Padding = new Padding(20, 10, 20, 10)
             };
 
-            // Title with icon
-            var titleIconPic = new IconPictureBox
-            {
-                IconChar = IconChar.Users,
-                IconColor = Color.FromArgb(24, 119, 18),
-                IconSize = 32,
-                Location = new Point(20, 15),
-                Size = new Size(40, 40),
-                BackColor = Color.Transparent
-            };
-            topPanel.Controls.Add(titleIconPic);
-
             var titleLabel = new Label
             {
-                Text = "User Management",
+                Text = "USER MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(68, 18),
-                Size = new Size(300, 35)
+                Location = new Point(20, 18),
+                Size = new Size(350, 35)
             };
             topPanel.Controls.Add(titleLabel);
 
-            // Search box with icon
-            var searchIconPic = new IconPictureBox
-            {
-                IconChar = IconChar.Search,
-                IconColor = Color.FromArgb(117, 117, 117),
-                IconSize = 16,
-                Location = new Point(22, 58),
-                Size = new Size(20, 20),
-                BackColor = Color.Transparent
-            };
-            topPanel.Controls.Add(searchIconPic);
-
             searchBox = new TextBox
             {
-                PlaceholderText = "     Search users...",
+                PlaceholderText = "Search users...",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(20, 55),
                 Size = new Size(220, 30)
@@ -120,64 +96,61 @@ namespace SyncVerseStudio.Views
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
             topPanel.Controls.Add(statusFilter);
 
-                // Buttons without FontAwesome icons
-                int buttonX = 590;
+            // Buttons without icons
+            int buttonX = 590;
             
-                addButton = CreateIconButton("Add User", IconChar.None, Color.FromArgb(24, 119, 18), buttonX, 55, 120);
-                addButton.Click += AddButton_Click;
-                buttonX += 130;
+            addButton = CreateButton("ADD USER", Color.FromArgb(48, 148, 255), buttonX, 55, 120);
+            addButton.Click += AddButton_Click;
+            buttonX += 130;
 
-                editButton = CreateIconButton("Edit", IconChar.None, Color.FromArgb(37, 99, 102), buttonX, 55, 90);
-                editButton.Click += EditButton_Click;
-                buttonX += 100;
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
+            editButton.Click += EditButton_Click;
+            buttonX += 100;
 
-                deleteButton = CreateIconButton("Delete", IconChar.None, Color.FromArgb(255, 0, 80), buttonX, 55, 100);
-                deleteButton.Click += DeleteButton_Click;
-                buttonX += 110;
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 100);
+            deleteButton.Click += DeleteButton_Click;
+            buttonX += 110;
 
-                refreshButton = CreateIconButton("Refresh", IconChar.None, Color.FromArgb(117, 117, 117), buttonX, 55, 110);
-                refreshButton.Click += RefreshButton_Click;
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 110);
+            refreshButton.Click += RefreshButton_Click;
 
-                topPanel.Controls.AddRange(new Control[] {
-                    addButton, editButton, deleteButton, refreshButton
-                });
+            topPanel.Controls.AddRange(new Control[] {
+                addButton, editButton, deleteButton, refreshButton
+            });
 
-                this.Controls.Add(topPanel);
-            }
+            this.Controls.Add(topPanel);
+        }
 
-        private IconButton CreateIconButton(string text, IconChar icon, Color backgroundColor, int x, int y, int width)
+        private Button CreateButton(string text, Color backgroundColor, int x, int y, int width)
         {
-            return new IconButton
+            return new Button
             {
                 Text = text,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 BackColor = backgroundColor,
-                ForeColor = Color.Black,
+                ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Location = new Point(x, y),
                 Size = new Size(width, 35),
                 Cursor = Cursors.Hand,
-                IconChar = IconChar.None,
                 TextAlign = ContentAlignment.MiddleCenter,
-                Padding = new Padding(10, 0, 10, 0),
                 FlatAppearance = { BorderSize = 0 }
             };
         }
 
         private void CreateUsersGrid()
         {
-            // Create a wrapper panel with padding - exact same as CategoryManagementView
             var gridPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                //BackColor = Color.FromArgb(226, 244, 255), // PattenBlue - same as CategoryManagementView
-                Padding = new Padding(10, 200, 10, 10) // Left, Top, Right, Bottom - same as CategoryManagementView
+                BackColor = Color.White,
+                Padding = new Padding(10, 200, 10, 10)
             };
 
             usersGrid = new DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = System.Drawing.Color.White,
+                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
@@ -185,27 +158,38 @@ namespace SyncVerseStudio.Views
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9F), // Same font as CategoryManagementView
+                Font = new Font("Segoe UI", 10F),
                 RowHeadersVisible = false,
-                GridColor = System.Drawing.Color.FromArgb(230, 230, 230), // Same as CategoryManagementView
+                GridColor = BrandTheme.TableBorder,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
-                    BackColor = System.Drawing.Color.White,
-                    ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
-                    SelectionBackColor = System.Drawing.Color.FromArgb(24, 119, 18), // Same green as CategoryManagementView
-                    SelectionForeColor = System.Drawing.Color.White,
-                    Padding = new Padding(5) // Same as CategoryManagementView
+                    BackColor = Color.White,
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
+                    SelectionForeColor = Color.White,
+                    Padding = new Padding(12, 8, 12, 8)
+                },
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = BrandTheme.TableRowOdd,
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
+                    SelectionForeColor = Color.White,
+                    Padding = new Padding(12, 8, 12, 8)
                 },
                 ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
                 {
-                    BackColor = System.Drawing.Color.FromArgb(245, 245, 245), // Same as CategoryManagementView
-                    ForeColor = System.Drawing.Color.FromArgb(33, 33, 33), // Same as CategoryManagementView
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold), // Same as CategoryManagementView
+                    BackColor = BrandTheme.TableHeaderBg,
+                    ForeColor = Color.White,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                     Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(5) // Same as CategoryManagementView
+                    Padding = new Padding(12, 10, 12, 10)
                 },
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
-                ColumnHeadersHeight = 35 // Same as CategoryManagementView
+                ColumnHeadersHeight = 45,
+                RowTemplate = { Height = 50 },
+                EnableHeadersVisualStyles = false,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
             };
 
             // Configure columns - simplified like CategoryManagementView

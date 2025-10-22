@@ -123,13 +123,10 @@ namespace SyncVerseStudio
 
                 if (success)
                 {
-                    errorLabel.Text = "Login successful! Loading dashboard...";
+                    errorLabel.Text = "Login successful!";
                     errorLabel.ForeColor = System.Drawing.Color.FromArgb(120, 220, 120);
                     
-                    // Brief delay to show success message
-                    await Task.Delay(500);
-                    
-                    // Open main dashboard based on user role
+                    // Immediately load dashboard for faster experience
                     this.Hide();
                     var mainForm = new MainDashboard(_authService);
                     mainForm.FormClosed += (s, args) => this.Close();

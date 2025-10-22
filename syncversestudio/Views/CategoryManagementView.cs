@@ -2,8 +2,8 @@ using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
-using FontAwesome.Sharp;
 
 namespace SyncVerseStudio.Views
 {
@@ -12,20 +12,13 @@ namespace SyncVerseStudio.Views
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _context;
         private DataGridView categoriesGrid;
-        private Panel topPanel, metricsPanel;
-        private IconButton addButton, editButton, deleteButton, refreshButton, exportButton;
+        private Panel topPanel;
+        private Button addButton, editButton, deleteButton, refreshButton, exportButton;
         private TextBox searchBox;
         private ComboBox statusFilter;
-        private Label totalCategoriesLabel, activeCategoriesLabel, totalProductsLabel, avgProductsLabel;
-        private IconPictureBox titleIcon, searchIcon, filterIcon;
         private Label titleLabel;
 
-        // Skyward Serenity Color Palette
-        private readonly Color PattenBlue = Color.FromArgb(226, 244, 255);      // #e2f4ff - Lightest
-        private readonly Color Malibu = Color.FromArgb(118, 189, 255);          // #76bdff
-        private readonly Color DodgerBlue1 = Color.FromArgb(69, 174, 255);      // #45aeff
-        private readonly Color DodgerBlue2 = Color.FromArgb(33, 163, 255);      // #21a3ff - Primary
-        private readonly Color DodgerBlue3 = Color.FromArgb(33, 136, 255);      // #2188ff - Darkest
+
 
         public CategoryManagementView(AuthenticationService authService)
         {
@@ -33,7 +26,6 @@ namespace SyncVerseStudio.Views
             _context = new ApplicationDbContext();
             InitializeComponent();
             LoadCategories();
-            LoadMetrics();
         }
 
         private void InitializeComponent()
@@ -44,12 +36,11 @@ namespace SyncVerseStudio.Views
             this.Text = "Category Management";
             this.WindowState = FormWindowState.Normal;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = PattenBlue; // Light blue background
-            this.ClientSize = new Size(1200, 800);
+            this.BackColor = Color.FromArgb(250, 250, 250);
+            this.ClientSize = new Size(1000, 700);
             this.Padding = new Padding(0);
             
             CreateTopPanel();
-            CreateMetricsPanel();
             CreateCategoriesGrid();
             
             this.ResumeLayout(false);
@@ -61,100 +52,62 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 80, // Increased from 70
+                Height = 80,
                 Padding = new Padding(20, 10, 20, 10)
             };
 
-            // Title with Icon
-            titleIcon = new IconPictureBox
-            {
-                IconChar = IconChar.Tags,
-                IconColor = DodgerBlue2, // Primary blue
-                IconSize = 26,
-                Location = new Point(20, 12),
-                Size = new Size(32, 32),
-                BackColor = Color.Transparent
-            };
-            topPanel.Controls.Add(titleIcon);
-
             titleLabel = new Label
             {
-                Text = "Category Management",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                Text = "CATEGORY MANAGEMENT",
+                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(58, 13),
-                Size = new Size(300, 28)
+                Location = new Point(20, 18),
+                Size = new Size(450, 35)
             };
             topPanel.Controls.Add(titleLabel);
 
-            // Search with Icon
-            var searchPanel = new Panel
-            {
-                BackColor = PattenBlue,
-                Location = new Point(20, 50),
-                Size = new Size(200, 28),
-                BorderStyle = BorderStyle.FixedSingle
-            };
-
-            searchIcon = new IconPictureBox
-            {
-                IconChar = IconChar.Search,
-                IconColor = Malibu,
-                IconSize = 14,
-                Location = new Point(8, 6),
-                Size = new Size(18, 18),
-                BackColor = Color.Transparent
-            };
-            searchPanel.Controls.Add(searchIcon);
-
             searchBox = new TextBox
             {
-                PlaceholderText = "Search...",
-                Font = new Font("Segoe UI", 9F),
-                Location = new Point(30, 4),
-                Size = new Size(165, 22),
-                BorderStyle = BorderStyle.None,
-                BackColor = PattenBlue
+                PlaceholderText = "Search categories...",
+                Font = new Font("Segoe UI", 10F),
+                Location = new Point(20, 55),
+                Size = new Size(220, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
-            searchPanel.Controls.Add(searchBox);
-            topPanel.Controls.Add(searchPanel);
+            topPanel.Controls.Add(searchBox);
 
-            // Status Filter
             statusFilter = new ComboBox
             {
-                Font = new Font("Segoe UI", 9F),
-                Location = new Point(235, 50),
-                Size = new Size(110, 26),
-                DropDownStyle = ComboBoxStyle.DropDownList,
-                FlatStyle = FlatStyle.Flat,
-                BackColor = PattenBlue
+                Font = new Font("Segoe UI", 10F),
+                Location = new Point(255, 55),
+                Size = new Size(130, 30),
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
             statusFilter.Items.AddRange(new object[] { "All Status", "Active", "Inactive" });
             statusFilter.SelectedIndex = 0;
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
             topPanel.Controls.Add(statusFilter);
 
-            // Icon-only Action Buttons
-            int buttonX = 900;
+            // Buttons without icons
+            int buttonX = 550;
             
-            addButton = CreateIconOnlyButton(IconChar.Plus, DodgerBlue2, "Add Category", buttonX, 47);
+            addButton = CreateButton("ADD CATEGORY", Color.FromArgb(48, 148, 255), buttonX, 55, 140);
             addButton.Click += AddButton_Click;
-            buttonX += 42;
+            buttonX += 150;
 
-            editButton = CreateIconOnlyButton(IconChar.Edit, Malibu, "Edit", buttonX, 47);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 42;
+            buttonX += 90;
 
-            deleteButton = CreateIconOnlyButton(IconChar.Trash, Color.FromArgb(244, 67, 54), "Delete", buttonX, 47);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 42;
+            buttonX += 100;
 
-            exportButton = CreateIconOnlyButton(IconChar.FileExport, DodgerBlue1, "Export", buttonX, 47);
+            exportButton = CreateButton("EXPORT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
             exportButton.Click += ExportButton_Click;
-            buttonX += 42;
+            buttonX += 100;
 
-            refreshButton = CreateIconOnlyButton(IconChar.SyncAlt, DodgerBlue3, "Refresh", buttonX, 47);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
@@ -164,114 +117,35 @@ namespace SyncVerseStudio.Views
             this.Controls.Add(topPanel);
         }
 
-        private IconButton CreateIconOnlyButton(IconChar icon, Color color, string tooltip, int x, int y)
+        private Button CreateButton(string text, Color backgroundColor, int x, int y, int width)
         {
-            var button = new IconButton
+            return new Button
             {
-                IconChar = icon,
-                IconColor = Color.White,
-                IconSize = 18,
-                BackColor = color,
+                Text = text,
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                BackColor = backgroundColor,
+                ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Location = new Point(x, y),
-                Size = new Size(36, 36),
+                Size = new Size(width, 35),
                 Cursor = Cursors.Hand,
                 FlatAppearance = { BorderSize = 0 }
             };
-
-            var toolTip = new ToolTip();
-            toolTip.SetToolTip(button, tooltip);
-
-            button.MouseEnter += (s, e) =>
-            {
-                button.BackColor = ControlPaint.Light(color, 0.2f);
-            };
-
-            button.MouseLeave += (s, e) =>
-            {
-                button.BackColor = color;
-            };
-
-            return button;
-        }
-
-        private void CreateMetricsPanel()
-        {
-            metricsPanel = new Panel
-            {
-                BackColor = Color.White,
-                Dock = DockStyle.Top,
-                Height = 60,
-                Padding = new Padding(20, 10, 20, 10)
-            };
-
-            CreateMetricCard("Total", "0", IconChar.Tags, DodgerBlue2, 20, 10, "totalCategoriesLabel");
-            CreateMetricCard("Active", "0", IconChar.CheckCircle, Malibu, 280, 10, "activeCategoriesLabel");
-            CreateMetricCard("Products", "0", IconChar.Box, DodgerBlue1, 540, 10, "totalProductsLabel");
-            CreateMetricCard("Avg/Category", "0", IconChar.ChartBar, DodgerBlue3, 800, 10, "avgProductsLabel");
-
-            this.Controls.Add(metricsPanel);
-        }
-
-        private void CreateMetricCard(string title, string value, IconChar icon, Color color, int x, int y, string labelName)
-        {
-            var cardPanel = new Panel
-            {
-                BackColor = PattenBlue,
-                Location = new Point(x, y),
-                Size = new Size(240, 40),
-                BorderStyle = BorderStyle.None
-            };
-
-            var iconPic = new IconPictureBox
-            {
-                IconChar = icon,
-                IconColor = color,
-                IconSize = 20,
-                Location = new Point(10, 10),
-                Size = new Size(24, 24),
-                BackColor = Color.Transparent
-            };
-            cardPanel.Controls.Add(iconPic);
-
-            var titleLbl = new Label
-            {
-                Text = title,
-                Font = new Font("Segoe UI", 8F, FontStyle.Regular),
-                ForeColor = Color.FromArgb(100, 100, 100),
-                Location = new Point(40, 6),
-                Size = new Size(190, 14)
-            };
-            cardPanel.Controls.Add(titleLbl);
-
-            var valueLabel = new Label
-            {
-                Text = value,
-                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(40, 18),
-                Size = new Size(190, 20),
-                Name = labelName
-            };
-            cardPanel.Controls.Add(valueLabel);
-
-            metricsPanel.Controls.Add(cardPanel);
         }
 
         private void CreateCategoriesGrid()
         {
-            // Create a wrapper panel with padding
             var gridPanel = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = PattenBlue,
-                Padding = new Padding(10, 200, 10, 10) // Left, Top, Right, Bottom - 50px padding from top
+                BackColor = Color.White,
+                Padding = new Padding(10, 10, 10, 10)
             };
 
             categoriesGrid = new DataGridView
             {
                 Dock = DockStyle.Fill,
-                BackgroundColor = System.Drawing.Color.White,
+                BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
@@ -279,27 +153,38 @@ namespace SyncVerseStudio.Views
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9F),
+                Font = new Font("Segoe UI", 10F),
                 RowHeadersVisible = false,
-                GridColor = System.Drawing.Color.FromArgb(230, 230, 230),
+                GridColor = BrandTheme.TableBorder,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
-                    BackColor = System.Drawing.Color.White,
-                    ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
-                    SelectionBackColor = System.Drawing.Color.FromArgb(24, 119, 18),
-                    SelectionForeColor = System.Drawing.Color.White,
-                    Padding = new Padding(5)
+                    BackColor = Color.White,
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
+                    SelectionForeColor = Color.White,
+                    Padding = new Padding(12, 8, 12, 8)
+                },
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = BrandTheme.TableRowOdd,
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
+                    SelectionForeColor = Color.White,
+                    Padding = new Padding(12, 8, 12, 8)
                 },
                 ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
                 {
-                    BackColor = System.Drawing.Color.FromArgb(245, 245, 245),
-                    ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                    BackColor = BrandTheme.TableHeaderBg,
+                    ForeColor = Color.White,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                     Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(5)
+                    Padding = new Padding(12, 10, 12, 10)
                 },
                 ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
-                ColumnHeadersHeight = 35
+                ColumnHeadersHeight = 45,
+                RowTemplate = { Height = 50 },
+                EnableHeadersVisualStyles = false,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
             };
 
             // Configure columns like Product Management
@@ -324,9 +209,7 @@ namespace SyncVerseStudio.Views
         {
             try
             {
-                refreshButton.IconChar = IconChar.Spinner;
                 refreshButton.Enabled = false;
-                titleIcon.IconChar = IconChar.HourglassHalf;
 
                 var categories = await _context.Categories
                     .Include(c => c.Products)
@@ -357,84 +240,15 @@ namespace SyncVerseStudio.Views
                         categoriesGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = System.Drawing.Color.FromArgb(139, 0, 0);
                     }
                 }
-
-                LoadMetrics();
             }
             catch (Exception ex)
             {
-                titleIcon.IconChar = IconChar.ExclamationTriangle;
-                titleIcon.IconColor = Color.FromArgb(244, 67, 54);
                 MessageBox.Show($"Error loading categories: {ex.Message}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
             {
-                refreshButton.IconChar = IconChar.SyncAlt;
                 refreshButton.Enabled = true;
-                titleIcon.IconChar = IconChar.Tags;
-                titleIcon.IconColor = DodgerBlue2;
-            }
-        }
-
-        private Bitmap CreateStatusIconBitmap(bool isActive)
-        {
-            var bitmap = new Bitmap(20, 20);
-            using (var g = Graphics.FromImage(bitmap))
-            {
-                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                var color = isActive ? Malibu : Color.FromArgb(200, 200, 200);
-                
-                using (var brush = new SolidBrush(color))
-                {
-                    g.FillEllipse(brush, 3, 3, 14, 14);
-                }
-                
-                using (var pen = new Pen(Color.White, 2))
-                {
-                    if (isActive)
-                    {
-                        g.DrawLines(pen, new Point[] { 
-                            new Point(7, 10), 
-                            new Point(9, 12), 
-                            new Point(13, 8) 
-                        });
-                    }
-                    else
-                    {
-                        g.DrawLine(pen, 8, 8, 12, 12);
-                        g.DrawLine(pen, 12, 8, 8, 12);
-                    }
-                }
-            }
-            return bitmap;
-        }
-
-        private async void LoadMetrics()
-        {
-            try
-            {
-                var totalCategories = await _context.Categories.CountAsync();
-                var activeCategories = await _context.Categories.CountAsync(c => c.IsActive);
-                var totalProducts = await _context.Products.CountAsync(p => p.IsActive);
-                var avgProducts = activeCategories > 0 ? (double)totalProducts / activeCategories : 0;
-
-                UpdateMetricLabel("totalCategoriesLabel", totalCategories.ToString());
-                UpdateMetricLabel("activeCategoriesLabel", activeCategories.ToString());
-                UpdateMetricLabel("totalProductsLabel", totalProducts.ToString());
-                UpdateMetricLabel("avgProductsLabel", Math.Round(avgProducts, 1).ToString());
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error loading metrics: {ex.Message}");
-            }
-        }
-
-        private void UpdateMetricLabel(string labelName, string value)
-        {
-            var label = metricsPanel.Controls.Find(labelName, true).FirstOrDefault() as Label;
-            if (label != null)
-            {
-                label.Text = value;
             }
         }
 
@@ -452,8 +266,6 @@ namespace SyncVerseStudio.Views
         {
             try
             {
-                searchIcon.IconColor = DodgerBlue2;
-
                 var searchTerm = searchBox.Text.ToLower();
                 var selectedStatus = statusFilter.SelectedItem?.ToString();
 
@@ -499,11 +311,6 @@ namespace SyncVerseStudio.Views
             catch (Exception ex)
             {
                 Console.WriteLine($"Error filtering categories: {ex.Message}");
-            }
-            finally
-            {
-                await Task.Delay(300);
-                searchIcon.IconColor = Malibu;
             }
         }
 
@@ -581,7 +388,6 @@ namespace SyncVerseStudio.Views
             {
                 try
                 {
-                    deleteButton.IconChar = IconChar.Spinner;
                     deleteButton.Enabled = false;
 
                     var category = await _context.Categories.FindAsync(categoryId);
@@ -593,9 +399,6 @@ namespace SyncVerseStudio.Views
                         
                         await _authService.LogAuditAsync("CATEGORY_DELETED", "Categories", categoryId, 
                             $"'{categoryName}', Active", $"'{categoryName}', Inactive");
-                        
-                        deleteButton.IconChar = IconChar.Check;
-                        await Task.Delay(500);
                         
                         LoadCategories();
                         
@@ -610,7 +413,6 @@ namespace SyncVerseStudio.Views
                 }
                 finally
                 {
-                    deleteButton.IconChar = IconChar.Trash;
                     deleteButton.Enabled = true;
                 }
             }
@@ -620,7 +422,6 @@ namespace SyncVerseStudio.Views
         {
             try
             {
-                exportButton.IconChar = IconChar.Spinner;
                 exportButton.Enabled = false;
 
                 var saveDialog = new SaveFileDialog
@@ -651,9 +452,6 @@ namespace SyncVerseStudio.Views
                         }
                     }
 
-                    exportButton.IconChar = IconChar.Check;
-                    await Task.Delay(500);
-
                     MessageBox.Show($"Exported to {saveDialog.FileName}", "Success", 
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -665,7 +463,6 @@ namespace SyncVerseStudio.Views
             }
             finally
             {
-                exportButton.IconChar = IconChar.FileExport;
                 exportButton.Enabled = true;
             }
         }

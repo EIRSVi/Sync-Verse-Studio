@@ -2,6 +2,7 @@ using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Data;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace SyncVerseStudio.Views
@@ -51,11 +52,11 @@ namespace SyncVerseStudio.Views
 
             var titleLabel = new Label
             {
-                Text = "Supplier Management",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                Text = "SUPPLIER MANAGEMENT",
+                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 15),
-                Size = new Size(300, 30)
+                Location = new Point(20, 18),
+                Size = new Size(400, 35)
             };
 
             supplierCountLabel = new Label
@@ -89,19 +90,19 @@ namespace SyncVerseStudio.Views
 
             // Buttons
             int buttonX = 600;
-            addButton = CreateButton("Add Supplier", Color.FromArgb(24, 119, 18), buttonX, 45);
+            addButton = CreateButton("ADD SUPPLIER", Color.FromArgb(48, 148, 255), buttonX, 45, 130);
             addButton.Click += AddButton_Click;
-            buttonX += 120;
+            buttonX += 140;
 
-            editButton = CreateButton("Edit", Color.FromArgb(37, 99, 102), buttonX, 45);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 45, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 80;
+            buttonX += 90;
 
-            deleteButton = CreateButton("Delete", Color.FromArgb(255, 0, 80), buttonX, 45);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 45, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 80;
+            buttonX += 100;
 
-            refreshButton = CreateButton("Refresh", Color.FromArgb(158, 158, 158), buttonX, 45);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 45, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
@@ -112,29 +113,34 @@ namespace SyncVerseStudio.Views
             this.Controls.Add(topPanel);
         }
 
-        private Button CreateButton(string text, Color backgroundColor, int x, int y)
+        private Button CreateButton(string text, Color backgroundColor, int x, int y, int width)
         {
             return new Button
             {
                 Text = text,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 BackColor = backgroundColor,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 FlatAppearance = { BorderSize = 0 },
                 Location = new Point(x, y),
-                Size = new Size(text == "Add Supplier" ? 110 : 70, 30),
+                Size = new Size(width, 35),
                 Cursor = Cursors.Hand
             };
         }
 
         private void CreateSuppliersGrid()
         {
+            var gridPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.White,
+                Padding = new Padding(10, 200, 10, 10)
+            };
+
             suppliersGrid = new DataGridView
             {
-                Location = new Point(0, 200),
-                Size = new Size(1000, 500),
-                Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right,
+                Dock = DockStyle.Fill,
                 BackgroundColor = Color.White,
                 BorderStyle = BorderStyle.None,
                 AllowUserToAddRows = false,
@@ -143,28 +149,38 @@ namespace SyncVerseStudio.Views
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 9F),
+                Font = new Font("Segoe UI", 10F),
                 RowHeadersVisible = false,
-                GridColor = Color.FromArgb(230, 230, 230),
-                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize,
-                ColumnHeadersHeight = 40,
+                GridColor = BrandTheme.TableBorder,
                 DefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = Color.White,
-                    ForeColor = Color.FromArgb(33, 33, 33),
-                    SelectionBackColor = Color.FromArgb(24, 119, 18),
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
                     SelectionForeColor = Color.White,
-                    Padding = new Padding(5)
+                    Padding = new Padding(12, 8, 12, 8)
+                },
+                AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
+                {
+                    BackColor = BrandTheme.TableRowOdd,
+                    ForeColor = BrandTheme.PrimaryText,
+                    SelectionBackColor = BrandTheme.TableRowSelected,
+                    SelectionForeColor = Color.White,
+                    Padding = new Padding(12, 8, 12, 8)
                 },
                 ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
                 {
-                    BackColor = Color.FromArgb(245, 245, 245),
-                    ForeColor = Color.FromArgb(33, 33, 33),
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                    BackColor = BrandTheme.TableHeaderBg,
+                    ForeColor = Color.White,
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                     Alignment = DataGridViewContentAlignment.MiddleLeft,
-                    Padding = new Padding(5),
-                    WrapMode = DataGridViewTriState.True
-                }
+                    Padding = new Padding(12, 10, 12, 10)
+                },
+                ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.DisableResizing,
+                ColumnHeadersHeight = 45,
+                RowTemplate = { Height = 50 },
+                EnableHeadersVisualStyles = false,
+                CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal
             };
 
             // Configure columns
@@ -184,7 +200,8 @@ namespace SyncVerseStudio.Views
             // Format date column
             suppliersGrid.Columns["CreatedAt"].DefaultCellStyle.Format = "MM/dd/yyyy";
 
-            this.Controls.Add(suppliersGrid);
+            gridPanel.Controls.Add(suppliersGrid);
+            this.Controls.Add(gridPanel);
         }
 
         private async void LoadSuppliers()

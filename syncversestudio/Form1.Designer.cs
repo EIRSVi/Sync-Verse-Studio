@@ -92,10 +92,10 @@ namespace SyncVerseStudio
             };
 
             // 
-            // logoPictureBox - Centered logo
+            // logoPictureBox - Larger Centered logo
             // 
-            this.logoPictureBox.Size = new System.Drawing.Size(150, 150);
-            this.logoPictureBox.Location = new System.Drawing.Point(150, 40);
+            this.logoPictureBox.Size = new System.Drawing.Size(200, 200);
+            this.logoPictureBox.Location = new System.Drawing.Point(125, 30);
             this.logoPictureBox.SizeMode = PictureBoxSizeMode.Zoom;
             this.logoPictureBox.BackColor = Color.Transparent;
 
@@ -141,10 +141,10 @@ namespace SyncVerseStudio
             // brandLabel - Brand Name
             // 
             this.brandLabel.Text = BrandTheme.BrandName;
-            this.brandLabel.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
+            this.brandLabel.Font = new Font("Segoe UI", 26F, FontStyle.Bold);
             this.brandLabel.ForeColor = BrandTheme.DarkGray;
-            this.brandLabel.Location = new Point(0, 200);
-            this.brandLabel.Size = new Size(450, 40);
+            this.brandLabel.Location = new Point(0, 235);
+            this.brandLabel.Size = new Size(450, 45);
             this.brandLabel.TextAlign = ContentAlignment.MiddleCenter;
             this.brandLabel.BackColor = Color.Transparent;
 
@@ -152,10 +152,10 @@ namespace SyncVerseStudio
             // taglineLabel - Brand Tagline
             // 
             this.taglineLabel.Text = BrandTheme.BrandTagline;
-            this.taglineLabel.Font = new Font("Segoe UI", 11F, FontStyle.Regular);
+            this.taglineLabel.Font = new Font("Segoe UI", 12F, FontStyle.Regular);
             this.taglineLabel.ForeColor = BrandTheme.SecondaryText;
-            this.taglineLabel.Location = new Point(0, 245);
-            this.taglineLabel.Size = new Size(450, 25);
+            this.taglineLabel.Location = new Point(0, 285);
+            this.taglineLabel.Size = new Size(450, 28);
             this.taglineLabel.TextAlign = ContentAlignment.MiddleCenter;
             this.taglineLabel.BackColor = Color.Transparent;
 
@@ -167,11 +167,11 @@ namespace SyncVerseStudio
             // 
             // welcomeLabel
             // 
-            this.welcomeLabel.Text = "Welcome";
-            this.welcomeLabel.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
+            this.welcomeLabel.Text = "Welcome Back";
+            this.welcomeLabel.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
             this.welcomeLabel.ForeColor = BrandTheme.DarkGray;
-            this.welcomeLabel.Location = new Point(0, 290);
-            this.welcomeLabel.Size = new Size(450, 30);
+            this.welcomeLabel.Location = new Point(0, 325);
+            this.welcomeLabel.Size = new Size(450, 35);
             this.welcomeLabel.TextAlign = ContentAlignment.MiddleCenter;
             this.welcomeLabel.BackColor = Color.Transparent;
 
@@ -190,7 +190,7 @@ namespace SyncVerseStudio
             this.usernameLabel.Text = "Username";
             this.usernameLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             this.usernameLabel.ForeColor = BrandTheme.PrimaryText;
-            this.usernameLabel.Location = new Point(50, 340);
+            this.usernameLabel.Location = new Point(50, 375);
             this.usernameLabel.Size = new Size(350, 20);
             this.usernameLabel.BackColor = Color.Transparent;
 
@@ -208,7 +208,7 @@ namespace SyncVerseStudio
             // Custom border
             var usernamePanel = new Panel
             {
-                Location = new Point(50, 365),
+                Location = new Point(50, 400),
                 Size = new Size(350, 50),
                 BackColor = BrandTheme.CoolWhite
             };
@@ -243,7 +243,7 @@ namespace SyncVerseStudio
             this.passwordLabel.Text = "Password";
             this.passwordLabel.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             this.passwordLabel.ForeColor = BrandTheme.PrimaryText;
-            this.passwordLabel.Location = new Point(50, 430);
+            this.passwordLabel.Location = new Point(50, 465);
             this.passwordLabel.Size = new Size(350, 20);
             this.passwordLabel.BackColor = Color.Transparent;
 
@@ -262,7 +262,7 @@ namespace SyncVerseStudio
             // Custom border
             var passwordPanel = new Panel
             {
-                Location = new Point(50, 455),
+                Location = new Point(50, 490),
                 Size = new Size(350, 50),
                 BackColor = BrandTheme.CoolWhite
             };
@@ -286,12 +286,12 @@ namespace SyncVerseStudio
             // loginButton
             // 
             this.loginButton.Text = "SIGN IN";
-            this.loginButton.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
+            this.loginButton.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
             this.loginButton.BackColor = BrandTheme.MediumBlue;
             this.loginButton.ForeColor = Color.White;
             this.loginButton.FlatStyle = FlatStyle.Flat;
             this.loginButton.FlatAppearance.BorderSize = 0;
-            this.loginButton.Location = new Point(50, 525);
+            this.loginButton.Location = new Point(50, 555);
             this.loginButton.Size = new Size(350, 50);
             this.loginButton.Cursor = Cursors.Hand;
             this.loginButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(45, 25, 230);

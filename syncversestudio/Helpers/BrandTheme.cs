@@ -83,14 +83,14 @@ namespace SyncVerseStudio.Helpers
         public static readonly Color Warning = Color.FromArgb(249, 115, 22);        // Orange
         public static readonly Color Info = Color.FromArgb(59, 130, 246);           // Blue
         
-        // Table Colors - Clean and Consistent
-        public static readonly Color TableHeaderBg = Color.FromArgb(249, 250, 251); // Very light gray
+        // Table Colors - New Blue Theme
+        public static readonly Color TableHeaderBg = Color.FromArgb(158, 236, 255); // #9EECFF - Blue 1
         public static readonly Color TableHeaderText = Color.FromArgb(30, 30, 30);  // Dark text
         public static readonly Color TableRowEven = Color.White;
-        public static readonly Color TableRowOdd = Color.FromArgb(249, 250, 251);   // Alternating row
-        public static readonly Color TableRowHover = Color.FromArgb(243, 244, 246); // Hover state
-        public static readonly Color TableRowSelected = Color.FromArgb(219, 234, 254); // Selected row (light blue)
-        public static readonly Color TableBorder = Color.FromArgb(229, 231, 235);   // Border color
+        public static readonly Color TableRowOdd = Color.FromArgb(240, 250, 255);   // Very light blue
+        public static readonly Color TableRowHover = Color.FromArgb(158, 236, 255); // #9EECFF - Blue 1
+        public static readonly Color TableRowSelected = Color.FromArgb(48, 148, 255); // #3094FF - Blue 2
+        public static readonly Color TableBorder = Color.FromArgb(158, 236, 255);   // #9EECFF - Blue 1
 
         // Sidebar/Navigation
         public static readonly Color SidebarBackground = Color.FromArgb(215, 232, 250); // Light blue
@@ -224,12 +224,12 @@ namespace SyncVerseStudio.Helpers
             grid.ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
             {
                 BackColor = TableHeaderBg,
-                ForeColor = TableHeaderText,
+                ForeColor = Color.White, // White text on blue header
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Padding = new Padding(12, 10, 12, 10),
                 Alignment = DataGridViewContentAlignment.MiddleLeft,
                 SelectionBackColor = TableHeaderBg,
-                SelectionForeColor = TableHeaderText
+                SelectionForeColor = Color.White
             };
             
             grid.ColumnHeadersHeight = 45;
