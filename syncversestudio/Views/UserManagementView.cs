@@ -146,19 +146,31 @@ namespace SyncVerseStudio.Views
                 BackColor = Color.White,
                 Padding = new Padding(10, 200, 10, 10)
             };
+            
+            // Add rounded border to panel
+            gridPanel.Paint += (s, e) =>
+            {
+                var rect = new Rectangle(10, 200, gridPanel.Width - 20, gridPanel.Height - 210);
+                using (var pen = new Pen(BrandTheme.TableBorder, 2))
+                using (var path = GetRoundedRectangle(rect, 10))
+                {
+                    e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+                    e.Graphics.DrawPath(pen, path);
+                }
+            };
 
             usersGrid = new DataGridView
             {
                 Dock = DockStyle.Fill,
                 BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
+                BorderStyle = BorderStyle.FixedSingle,
                 AllowUserToAddRows = false,
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
                 MultiSelect = false,
                 AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
-                Font = new Font("Segoe UI", 10F),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 RowHeadersVisible = false,
                 GridColor = BrandTheme.TableBorder,
                 DefaultCellStyle = new DataGridViewCellStyle
@@ -167,7 +179,8 @@ namespace SyncVerseStudio.Views
                     ForeColor = BrandTheme.PrimaryText,
                     SelectionBackColor = BrandTheme.TableRowSelected,
                     SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8)
+                    Padding = new Padding(12, 8, 12, 8),
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
                 },
                 AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
                 {
@@ -175,7 +188,8 @@ namespace SyncVerseStudio.Views
                     ForeColor = BrandTheme.PrimaryText,
                     SelectionBackColor = BrandTheme.TableRowSelected,
                     SelectionForeColor = Color.White,
-                    Padding = new Padding(12, 8, 12, 8)
+                    Padding = new Padding(12, 8, 12, 8),
+                    Font = new Font("Segoe UI", 10F, FontStyle.Bold)
                 },
                 ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
                 {
@@ -209,6 +223,17 @@ namespace SyncVerseStudio.Views
 
             gridPanel.Controls.Add(usersGrid);
             this.Controls.Add(gridPanel);
+        }
+
+        private System.Drawing.Drawing2D.GraphicsPath GetRoundedRectangle(Rectangle rect, int radius)
+        {
+            var path = new System.Drawing.Drawing2D.GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         private async void LoadUsers()

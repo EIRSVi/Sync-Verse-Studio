@@ -185,7 +185,7 @@ namespace SyncVerseStudio.Helpers
         public static void StyleDataGridView(DataGridView grid)
         {
             grid.BackgroundColor = Color.White;
-            grid.BorderStyle = BorderStyle.None;
+            grid.BorderStyle = BorderStyle.FixedSingle;
             grid.AllowUserToAddRows = false;
             grid.AllowUserToDeleteRows = false;
             grid.ReadOnly = true;
@@ -197,27 +197,27 @@ namespace SyncVerseStudio.Helpers
             grid.CellBorderStyle = DataGridViewCellBorderStyle.SingleHorizontal;
             grid.GridColor = TableBorder;
             
-            // Default cell style
+            // Default cell style - Bold text
             grid.DefaultCellStyle = new DataGridViewCellStyle
             {
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Padding = new Padding(12, 8, 12, 8),
                 SelectionBackColor = TableRowSelected,
-                SelectionForeColor = PrimaryText,
+                SelectionForeColor = Color.White,
                 BackColor = Color.White,
                 ForeColor = PrimaryText,
                 Alignment = DataGridViewContentAlignment.MiddleLeft
             };
             
-            // Alternating row style
+            // Alternating row style - Bold text
             grid.AlternatingRowsDefaultCellStyle = new DataGridViewCellStyle
             {
-                Font = new Font("Segoe UI", 10F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 Padding = new Padding(12, 8, 12, 8),
                 BackColor = TableRowOdd,
                 ForeColor = PrimaryText,
                 SelectionBackColor = TableRowSelected,
-                SelectionForeColor = PrimaryText
+                SelectionForeColor = Color.White
             };
             
             // Column header style
