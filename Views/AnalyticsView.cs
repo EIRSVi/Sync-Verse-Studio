@@ -7,6 +7,9 @@ namespace SyncVerseStudio.Views
 {
     public partial class AnalyticsView : Form
     {
+
+
+//    Hello from shcool
         private readonly AuthenticationService _authService;
         private ApplicationDbContext? _context;
         private Panel dashboardPanel;
