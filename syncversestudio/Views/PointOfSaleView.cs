@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
 using SyncVerseStudio.Services;
+using SyncVerseStudio.Data;
+using SyncVerseStudio.Models;
 
 namespace SyncVerseStudio.Views
 {
@@ -135,7 +137,7 @@ namespace SyncVerseStudio.Views
             productsGrid.Rows.Clear();
             foreach (var product in products)
             {
-                productsGrid.Rows.Add(product.Id, product.Name, product.Price, product.StockQuantity);
+                productsGrid.Rows.Add(product.Id, product.Name, product.SellingPrice, product.Quantity);
             }
         }
 
@@ -147,7 +149,7 @@ namespace SyncVerseStudio.Views
             productsGrid.Rows.Clear();
             foreach (var product in products)
             {
-                productsGrid.Rows.Add(product.Id, product.Name, product.Price, product.StockQuantity);
+                productsGrid.Rows.Add(product.Id, product.Name, product.SellingPrice, product.Quantity);
             }
         }
 
@@ -188,8 +190,8 @@ namespace SyncVerseStudio.Views
             _total = 0;
             foreach (var product in _cart)
             {
-                cartGrid.Rows.Add(product.Id, product.Name, product.Price);
-                _total += product.Price;
+                cartGrid.Rows.Add(product.Id, product.Name, product.SellingPrice);
+                _total += product.SellingPrice;
             }
             var totalLabel = (Label)this.Controls["totalLabel"];
             totalLabel.Text = $"Total: ${_total:F2}";
@@ -205,10 +207,10 @@ namespace SyncVerseStudio.Views
 
             var sale = new Sale
             {
-                UserId = _authService.CurrentUser.Id,
+                CashierId = _authService.CurrentUser.Id,
                 SaleDate = DateTime.Now,
                 TotalAmount = _total,
-                SaleItems = _cart.Select(p => new SaleItem { ProductId = p.Id, Quantity = 1, UnitPrice = p.Price }).ToList()
+                SaleItems = _cart.Select(p => new SaleItem { ProductId = p.Id, Quantity = 1, UnitPrice = p.SellingPrice }).ToList()
             };
 
             _context.Sales.Add(sale);
@@ -220,13 +222,13 @@ namespace SyncVerseStudio.Views
                 var product = _context.Products.Find(item.ProductId);
                 if (product != null)
                 {
-                    product.StockQuantity -= item.Quantity;
+                    product.Quantity -= item.Quantity;
                     _context.InventoryMovements.Add(new InventoryMovement
                     {
                         ProductId = product.Id,
-                        MovementType = "Sale",
+                        MovementType = MovementType.Sale,
                         Quantity = -item.Quantity,
-                        MovementDate = DateTime.Now,
+                        CreatedAt = DateTime.Now,
                         UserId = _authService.CurrentUser.Id
                     });
                 }
@@ -309,11 +311,11 @@ namespace SyncVerseStudio.Views
 
             var priceLabel = new Label { Text = "Price:", Location = new Point(10, 50) };
             priceTextBox = new TextBox { Location = new Point(100, 50), Width = 150 };
-            if (_product != null) priceTextBox.Text = _product.Price.ToString();
+            if (_product != null) priceTextBox.Text = _product.SellingPrice.ToString();
 
             var stockLabel = new Label { Text = "Stock:", Location = new Point(10, 90) };
             stockTextBox = new TextBox { Location = new Point(100, 90), Width = 150 };
-            if (_product != null) stockTextBox.Text = _product.StockQuantity.ToString();
+            if (_product != null) stockTextBox.Text = _product.Quantity.ToString();
 
             saveButton = new Button { Text = "Save", Location = new Point(50, 130) };
             saveButton.Click += SaveButton_Click;
@@ -330,14 +332,14 @@ namespace SyncVerseStudio.Views
             {
                 if (_product == null)
                 {
-                    var newProduct = new Product { Name = nameTextBox.Text, Price = price, StockQuantity = stock };
+                    var newProduct = new Product { Name = nameTextBox.Text, SellingPrice = price, Quantity = stock };
                     _context.Products.Add(newProduct);
                 }
                 else
                 {
                     _product.Name = nameTextBox.Text;
-                    _product.Price = price;
-                    _product.StockQuantity = stock;
+                    _product.SellingPrice = price;
+                    _product.Quantity = stock;
                 }
                 _context.SaveChanges();
                 this.DialogResult = DialogResult.OK;

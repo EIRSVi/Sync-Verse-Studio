@@ -632,4 +632,4 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
   base.Dispose(disposing);
         }
     }
-}}
+}
