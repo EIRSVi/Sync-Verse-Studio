@@ -28,6 +28,9 @@ https://raw.githubusercontent.com/EIRSVi/eirsvi/d8339235bb1765d461e284ab51bd1223
 | 5. Run Application | `dotnet run --project syncversestudio` |
 
 ### System Requirements
+fsdfdsfsf 
+
+
 
 | Component | Requirement |
 |-----------|-------------|
