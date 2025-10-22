@@ -298,7 +298,7 @@ sidebarPanel.Controls.Add(navHeader);
  case UserRole.Cashier:
  CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new CashierDashboardView(_authService)));
  yPos += 55;
- CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
+ CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new ModernPOSView(_authService)));
      yPos += 55;
  CreateModernMenuItem("Sales History", IconChar.Receipt, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
          yPos += 55;

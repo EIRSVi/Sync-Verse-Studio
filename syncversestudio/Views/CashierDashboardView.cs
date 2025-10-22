@@ -19,7 +19,6 @@ namespace SyncVerseStudio.Views
         // Panels
         private Panel headerPanel = null!;
         private Panel metricsPanel = null!;
-        private Panel quickActionsPanel = null!;
         private Panel recentSalesPanel = null!;
         private Panel todayStatsPanel = null!;
         
@@ -114,8 +113,8 @@ namespace SyncVerseStudio.Views
 
             CreateMetricCards();
 
-            // Quick Actions Panel
-            quickActionsPanel = new Panel
+            // Today's Stats Panel - Expanded
+            todayStatsPanel = new Panel
             {
                 Location = new Point(30, 280),
                 Size = new Size(440, 560),
@@ -123,18 +122,18 @@ namespace SyncVerseStudio.Views
                 Padding = new Padding(20)
             };
 
-            CreateQuickActionsSection();
+            CreateTodayStatsSection();
 
-            // Today's Stats Panel
-            todayStatsPanel = new Panel
+            // Performance Panel - Expanded
+            var performancePanel = new Panel
             {
                 Location = new Point(490, 280),
-                Size = new Size(440, 280),
+                Size = new Size(440, 560),
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
 
-            CreateTodayStatsSection();
+            CreatePerformanceSection(performancePanel);
 
             // Recent Sales Panel
             recentSalesPanel = new Panel
@@ -147,21 +146,10 @@ namespace SyncVerseStudio.Views
 
             CreateRecentSalesSection();
 
-            // Performance Panel
-            var performancePanel = new Panel
-            {
-                Location = new Point(490, 580),
-                Size = new Size(440, 260),
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            CreatePerformanceSection(performancePanel);
-
             // Add all to form
             this.Controls.AddRange(new Control[] { 
-                headerPanel, metricsPanel, quickActionsPanel, 
-                todayStatsPanel, recentSalesPanel, performancePanel 
+                headerPanel, metricsPanel, 
+                todayStatsPanel, performancePanel, recentSalesPanel 
             });
 
             this.ResumeLayout(false);
@@ -260,119 +248,6 @@ namespace SyncVerseStudio.Views
             };
 
             return card;
-        }
-
-        private void CreateQuickActionsSection()
-        {
-            var title = new Label
-            {
-                Text = "Quick Actions",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(0, 0),
-                AutoSize = true
-            };
-
-            var subtitle = new Label
-            {
-                Text = "Common tasks and operations",
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(0, 30),
-                AutoSize = true
-            };
-
-            // Quick action buttons
-            var yPos = 70;
-            var buttonWidth = 400;
-            var buttonHeight = 60;
-            var spacing = 15;
-
-            var newSaleBtn = CreateQuickActionButton("New Sale", "Process customer transaction", 
-                IconChar.CashRegister, Color.FromArgb(34, 197, 94), yPos);
-            newSaleBtn.Click += (s, e) => OpenPointOfSale();
-            yPos += buttonHeight + spacing;
-
-            var viewSalesBtn = CreateQuickActionButton("Sales History", "View my sales transactions", 
-                IconChar.Receipt, Color.FromArgb(59, 130, 246), yPos);
-            viewSalesBtn.Click += (s, e) => OpenSalesHistory();
-            yPos += buttonHeight + spacing;
-
-            var customerBtn = CreateQuickActionButton("Manage Customers", "Add or update customer info", 
-                IconChar.UserFriends, Color.FromArgb(168, 85, 247), yPos);
-            customerBtn.Click += (s, e) => OpenCustomerManagement();
-            yPos += buttonHeight + spacing;
-
-            var refundBtn = CreateQuickActionButton("Process Refund", "Handle returns and refunds", 
-                IconChar.Undo, Color.FromArgb(239, 68, 68), yPos);
-            refundBtn.Click += (s, e) => ProcessRefund();
-            yPos += buttonHeight + spacing;
-
-            var reportBtn = CreateQuickActionButton("My Reports", "View personal sales reports", 
-                IconChar.ChartBar, Color.FromArgb(249, 115, 22), yPos);
-            reportBtn.Click += (s, e) => ViewMyReports();
-            yPos += buttonHeight + spacing;
-
-            var helpBtn = CreateQuickActionButton("Help & Support", "Get assistance", 
-                IconChar.QuestionCircle, Color.FromArgb(100, 116, 139), yPos);
-            helpBtn.Click += (s, e) => ShowHelp();
-
-            quickActionsPanel.Controls.AddRange(new Control[] { 
-                title, subtitle, newSaleBtn, viewSalesBtn, customerBtn, refundBtn, reportBtn, helpBtn 
-            });
-        }
-
-        private Button CreateQuickActionButton(string title, string description, IconChar icon, Color color, int yPos)
-        {
-            var button = new Button
-            {
-                Location = new Point(0, yPos),
-                Size = new Size(400, 60),
-                BackColor = Color.FromArgb(248, 250, 252),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand,
-                TextAlign = ContentAlignment.MiddleLeft,
-                Padding = new Padding(60, 0, 0, 0)
-            };
-            button.FlatAppearance.BorderColor = Color.FromArgb(226, 232, 240);
-
-            var iconBox = new IconPictureBox
-            {
-                IconChar = icon,
-                IconColor = color,
-                IconSize = 28,
-                Location = new Point(15, 16),
-                Size = new Size(28, 28),
-                BackColor = Color.Transparent
-            };
-            button.Controls.Add(iconBox);
-
-            var titleLabel = new Label
-            {
-                Text = title,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(60, 10),
-                AutoSize = true,
-                BackColor = Color.Transparent
-            };
-            button.Controls.Add(titleLabel);
-
-            var descLabel = new Label
-            {
-                Text = description,
-                Font = new Font("Segoe UI", 8),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(60, 32),
-                AutoSize = true,
-                BackColor = Color.Transparent
-            };
-            button.Controls.Add(descLabel);
-
-            button.MouseEnter += (s, e) => button.BackColor = Color.FromArgb(241, 245, 249);
-            button.MouseLeave += (s, e) => button.BackColor = Color.FromArgb(248, 250, 252);
-
-            return button;
         }
 
         private void CreateTodayStatsSection()
@@ -485,21 +360,60 @@ namespace SyncVerseStudio.Views
                 AllowUserToDeleteRows = false,
                 ReadOnly = true,
                 SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill,
+                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
                 RowHeadersVisible = false,
+                DefaultCellStyle = new DataGridViewCellStyle
+                {
+                    Font = new Font("Segoe UI", 10),
+                    Padding = new Padding(5),
+                    SelectionBackColor = Color.FromArgb(219, 234, 254),
+                    SelectionForeColor = Color.FromArgb(30, 41, 59)
+                },
                 ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
                 {
                     BackColor = Color.FromArgb(248, 250, 252),
                     ForeColor = Color.FromArgb(30, 41, 59),
-                    Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                    Padding = new Padding(5)
-                }
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    Padding = new Padding(8),
+                    Alignment = DataGridViewContentAlignment.MiddleLeft
+                },
+                ColumnHeadersHeight = 40,
+                RowTemplate = { Height = 45 }
             };
 
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Invoice", HeaderText = "Invoice", Width = 80 });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Time", HeaderText = "Time", Width = 70 });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Amount", HeaderText = "Amount", Width = 80 });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 80 });
+            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
+            { 
+                Name = "Invoice", 
+                HeaderText = "Invoice #", 
+                Width = 120,
+                DefaultCellStyle = new DataGridViewCellStyle { Font = new Font("Consolas", 9, FontStyle.Bold) }
+            });
+            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
+            { 
+                Name = "Time", 
+                HeaderText = "Time", 
+                Width = 80,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            });
+            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
+            { 
+                Name = "Amount", 
+                HeaderText = "Amount", 
+                Width = 90,
+                DefaultCellStyle = new DataGridViewCellStyle 
+                { 
+                    Alignment = DataGridViewContentAlignment.MiddleRight,
+                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                    ForeColor = Color.FromArgb(34, 197, 94)
+                }
+            });
+            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
+            { 
+                Name = "Status", 
+                HeaderText = "Status", 
+                Width = 90,
+                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
+            });
 
             recentSalesPanel.Controls.AddRange(new Control[] { title, subtitle, recentSalesGrid });
         }
@@ -629,51 +543,6 @@ namespace SyncVerseStudio.Views
             };
             refreshTimer.Tick += (s, e) => LoadDashboard();
             refreshTimer.Start();
-        }
-
-        // Quick action handlers
-        private void OpenPointOfSale()
-        {
-            var posForm = new PointOfSaleView(_authService);
-            posForm.ShowDialog();
-            LoadDashboard(); // Refresh after closing POS
-        }
-
-        private void OpenSalesHistory()
-        {
-            var salesForm = new SalesView(_authService);
-            salesForm.ShowDialog();
-        }
-
-        private void OpenCustomerManagement()
-        {
-            var customerForm = new CustomerManagementView(_authService);
-            customerForm.ShowDialog();
-        }
-
-        private void ProcessRefund()
-        {
-            MessageBox.Show("Refund processing feature coming soon!\n\nThis will allow you to:\n- Search for transactions\n- Process refunds\n- Handle returns\n- Update inventory", 
-                "Process Refund", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void ViewMyReports()
-        {
-            MessageBox.Show($"Personal Sales Report for {_authService.CurrentUser.FullName}\n\nThis will show:\n- Your sales history\n- Performance metrics\n- Commission details\n- Daily reconciliation", 
-                "My Reports", MessageBoxButtons.OK, MessageBoxIcon.Information);
-        }
-
-        private void ShowHelp()
-        {
-            MessageBox.Show("Cashier Help & Support\n\n" +
-                "Quick Tips:\n" +
-                "• Use 'New Sale' to start a transaction\n" +
-                "• Scan barcodes or search products\n" +
-                "• Apply customer loyalty points\n" +
-                "• Process payments (Cash/Card)\n" +
-                "• Print receipts for customers\n\n" +
-                "For assistance, contact your supervisor.", 
-                "Help & Support", MessageBoxButtons.OK, MessageBoxIcon.Information);
         }
 
         protected override void Dispose(bool disposing)
