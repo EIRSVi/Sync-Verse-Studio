@@ -110,11 +110,11 @@ namespace SyncVerseStudio.Views
 
         private void CreateBrandHeader(ref int yPos)
         {
-            // Add centered logo above navigation - centered in 280px sidebar
+            // Add larger centered logo at the top - adjusted to left
             logoPictureBox = new PictureBox
             {
-                Location = new Point(90, yPos + 20),
-                Size = new Size(100, 50),
+                Location = new Point(40, yPos + 30), // Moved left: adjust X value (40 = more left, 65 = center, 90 = more right)
+                Size = new Size(150, 95), // Logo size (width, height)
                 BackColor = Color.Transparent,
                 SizeMode = PictureBoxSizeMode.Zoom,
                 Anchor = AnchorStyles.Top
@@ -130,7 +130,7 @@ namespace SyncVerseStudio.Views
                         // Load color logo without background
                         try
                         {
-                            var pngUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/logo.png";
+                            var pngUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgColor.png";
                             var imageBytes = await client.GetByteArrayAsync(pngUrl);
                             using (var ms = new MemoryStream(imageBytes))
                             {
@@ -173,9 +173,9 @@ namespace SyncVerseStudio.Views
                             {
                                 IconChar = IconChar.Store,
                                 IconColor = BrandTheme.LimeGreen,
-                                IconSize = 50,
-                                Location = new Point(25, 25),
-                                Size = new Size(60, 40),
+                                IconSize = 60,
+                                Location = new Point(110, 40),
+                                Size = new Size(60, 60),
                                 BackColor = Color.Transparent
                             };
                             sidebarPanel.Controls.Add(fallbackIcon);
@@ -187,7 +187,22 @@ namespace SyncVerseStudio.Views
             });
 
             sidebarPanel.Controls.Add(logoPictureBox);
-            yPos += 80;
+            yPos += 115; // Space for logo
+
+            // Add brand name below logo - centered and capitalized
+            var brandNameLabel = new Label
+            {
+                // Text = "SYNCVERSE STUDIO",
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(60, 60, 60), // Dark text
+                BackColor = Color.Transparent,
+                Location = new Point(0, yPos),
+                Size = new Size(280, 30),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Anchor = AnchorStyles.Top
+            };
+            sidebarPanel.Controls.Add(brandNameLabel);
+            yPos += 45; // Space for brand name
 }
 
         private void CreateNavigationMenu(UserRole role, ref int yPos)
@@ -298,13 +313,14 @@ sidebarPanel.Controls.Add(navHeader);
        };
        menuItem.Controls.Add(textLabel);
          
-      // Hover effects - no background, only color change
+      // Hover effects - with background color
             menuItem.MouseEnter += (s, e) =>
             {
       var panel = (Panel)s;
       dynamic tag = panel.Tag;
       if (!tag.IsSelected)
           {
+                panel.BackColor = Color.FromArgb(200, 220, 240); // Light hover background
                 var icon = panel.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
                 var label = panel.Controls.Find("MenuText", false).FirstOrDefault() as Label;
                 if (icon != null) icon.IconColor = Color.FromArgb(255, 0, 80); // #ff0050
@@ -318,6 +334,7 @@ sidebarPanel.Controls.Add(navHeader);
       dynamic tag = panel.Tag;
                 if (!tag.IsSelected)
    {
+                panel.BackColor = Color.Transparent;
                 var icon = panel.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
                 var label = panel.Controls.Find("MenuText", false).FirstOrDefault() as Label;
                 if (icon != null) icon.IconColor = Color.FromArgb(80, 80, 80); // Back to dark gray
@@ -325,11 +342,25 @@ sidebarPanel.Controls.Add(navHeader);
          }
 };
 
-     menuItem.Click += (s, e) =>
+     // Shared click handler for panel and child controls
+        EventHandler menuClickHandler = (s, e) =>
             {
       try
         {
-   var clickedPanel = (Panel)s;
+   // Find the parent panel (could be clicked from panel, icon, or label)
+   Panel clickedPanel = s as Panel;
+   if (clickedPanel == null)
+   {
+       // If clicked from child control, find parent panel
+       Control ctrl = s as Control;
+       while (ctrl != null && !(ctrl is Panel && menuButtons.Contains(ctrl as Panel)))
+       {
+           ctrl = ctrl.Parent;
+       }
+       clickedPanel = ctrl as Panel;
+   }
+   
+   if (clickedPanel == null) return;
        
      // Reset all menu items
                     foreach (var btn in menuButtons)
@@ -347,8 +378,8 @@ sidebarPanel.Controls.Add(navHeader);
             if (label != null) label.ForeColor = Color.FromArgb(60, 60, 60);
       }
 
-              // Set active state - no background, only color #ff0050
-        clickedPanel.BackColor = Color.Transparent;
+              // Set active state - with background color
+        clickedPanel.BackColor = Color.FromArgb(180, 210, 240); // Active background color
   dynamic tag = clickedPanel.Tag;
   clickedPanel.Tag = new { AccentColor = tag.AccentColor, IsSelected = true };
   
@@ -370,9 +401,10 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
          }
         };
 
-   // Make child controls clickable - store the action and call it directly
-   textLabel.Click += (s, e) => clickAction();
-   iconPic.Click += (s, e) => clickAction();
+   // Attach click handler to panel and child controls
+   menuItem.Click += menuClickHandler;
+   textLabel.Click += menuClickHandler;
+   iconPic.Click += menuClickHandler;
 
    menuButtons.Add(menuItem);
  sidebarPanel.Controls.Add(menuItem);
@@ -476,7 +508,7 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
             var firstButton = menuButtons.FirstOrDefault();
     if (firstButton != null)
             {
- firstButton.BackColor = Color.Transparent;
+ firstButton.BackColor = Color.FromArgb(180, 210, 240); // Active background
                 dynamic tag = firstButton.Tag;
                 firstButton.Tag = new { AccentColor = tag.AccentColor, IsSelected = true };
                 
