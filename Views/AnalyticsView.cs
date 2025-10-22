@@ -10,6 +10,7 @@ namespace SyncVerseStudio.Views
 
 
 //    Hello from shcool
+//KONGA
         private readonly AuthenticationService _authService;
         private ApplicationDbContext? _context;
         private Panel dashboardPanel;
