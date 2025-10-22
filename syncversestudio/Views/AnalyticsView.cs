@@ -80,7 +80,7 @@ namespace SyncVerseStudio.Views
 
             var titleLabel = new Label
             {
-                Text = "Reports & Analytics",
+                Text = "Reports  Analytics",
                 Font = new Font("Segoe UI", 24, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 41, 59),
                 Location = new Point(80, 20),
@@ -96,11 +96,11 @@ namespace SyncVerseStudio.Views
                 AutoSize = true
             };
 
-            // Date filters
+            // Date filters - Adjusted for 200px padding
             var filterPanel = new Panel
             {
-                Location = new Point(30, 85),
-                Size = new Size(1340, 35),
+                Location = new Point(230, 85),
+                Size = new Size(940, 35),
                 BackColor = Color.Transparent
             };
 
@@ -155,7 +155,7 @@ namespace SyncVerseStudio.Views
                 Text = " Refresh",
                 IconChar = IconChar.Sync,
                 IconColor = Color.White,
-                Location = new Point(1100, 0),
+                Location = new Point(700, 0),
                 Size = new Size(110, 35),
                 BackColor = Color.FromArgb(59, 130, 246),
                 ForeColor = Color.White,
@@ -170,7 +170,7 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = IconChar.FilePdf,
                 IconColor = Color.White,
-                Location = new Point(1220, 0),
+                Location = new Point(820, 0),
                 Size = new Size(35, 35),
                 BackColor = Color.FromArgb(220, 38, 38),
                 FlatStyle = FlatStyle.Flat,
@@ -183,7 +183,7 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = IconChar.FileExcel,
                 IconColor = Color.White,
-                Location = new Point(1265, 0),
+                Location = new Point(865, 0),
                 Size = new Size(35, 35),
                 BackColor = Color.FromArgb(34, 197, 94),
                 FlatStyle = FlatStyle.Flat,
@@ -196,7 +196,7 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = IconChar.FileCsv,
                 IconColor = Color.White,
-                Location = new Point(1310, 0),
+                Location = new Point(910, 0),
                 Size = new Size(35, 35),
                 BackColor = Color.FromArgb(168, 85, 247),
                 FlatStyle = FlatStyle.Flat,
@@ -212,31 +212,31 @@ namespace SyncVerseStudio.Views
 
             headerPanel.Controls.AddRange(new Control[] { titleIcon, titleLabel, subtitleLabel, filterPanel });
 
-            // Metrics Panel (KPI Cards)
+            // Metrics Panel (KPI Cards) - Added 200px padding
             metricsPanel = new Panel
             {
-                Location = new Point(30, 140),
-                Size = new Size(1340, 150),
+                Location = new Point(230, 140),
+                Size = new Size(940, 150),
                 BackColor = Color.Transparent
             };
 
             CreateMetricCards();
 
-            // Charts Panel
+            // Charts Panel - Added 200px padding
             chartsPanel = new Panel
             {
-                Location = new Point(30, 310),
-                Size = new Size(1340, 280),
+                Location = new Point(230, 310),
+                Size = new Size(940, 280),
                 BackColor = Color.Transparent
             };
 
             CreateChartsSection();
 
-            // Reports Panel
+            // Reports Panel - Added 200px padding
             reportsPanel = new Panel
             {
-                Location = new Point(30, 610),
-                Size = new Size(1340, 250),
+                Location = new Point(230, 610),
+                Size = new Size(940, 250),
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
@@ -251,9 +251,9 @@ namespace SyncVerseStudio.Views
 
         private void CreateMetricCards()
         {
-            int cardWidth = 210;
+            int cardWidth = 145;
             int cardHeight = 140;
-            int spacing = 15;
+            int spacing = 10;
 
             // Total Sales Card
             var salesCard = CreateMetricCard("Total Sales", "$0.00", IconChar.DollarSign, 
@@ -289,53 +289,55 @@ namespace SyncVerseStudio.Views
             var card = new Panel
             {
                 Location = new Point(xPos, 0),
-                Size = new Size(210, 140),
+                Size = new Size(145, 140),
                 BackColor = Color.White,
-                Padding = new Padding(15)
+                Padding = new Padding(10)
             };
 
             var iconBox = new IconPictureBox
             {
                 IconChar = icon,
                 IconColor = color,
-                IconSize = 32,
-                Location = new Point(15, 15),
-                Size = new Size(32, 32)
+                IconSize = 28,
+                Location = new Point(10, 10),
+                Size = new Size(28, 28)
             };
 
             var titleLbl = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI", 9),
+                Font = new Font("Segoe UI", 8),
                 ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(15, 55),
-                AutoSize = true
+                Location = new Point(10, 45),
+                Size = new Size(125, 30),
+                AutoEllipsis = true
             };
 
             valueLabel = new Label
             {
                 Text = value,
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(15, 75),
-                AutoSize = true
+                Location = new Point(10, 70),
+                Size = new Size(125, 25),
+                AutoEllipsis = true
             };
 
             var trendIcon = new IconPictureBox
             {
                 IconChar = IconChar.ArrowUp,
                 IconColor = Color.FromArgb(34, 197, 94),
-                IconSize = 16,
-                Location = new Point(15, 115),
-                Size = new Size(16, 16)
+                IconSize = 12,
+                Location = new Point(10, 105),
+                Size = new Size(12, 12)
             };
 
             var trendLabel = new Label
             {
                 Text = "+12.5%",
-                Font = new Font("Segoe UI", 8),
+                Font = new Font("Segoe UI", 7),
                 ForeColor = Color.FromArgb(34, 197, 94),
-                Location = new Point(35, 113),
+                Location = new Point(25, 103),
                 AutoSize = true
             };
 
@@ -360,7 +362,7 @@ namespace SyncVerseStudio.Views
             var salesChartPanel = new Panel
             {
                 Location = new Point(0, 0),
-                Size = new Size(660, 280),
+                Size = new Size(460, 280),
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
@@ -379,17 +381,17 @@ namespace SyncVerseStudio.Views
                 IconChar = IconChar.ChartArea,
                 IconColor = Color.FromArgb(59, 130, 246),
                 IconSize = 20,
-                Location = new Point(620, 15),
+                Location = new Point(420, 15),
                 Size = new Size(20, 20)
             };
 
             var salesChartPlaceholder = new Label
             {
-                Text = "📊 Sales trend chart will be displayed here\n\nShowing daily, weekly, and monthly sales patterns",
-                Font = new Font("Segoe UI", 10),
+                Text = "📊 Sales trend chart\n\nDaily, weekly, monthly patterns",
+                Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(148, 163, 184),
                 Location = new Point(20, 80),
-                Size = new Size(620, 180),
+                Size = new Size(420, 180),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -398,8 +400,8 @@ namespace SyncVerseStudio.Views
             // Top Products Chart
             var productsChartPanel = new Panel
             {
-                Location = new Point(680, 0),
-                Size = new Size(660, 280),
+                Location = new Point(480, 0),
+                Size = new Size(460, 280),
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
@@ -418,17 +420,17 @@ namespace SyncVerseStudio.Views
                 IconChar = IconChar.ChartPie,
                 IconColor = Color.FromArgb(168, 85, 247),
                 IconSize = 20,
-                Location = new Point(620, 15),
+                Location = new Point(420, 15),
                 Size = new Size(20, 20)
             };
 
             var productsChartPlaceholder = new Label
             {
-                Text = "📈 Top selling products chart\n\nBest performing categories and items",
-                Font = new Font("Segoe UI", 10),
+                Text = "📈 Top products chart\n\nBest categories and items",
+                Font = new Font("Segoe UI", 9),
                 ForeColor = Color.FromArgb(148, 163, 184),
                 Location = new Point(20, 80),
-                Size = new Size(620, 180),
+                Size = new Size(420, 180),
                 TextAlign = ContentAlignment.MiddleCenter
             };
 
@@ -451,7 +453,7 @@ namespace SyncVerseStudio.Views
             var reportsGrid = new FlowLayoutPanel
             {
                 Location = new Point(0, 40),
-                Size = new Size(1300, 190),
+                Size = new Size(900, 190),
                 AutoScroll = true,
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = true
@@ -571,4 +573,258 @@ namespace SyncVerseStudio.Views
                 string topProductName = "N/A";
                 if (topProduct != null)
                 {
-              
+                    var product = _context.Products.Find(topProduct.ProductId);
+                    topProductName = product?.Name ?? "N/A";
+                }
+
+                // Update UI
+                totalSalesLabel.Text = $"${totalSales:N2}";
+                totalRevenueLabel.Text = $"${totalSales:N2}";
+                totalProfitLabel.Text = $"${totalProfit:N2}";
+                totalTransactionsLabel.Text = totalTransactions.ToString();
+                avgTransactionLabel.Text = $"${avgTransaction:N2}";
+                topProductLabel.Text = topProductName.Length > 15 ? topProductName.Substring(0, 15) + "..." : topProductName;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading analytics: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void DateFilter_Changed(object? sender, EventArgs e)
+        {
+            periodFilter.SelectedIndex = 4; // Set to Custom
+            LoadAnalytics();
+        }
+
+        private void PeriodFilter_Changed(object? sender, EventArgs e)
+        {
+            switch (periodFilter.SelectedIndex)
+            {
+                case 0: // Today
+                    fromDatePicker.Value = DateTime.Today;
+                    toDatePicker.Value = DateTime.Today;
+                    break;
+                case 1: // This Week
+                    fromDatePicker.Value = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
+                    toDatePicker.Value = DateTime.Today;
+                    break;
+                case 2: // This Month
+                    fromDatePicker.Value = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
+                    toDatePicker.Value = DateTime.Today;
+                    break;
+                case 3: // This Year
+                    fromDatePicker.Value = new DateTime(DateTime.Today.Year, 1, 1);
+                    toDatePicker.Value = DateTime.Today;
+                    break;
+                case 4: // Custom
+                    return;
+            }
+            LoadAnalytics();
+        }
+
+        private void RefreshButton_Click(object? sender, EventArgs e)
+        {
+            LoadAnalytics();
+        }
+
+        private void ExportPdf_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "PDF Files (*.pdf)|*.pdf",
+                    FileName = $"Analytics_Report_{DateTime.Now:yyyyMMdd_HHmmss}.pdf",
+                    Title = "Export Analytics Report to PDF"
+                };
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ExportToPdf(saveDialog.FileName);
+                    MessageBox.Show($"Report exported successfully to:\n{saveDialog.FileName}", "Export Successful", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to PDF: {ex.Message}", "Export Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ExportExcel_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "Excel Files (*.xlsx)|*.xlsx",
+                    FileName = $"Analytics_Report_{DateTime.Now:yyyyMMdd_HHmmss}.xlsx",
+                    Title = "Export Analytics Report to Excel"
+                };
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ExportToExcel(saveDialog.FileName);
+                    MessageBox.Show($"Report exported successfully to:\n{saveDialog.FileName}", "Export Successful", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to Excel: {ex.Message}", "Export Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ExportCsv_Click(object? sender, EventArgs e)
+        {
+            try
+            {
+                var saveDialog = new SaveFileDialog
+                {
+                    Filter = "CSV Files (*.csv)|*.csv",
+                    FileName = $"Analytics_Report_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+                    Title = "Export Analytics Report to CSV"
+                };
+
+                if (saveDialog.ShowDialog() == DialogResult.OK)
+                {
+                    ExportToCsv(saveDialog.FileName);
+                    MessageBox.Show($"Report exported successfully to:\n{saveDialog.FileName}", "Export Successful", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error exporting to CSV: {ex.Message}", "Export Error", 
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void ExportToPdf(string filePath)
+        {
+            using (var writer = new System.IO.StreamWriter(filePath))
+            {
+                writer.WriteLine("SYNCVERSE STUDIO - ANALYTICS REPORT");
+                writer.WriteLine("=" + new string('=', 60));
+                writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine($"Period: {fromDatePicker.Value:yyyy-MM-dd} to {toDatePicker.Value:yyyy-MM-dd}");
+                writer.WriteLine();
+                writer.WriteLine("KEY PERFORMANCE INDICATORS");
+                writer.WriteLine("-" + new string('-', 60));
+                writer.WriteLine($"Total Sales:        {totalSalesLabel.Text}");
+                writer.WriteLine($"Revenue:            {totalRevenueLabel.Text}");
+                writer.WriteLine($"Profit:             {totalProfitLabel.Text}");
+                writer.WriteLine($"Transactions:       {totalTransactionsLabel.Text}");
+                writer.WriteLine($"Avg Transaction:    {avgTransactionLabel.Text}");
+                writer.WriteLine($"Top Product:        {topProductLabel.Text}");
+                writer.WriteLine();
+                
+                // Get detailed sales data
+                var fromDate = fromDatePicker.Value.Date;
+                var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+                var sales = _context.Sales
+                    .Include(s => s.SaleItems)
+                    .ThenInclude(si => si.Product)
+                    .Include(s => s.Customer)
+                    .Include(s => s.Cashier)
+                    .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                    .OrderByDescending(s => s.SaleDate)
+                    .ToList();
+
+                writer.WriteLine("DETAILED TRANSACTIONS");
+                writer.WriteLine("-" + new string('-', 60));
+                foreach (var sale in sales)
+                {
+                    writer.WriteLine($"Invoice: {sale.InvoiceNumber} | Date: {sale.SaleDate:yyyy-MM-dd HH:mm}");
+                    writer.WriteLine($"Cashier: {sale.Cashier.FullName} | Customer: {sale.Customer?.FullName ?? "Walk-in"}");
+                    writer.WriteLine($"Amount: ${sale.TotalAmount:N2} | Payment: {sale.PaymentMethod}");
+                    writer.WriteLine();
+                }
+            }
+        }
+
+        private void ExportToExcel(string filePath)
+        {
+            var fromDate = fromDatePicker.Value.Date;
+            var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+            var sales = _context.Sales
+                .Include(s => s.SaleItems)
+                .ThenInclude(si => si.Product)
+                .Include(s => s.Customer)
+                .Include(s => s.Cashier)
+                .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                .OrderByDescending(s => s.SaleDate)
+                .ToList();
+
+            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+            {
+                // Write header
+                writer.WriteLine("SYNCVERSE STUDIO - ANALYTICS REPORT");
+                writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+                writer.WriteLine($"Period: {fromDatePicker.Value:yyyy-MM-dd} to {toDatePicker.Value:yyyy-MM-dd}");
+                writer.WriteLine();
+                
+                // KPIs
+                writer.WriteLine("KEY METRICS");
+                writer.WriteLine($"Total Sales\t{totalSalesLabel.Text}");
+                writer.WriteLine($"Revenue\t{totalRevenueLabel.Text}");
+                writer.WriteLine($"Profit\t{totalProfitLabel.Text}");
+                writer.WriteLine($"Transactions\t{totalTransactionsLabel.Text}");
+                writer.WriteLine($"Avg Transaction\t{avgTransactionLabel.Text}");
+                writer.WriteLine($"Top Product\t{topProductLabel.Text}");
+                writer.WriteLine();
+                
+                // Detailed data
+                writer.WriteLine("TRANSACTION DETAILS");
+                writer.WriteLine("Invoice Number\tDate\tCashier\tCustomer\tTotal Amount\tPayment Method\tStatus");
+                foreach (var sale in sales)
+                {
+                    writer.WriteLine($"{sale.InvoiceNumber}\t{sale.SaleDate:yyyy-MM-dd HH:mm}\t{sale.Cashier.FullName}\t" +
+                        $"{sale.Customer?.FullName ?? "Walk-in"}\t${sale.TotalAmount:N2}\t{sale.PaymentMethod}\t{sale.Status}");
+                }
+            }
+        }
+
+        private void ExportToCsv(string filePath)
+        {
+            var fromDate = fromDatePicker.Value.Date;
+            var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+            var sales = _context.Sales
+                .Include(s => s.SaleItems)
+                .ThenInclude(si => si.Product)
+                .Include(s => s.Customer)
+                .Include(s => s.Cashier)
+                .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                .OrderByDescending(s => s.SaleDate)
+                .ToList();
+
+            using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+            {
+                // Write CSV header
+                writer.WriteLine("Invoice Number,Date,Time,Cashier,Customer,Subtotal,Tax,Discount,Total Amount,Payment Method,Status");
+                
+                // Write data rows
+                foreach (var sale in sales)
+                {
+                    var subtotal = sale.TotalAmount - sale.TaxAmount + sale.DiscountAmount;
+                    writer.WriteLine($"\"{sale.InvoiceNumber}\",\"{sale.SaleDate:yyyy-MM-dd}\",\"{sale.SaleDate:HH:mm:ss}\"," +
+                        $"\"{sale.Cashier.FullName}\",\"{sale.Customer?.FullName ?? "Walk-in"}\"," +
+                        $"{subtotal:F2},{sale.TaxAmount:F2},{sale.DiscountAmount:F2},{sale.TotalAmount:F2}," +
+                        $"\"{sale.PaymentMethod}\",\"{sale.Status}\"");
+                }
+            }
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _context?.Dispose();
+            }
+            base.Dispose(disposing);
+        }
+    }
+}

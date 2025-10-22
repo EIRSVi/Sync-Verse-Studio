@@ -290,13 +290,13 @@ sidebarPanel.Controls.Add(navHeader);
  yPos +=55;
  CreateModernMenuItem("Suppliers", IconChar.Truck, Color.FromArgb(168,85,247), yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
  yPos +=55;
- CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245,158,11), yPos, () => SafeLoadChildForm(() => new ReportsView(_authService)));
+ CreateModernMenuItem("Analytics", IconChar.ChartPie, Color.FromArgb(245,158,11), yPos, () => SafeLoadChildForm(() => new AnalyticsView(_authService)));
  yPos +=55;
  CreateModernMenuItem("Audit Logs", IconChar.FileText, Color.FromArgb(245,158,11), yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
  break;
 
  case UserRole.Cashier:
- CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+ CreateModernMenuItem("Dashboard", IconChar.Home, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new CashierDashboardView(_authService)));
  yPos += 55;
  CreateModernMenuItem("Point of Sale", IconChar.CashRegister, Color.FromArgb(34,197,94), yPos, () => SafeLoadChildForm(() => new PointOfSaleView(_authService)));
      yPos += 55;
@@ -504,7 +504,15 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
                 firstButton.Tag = "selected";
     }
             
-            SafeLoadChildForm(() => new DashboardView(_authService));
+            // Load appropriate dashboard based on role
+            if (_authService.CurrentUser.Role == UserRole.Cashier)
+            {
+                SafeLoadChildForm(() => new CashierDashboardView(_authService));
+            }
+            else
+            {
+                SafeLoadChildForm(() => new DashboardView(_authService));
+            }
  }
 
         private void SafeLoadChildForm(Func<Form> formFactory)
