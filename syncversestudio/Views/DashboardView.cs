@@ -34,7 +34,7 @@ namespace SyncVerseStudio.Views
 
             _refreshTimer = new System.Windows.Forms.Timer
             {
-                Interval = 15000
+                Interval = 1000 // Update every 1 second for real-time feel
             };
             _refreshTimer.Tick += async (s, e) => await RefreshLiveDataAsync();
         }
@@ -123,77 +123,6 @@ namespace SyncVerseStudio.Views
                 BackColor = Color.Transparent
             };
             headerPanel.Controls.Add(subtitleLabel);
-
-            // Live status indicator (top right) - clean minimal design
-            var statusPanel = new Panel
-            {
-                Size = new Size(450, 40),
-                Location = new Point(headerPanel.Width - 470, 15),
-                Anchor = AnchorStyles.Top | AnchorStyles.Right,
-                BackColor = Color.White
-            };
-
-            statusPanel.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-                var rect = statusPanel.ClientRectangle;
-                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), 8))
-                using (var brush = new SolidBrush(Color.White))
-                using (var pen = new Pen(Color.FromArgb(230, 230, 230), 1))
-                {
-                    e.Graphics.FillPath(brush, path);
-                    e.Graphics.DrawPath(pen, path);
-                }
-            };
-
-            // Static live indicator - no animation
-            var pulseIcon = new IconPictureBox
-            {
-                IconChar = IconChar.Circle,
-                IconColor = BrandTheme.LimeGreen,
-                IconSize = 10,
-                Location = new Point(15, 15),
-                Size = new Size(10, 10),
-                BackColor = Color.Transparent,
-                Name = "PulseIcon"
-            };
-            statusPanel.Controls.Add(pulseIcon);
-
-            var liveLabel = new Label
-            {
-                Text = "LIVE",
-                Font = GetKhmerFont(9F, FontStyle.Bold),
-                ForeColor = BrandTheme.DarkGray,
-                Location = new Point(30, 12),
-                Size = new Size(40, 16),
-                BackColor = Color.Transparent
-            };
-            statusPanel.Controls.Add(liveLabel);
-
-            var statusIcon = new IconPictureBox
-            {
-                IconChar = IconChar.Clock,
-                IconColor = BrandTheme.MediumBlue,
-                IconSize = 20,
-                Location = new Point(75, 17),
-                Size = new Size(20, 20),
-                BackColor = Color.Transparent
-            };
-            statusPanel.Controls.Add(statusIcon);
-
-            var statusLabel = new Label
-            {
-                Text = GetEnglishDateTime(),
-                Font = GetKhmerFont(10F, FontStyle.Bold),
-                ForeColor = BrandTheme.DarkGray,
-                Location = new Point(100, 11),
-                Size = new Size(340, 22),
-                TextAlign = ContentAlignment.MiddleLeft,
-                Name = "LiveStatusLabel",
-                BackColor = Color.Transparent
-            };
-            statusPanel.Controls.Add(statusLabel);
-            headerPanel.Controls.Add(statusPanel);
 
             container.Controls.Add(headerPanel);
         }
@@ -572,20 +501,30 @@ namespace SyncVerseStudio.Views
         {
             if (_cardValueLabels.TryGetValue(title, out var label))
             {
-                label.Text = value;
+                if (label.Text != value)
+                {
+                    // Animate value change with color flash
+                    var originalColor = label.ForeColor;
+                    label.ForeColor = Color.FromArgb(255, 255, 100); // Flash yellow
+                    label.Text = value;
+                    
+                    // Reset color after brief delay
+                    var flashTimer = new System.Windows.Forms.Timer { Interval = 300 };
+                    flashTimer.Tick += (s, e) =>
+                    {
+                        if (!label.IsDisposed)
+                            label.ForeColor = originalColor;
+                        flashTimer.Stop();
+                        flashTimer.Dispose();
+                    };
+                    flashTimer.Start();
+                }
             }
         }
 
         private void UpdateLiveStatus()
         {
-            this.Invoke(new Action(() =>
-            {
-                var statusLabel = this.Controls.Find("LiveStatusLabel", true).FirstOrDefault() as Label;
-                if (statusLabel != null)
-                {
-                    statusLabel.Text = GetEnglishDateTime();
-                }
-            }));
+            // Time section removed - no longer needed
         }
 
         private async Task LoadPieChartData()

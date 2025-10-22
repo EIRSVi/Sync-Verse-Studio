@@ -30,23 +30,24 @@ namespace SyncVerseStudio.Views
         {
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(250, 250, 250);
-            this.ClientSize = new Size(1000, 700);
+            this.BackColor = Color.FromArgb(250, 250, 250);
+            this.ClientSize = new Size(1200, 800);
             this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "ProductManagementView";
             this.Text = "Product Management";
+            this.Padding = new Padding(0);
 
             CreateTopPanel();
             CreateProductsGrid();
         }
-        //Padding = new Padding(10, 200, 10, 10)
+
         private void CreateTopPanel()
         {
             topPanel = new Panel
             {
-                BackColor = System.Drawing.Color.White,
+                BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 80,
+                Height = 90,
                 Padding = new Padding(20, 10, 20, 10)
             };
 
@@ -58,44 +59,46 @@ namespace SyncVerseStudio.Views
                 Location = new Point(20, 18),
                 Size = new Size(400, 35)
             };
+            topPanel.Controls.Add(titleLabel);
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search products...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 45),
-                Size = new Size(200, 25)
+                Location = new Point(20, 55),
+                Size = new Size(220, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
+            topPanel.Controls.Add(searchBox);
 
             categoryFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(240, 45),
-                Size = new Size(150, 25),
+                Location = new Point(255, 55),
+                Size = new Size(160, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             categoryFilter.SelectedIndexChanged += CategoryFilter_SelectedIndexChanged;
+            topPanel.Controls.Add(categoryFilter);
 
             // Buttons
-            int buttonX = 600;
-            addButton = CreateButton("ADD PRODUCT", Color.FromArgb(48, 148, 255), buttonX, 45, 130);
+            int buttonX = 440;
+            addButton = CreateButton("ADD PRODUCT", Color.FromArgb(48, 148, 255), buttonX, 55, 140);
             addButton.Click += AddButton_Click;
-            buttonX += 140;
+            buttonX += 150;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 45, 80);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
             editButton.Click += EditButton_Click;
-            buttonX += 90;
-
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 45, 90);
-            deleteButton.Click += DeleteButton_Click;
             buttonX += 100;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 45, 100);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 100);
+            deleteButton.Click += DeleteButton_Click;
+            buttonX += 110;
+
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 110);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
-                titleLabel, searchBox, categoryFilter, 
                 addButton, editButton, deleteButton, refreshButton
             });
 
