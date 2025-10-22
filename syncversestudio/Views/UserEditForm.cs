@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;

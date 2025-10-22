@@ -21,7 +21,7 @@ namespace SyncVerseStudio.Views
         private IconButton logoutButton;
         private Form? _currentChildForm;
         private PictureBox logoPictureBox;
-        private List<Button> menuButtons = new List<Button>();
+        private List<Panel> menuButtons = new List<Panel>();
 
         public MainDashboard(AuthenticationService authService)
         {
@@ -60,14 +60,11 @@ namespace SyncVerseStudio.Views
             this.WindowState = FormWindowState.Maximized;
             this.Icon = SystemIcons.Application;
 
-            // Sidebar with Brand Theme
-            this.sidebarPanel.BackColor = BrandTheme.SidebarBackground;
+            // Sidebar with light blue background
+            this.sidebarPanel.BackColor = Color.FromArgb(215, 232, 250); // #D7E8FA
             this.sidebarPanel.Dock = DockStyle.Left;
             this.sidebarPanel.Width = 280;
             this.sidebarPanel.Padding = new Padding(0);
-            
-            // Custom paint for sidebar
-            this.sidebarPanel.Paint += SidebarPanel_Paint;
 
             // No top panel for cleaner design
             this.topPanel.Visible = false;
@@ -83,25 +80,7 @@ namespace SyncVerseStudio.Views
             this.ResumeLayout(false);
         }
 
-        private void SidebarPanel_Paint(object sender, PaintEventArgs e)
-        {
-            var rect = sidebarPanel.ClientRectangle;
-            
-            // Brand gradient
-            using (var brush = new LinearGradientBrush(rect, 
-                BrandTheme.Charcoal,
-                Color.FromArgb(100, 70, 35),
-                LinearGradientMode.Vertical))
-            {
-                e.Graphics.FillRectangle(brush, rect);
-            }
 
-            // Right border with brand accent
-            using (var pen = new Pen(BrandTheme.LimeGreen, 2))
-            {
-                e.Graphics.DrawLine(pen, rect.Width - 2, 0, rect.Width - 2, rect.Height);
-            }
-}
 
         private void LoadUserInterface()
         {
@@ -131,110 +110,84 @@ namespace SyncVerseStudio.Views
 
         private void CreateBrandHeader(ref int yPos)
         {
-            // Brand header with brand colors
-            var brandPanel = new Panel
+            // Add centered logo above navigation - centered in 280px sidebar
+            logoPictureBox = new PictureBox
             {
-                BackColor = Color.FromArgb(100, 70, 35),
-                Location = new Point(0, yPos),
-   Size = new Size(280, 100),
-                Padding = new Padding(20, 20, 20, 20)
+                Location = new Point(90, yPos + 20),
+                Size = new Size(100, 50),
+                BackColor = Color.Transparent,
+                SizeMode = PictureBoxSizeMode.Zoom,
+                Anchor = AnchorStyles.Top
             };
 
-            // Create the logo PictureBox
-            logoPictureBox = new PictureBox
-  {
-        Location = new Point(20, 20),
-        Size = new Size(60, 60),
-      BackColor = Color.Transparent,
-        SizeMode = PictureBoxSizeMode.Zoom
-};
-
-    // Load brand logo
-  Task.Run(async () =>
-    {
-        try
-{
-            var logoPath = Path.Combine(Application.StartupPath, "..", "..", "..", BrandTheme.LogoPath);
-            if (File.Exists(logoPath))
+            // Load brand logo from URL
+            Task.Run(async () =>
             {
-                var image = Image.FromFile(logoPath);
-                var bitmap = new Bitmap(image);
-        
-                // Update UI on main thread
-                this.Invoke(new Action(() =>
+                try
                 {
-                    if (logoPictureBox != null && !logoPictureBox.IsDisposed)
+                    using (var client = new HttpClient())
                     {
-                        logoPictureBox.Image?.Dispose();
-                        logoPictureBox.Image = bitmap;
+                        // Load color logo without background
+                        try
+                        {
+                            var pngUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/logo.png";
+                            var imageBytes = await client.GetByteArrayAsync(pngUrl);
+                            using (var ms = new MemoryStream(imageBytes))
+                            {
+                                var image = Image.FromStream(ms);
+                                this.Invoke(new Action(() =>
+                                {
+                                    if (logoPictureBox != null && !logoPictureBox.IsDisposed)
+                                    {
+                                        logoPictureBox.Image?.Dispose();
+                                        logoPictureBox.Image = image;
+                                    }
+                                }));
+                            }
+                        }
+                        catch
+                        {
+                            // Fallback to local file
+                            var logoPath = Path.Combine(Application.StartupPath, "..", "..", "..", BrandTheme.LogoPath);
+                            if (File.Exists(logoPath))
+                            {
+                                this.Invoke(new Action(() =>
+                                {
+                                    if (logoPictureBox != null && !logoPictureBox.IsDisposed)
+                                    {
+                                        logoPictureBox.Image = Image.FromFile(logoPath);
+                                    }
+                                }));
+                            }
+                        }
                     }
-                }));
-            }
-        }
-   catch (Exception ex)
-        {
-            // On error, set a fallback icon on main thread
- this.Invoke(new Action(() =>
-            {
-   if (logoPictureBox != null && !logoPictureBox.IsDisposed)
-      {
-                    brandPanel.Controls.Remove(logoPictureBox);
-     var fallbackIcon = new IconPictureBox
-         {
-            IconChar = IconChar.Store,
-   IconColor = BrandTheme.LimeGreen,
-         IconSize = 50,
-      Location = new Point(20, 20),
-     Size = new Size(60, 60),
-         BackColor = Color.Transparent
-      };
-            brandPanel.Controls.Add(fallbackIcon);
-          }
- }));
+                }
+                catch (Exception ex)
+                {
+                    // On error, set a fallback icon
+                    this.Invoke(new Action(() =>
+                    {
+                        if (logoPictureBox != null && !logoPictureBox.IsDisposed)
+                        {
+                            var fallbackIcon = new IconPictureBox
+                            {
+                                IconChar = IconChar.Store,
+                                IconColor = BrandTheme.LimeGreen,
+                                IconSize = 50,
+                                Location = new Point(25, 25),
+                                Size = new Size(60, 40),
+                                BackColor = Color.Transparent
+                            };
+                            sidebarPanel.Controls.Add(fallbackIcon);
+                        }
+                    }));
        
-  Console.WriteLine($"Error loading logo: {ex.Message}");
-        }
-    });
+                    Console.WriteLine($"Error loading logo: {ex.Message}");
+                }
+            });
 
-    brandPanel.Controls.Add(logoPictureBox);
-
-    // Brand name
-    var brandLabel = new Label
-    {
-        Text = BrandTheme.BrandName,
-        Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-     ForeColor = BrandTheme.CoolWhite,
-        Location = new Point(90, 25),
-        Size = new Size(180, 30),
- TextAlign = ContentAlignment.MiddleLeft
-    };
-  brandPanel.Controls.Add(brandLabel);
-
-    // Tagline
-    var taglineLabel = new Label
-    {
-  Text = BrandTheme.BrandTagline,
-        Font = new Font("Segoe UI", 9F, FontStyle.Regular),
-        ForeColor = BrandTheme.LimeGreen,
-        Location = new Point(90, 55),
-        Size = new Size(180, 20),
-        TextAlign = ContentAlignment.MiddleLeft
-    };
-    brandPanel.Controls.Add(taglineLabel);
-
-    sidebarPanel.Controls.Add(brandPanel);
-    yPos += 100;
-
-    // Brand separator
-    var separator = new Panel
-    {
-        BackColor = BrandTheme.LimeGreen,
-  Location = new Point(20, yPos),
-    Size = new Size(240, 2)
-    };
-    
-    sidebarPanel.Controls.Add(separator);
-    yPos += 30;
+            sidebarPanel.Controls.Add(logoPictureBox);
+            yPos += 80;
 }
 
         private void CreateNavigationMenu(UserRole role, ref int yPos)
@@ -244,7 +197,7 @@ namespace SyncVerseStudio.Views
        {
  Text = "NAVIGATION",
        Font = new Font("Segoe UI", 9F, FontStyle.Bold),
-    ForeColor = BrandTheme.LimeGreen,
+    ForeColor = Color.FromArgb(100, 100, 100), // Dark gray for light background
    Location = new Point(25, yPos),
         Size = new Size(230, 25)
    };
@@ -255,17 +208,17 @@ sidebarPanel.Controls.Add(navHeader);
  switch (role)
  {
  case UserRole.Administrator:
- CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+ CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
  yPos +=50;
- CreateModernMenuItem("Users", IconChar.Users, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
+ CreateModernMenuItem("Accounts", IconChar.Users, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new UserManagementView(_authService)));
  yPos +=50;
  CreateModernMenuItem("Products", IconChar.Box, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
  yPos +=50;
  CreateModernMenuItem("Customers", IconChar.UserFriends, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
  yPos +=50;
- CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+ CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
  yPos +=50;
- CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+ CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
  yPos +=50;
  CreateModernMenuItem("Analytics", IconChar.ChartPie, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AnalyticsView(_authService)));
  yPos +=50;
@@ -283,58 +236,92 @@ sidebarPanel.Controls.Add(navHeader);
       break;
 
         case UserRole.InventoryClerk:
-        CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+        CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
       yPos += 50;
-    CreateModernMenuItem("Products", IconChar.Box, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+    CreateModernMenuItem("Products", IconChar.Box, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
     yPos += 50;
-                CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+                CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
          yPos += 50;
-          CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+          CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
   yPos += 50;
- CreateModernMenuItem("Stock Reports", IconChar.FileAlt, BrandTheme.OceanBlue, yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+ CreateModernMenuItem("Stock Reports", IconChar.FileAlt, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
     break;
 }
         }
 
    private void CreateModernMenuItem(string text, IconChar icon, Color accentColor, int yPos, Action clickAction)
         {
-       var menuItem = new Button
+       var menuItem = new Panel
             {
- Text = text,
-              Font = new Font("Segoe UI", 12F, FontStyle.Bold),
-          ForeColor = Color.White,
-    BackColor = Color.Transparent,
-          FlatStyle = FlatStyle.Flat,
-                TextAlign = ContentAlignment.MiddleCenter,
-  Location = new Point(20, yPos),
-     Size = new Size(240, 45),
+  Location = new Point(0, yPos),
+     Size = new Size(280, 45),
    Cursor = Cursors.Hand,
-                Padding = new Padding(0),
+        BackColor = Color.Transparent,
         Tag = new { AccentColor = accentColor, IsSelected = false }
             };
 
-       menuItem.FlatAppearance.BorderSize = 0;
+       // Active border indicator (left side)
+       var borderIndicator = new Panel
+       {
+           BackColor = Color.Transparent,
+           Location = new Point(0, 0),
+           Size = new Size(4, 45),
+           Name = "BorderIndicator"
+       };
+       menuItem.Controls.Add(borderIndicator);
+
+       // Icon
+       var iconPic = new IconPictureBox
+       {
+           IconChar = icon,
+           IconColor = Color.FromArgb(80, 80, 80), // Dark gray for light background
+           IconSize = 24,
+           Location = new Point(25, 10),
+           Size = new Size(24, 24),
+           BackColor = Color.Transparent,
+           Name = "MenuIcon"
+       };
+       menuItem.Controls.Add(iconPic);
+
+       // Text label with font support for both English and Khmer
+       var textLabel = new Label
+       {
+           Text = text,
+           Font = new Font("Segoe UI", 11F, FontStyle.Regular),
+           ForeColor = Color.FromArgb(60, 60, 60), // Dark text for light background
+           BackColor = Color.Transparent,
+           Location = new Point(60, 0),
+           Size = new Size(220, 45),
+           TextAlign = ContentAlignment.MiddleLeft,
+           Cursor = Cursors.Hand,
+           Name = "MenuText"
+       };
+       menuItem.Controls.Add(textLabel);
          
-      // Brand hover and click effects
+      // Hover effects - no background, only color change
             menuItem.MouseEnter += (s, e) =>
             {
-      var btn = (Button)s;
-      dynamic tag = btn.Tag;
+      var panel = (Panel)s;
+      dynamic tag = panel.Tag;
       if (!tag.IsSelected)
           {
-    btn.BackColor = BrandTheme.SidebarHover;
-             btn.ForeColor = Color.White;
+                var icon = panel.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
+                var label = panel.Controls.Find("MenuText", false).FirstOrDefault() as Label;
+                if (icon != null) icon.IconColor = Color.FromArgb(255, 0, 80); // #ff0050
+                if (label != null) label.ForeColor = Color.FromArgb(255, 0, 80);
      }
         };
 
             menuItem.MouseLeave += (s, e) =>
          {
-      var btn = (Button)s;
-      dynamic tag = btn.Tag;
+      var panel = (Panel)s;
+      dynamic tag = panel.Tag;
                 if (!tag.IsSelected)
    {
-           btn.BackColor = Color.Transparent;
-        btn.ForeColor = Color.White;
+                var icon = panel.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
+                var label = panel.Controls.Find("MenuText", false).FirstOrDefault() as Label;
+                if (icon != null) icon.IconColor = Color.FromArgb(80, 80, 80); // Back to dark gray
+                if (label != null) label.ForeColor = Color.FromArgb(60, 60, 60);
          }
 };
 
@@ -342,23 +329,37 @@ sidebarPanel.Controls.Add(navHeader);
             {
       try
         {
-   // Get reference to the clicked button
-        var clickedButton = (Button)s;
+   var clickedPanel = (Panel)s;
        
-     // Reset all buttons to default state
+     // Reset all menu items
                     foreach (var btn in menuButtons)
          {
         btn.BackColor = Color.Transparent;
-    btn.ForeColor = Color.White;
             dynamic btnTag = btn.Tag;
             btn.Tag = new { AccentColor = btnTag.AccentColor, IsSelected = false };
+            
+            var border = btn.Controls.Find("BorderIndicator", false).FirstOrDefault();
+            if (border != null) border.BackColor = Color.Transparent;
+            
+            var icon = btn.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
+            var label = btn.Controls.Find("MenuText", false).FirstOrDefault() as Label;
+            if (icon != null) icon.IconColor = Color.FromArgb(80, 80, 80); // Dark gray
+            if (label != null) label.ForeColor = Color.FromArgb(60, 60, 60);
       }
 
-              // Set active state for clicked button
-        clickedButton.BackColor = BrandTheme.OceanBlue;
-          clickedButton.ForeColor = Color.White;
-  dynamic tag = clickedButton.Tag;
-  clickedButton.Tag = new { AccentColor = tag.AccentColor, IsSelected = true };
+              // Set active state - no background, only color #ff0050
+        clickedPanel.BackColor = Color.Transparent;
+  dynamic tag = clickedPanel.Tag;
+  clickedPanel.Tag = new { AccentColor = tag.AccentColor, IsSelected = true };
+  
+  // Show active border and color
+  var activeBorder = clickedPanel.Controls.Find("BorderIndicator", false).FirstOrDefault();
+  if (activeBorder != null) activeBorder.BackColor = Color.FromArgb(255, 0, 80); // #ff0050
+  
+  var activeIcon = clickedPanel.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
+  var activeLabel = clickedPanel.Controls.Find("MenuText", false).FirstOrDefault() as Label;
+  if (activeIcon != null) activeIcon.IconColor = Color.FromArgb(255, 0, 80);
+  if (activeLabel != null) activeLabel.ForeColor = Color.FromArgb(255, 0, 80);
 
      clickAction();
         }
@@ -368,6 +369,10 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
          MessageBoxButtons.OK, MessageBoxIcon.Error);
          }
         };
+
+   // Make child controls clickable - store the action and call it directly
+   textLabel.Click += (s, e) => clickAction();
+   iconPic.Click += (s, e) => clickAction();
 
    menuButtons.Add(menuItem);
  sidebarPanel.Controls.Add(menuItem);
@@ -379,11 +384,11 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
         logoutButton = new IconButton
     {
          BackColor = Color.Transparent,
- ForeColor = BrandTheme.SidebarText,
+ ForeColor = Color.FromArgb(60, 60, 60), // Dark text for light background
         FlatStyle = FlatStyle.Flat,
        Font = new Font("Segoe UI", 10F, FontStyle.Regular),
       IconChar = IconChar.ArrowRightFromBracket,
-     IconColor = BrandTheme.CoolWhite,
+     IconColor = Color.FromArgb(80, 80, 80), // Dark icon for light background
       IconSize = 18,
        Text = "  Logout",
                 TextAlign = ContentAlignment.MiddleLeft,
@@ -397,10 +402,10 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
 
             logoutButton.FlatAppearance.BorderSize = 0;
             
-          // Brand hover effect
+          // Hover effect
     logoutButton.MouseEnter += (s, e) =>
  {
-          logoutButton.BackColor = BrandTheme.SidebarHover;
+          logoutButton.BackColor = Color.FromArgb(200, 220, 240); // Slightly darker blue on hover
      logoutButton.ForeColor = BrandTheme.Error;
                 logoutButton.IconColor = BrandTheme.Error;
  };
@@ -408,8 +413,8 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
          logoutButton.MouseLeave += (s, e) =>
             {
                 logoutButton.BackColor = Color.Transparent;
-      logoutButton.ForeColor = BrandTheme.SidebarText;
-    logoutButton.IconColor = BrandTheme.CoolWhite;
+      logoutButton.ForeColor = Color.FromArgb(60, 60, 60);
+    logoutButton.IconColor = Color.FromArgb(80, 80, 80);
             };
 
        logoutButton.Click += LogoutButton_Click;
@@ -428,7 +433,7 @@ MessageBox.Show($"Error: {ex.Message}", "Navigation Error",
         {
         Text = "v2.1.0",
          Font = new Font("Segoe UI", 8F, FontStyle.Regular),
-       ForeColor = Color.FromArgb(90, 70, 40),
+       ForeColor = Color.FromArgb(120, 120, 120), // Gray text for light background
           Location = new Point(10, this.ClientSize.Height - 25),
    Size = new Size(260, 15),
 Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
@@ -471,10 +476,18 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
             var firstButton = menuButtons.FirstOrDefault();
     if (firstButton != null)
             {
- firstButton.BackColor = BrandTheme.OceanBlue;
-    firstButton.ForeColor = Color.White;
+ firstButton.BackColor = Color.Transparent;
                 dynamic tag = firstButton.Tag;
                 firstButton.Tag = new { AccentColor = tag.AccentColor, IsSelected = true };
+                
+                // Set active color #ff0050
+                var border = firstButton.Controls.Find("BorderIndicator", false).FirstOrDefault();
+                if (border != null) border.BackColor = Color.FromArgb(255, 0, 80);
+                
+                var icon = firstButton.Controls.Find("MenuIcon", false).FirstOrDefault() as IconPictureBox;
+                var label = firstButton.Controls.Find("MenuText", false).FirstOrDefault() as Label;
+                if (icon != null) icon.IconColor = Color.FromArgb(255, 0, 80);
+                if (label != null) label.ForeColor = Color.FromArgb(255, 0, 80);
     }
             
             // Load appropriate dashboard based on role

@@ -104,7 +104,7 @@ namespace SyncVerseStudio.Views
             {
                 Text = "Products",
                 Font = BrandTheme.SubtitleFont,
-                ForeColor = BrandTheme.Charcoal,
+                ForeColor = BrandTheme.DarkGray,
                 Location = new Point(15, 20),
                 AutoSize = true
             };
@@ -172,7 +172,7 @@ namespace SyncVerseStudio.Views
             {
                 Location = new Point(0, 0),
                 Size = new Size(470, 60),
-                BackColor = BrandTheme.OceanBlue
+                BackColor = BrandTheme.MediumBlue
             };
 
             var titleLabel = new Label
@@ -376,7 +376,7 @@ namespace SyncVerseStudio.Views
                 Text = "COMPLETE SALE",
                 Location = new Point(10, 700),
                 Size = new Size(450, 55),
-                BackColor = BrandTheme.OceanBlue,
+                BackColor = BrandTheme.MediumBlue,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 16, FontStyle.Bold),
@@ -390,7 +390,7 @@ namespace SyncVerseStudio.Views
                 Text = "CLEAR CART",
                 Location = new Point(10, 765),
                 Size = new Size(220, 45),
-                BackColor = BrandTheme.Charcoal,
+                BackColor = BrandTheme.DarkGray,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
@@ -405,7 +405,7 @@ namespace SyncVerseStudio.Views
                 Location = new Point(240, 765),
                 Size = new Size(220, 45),
                 BackColor = BrandTheme.LimeGreen,
-                ForeColor = BrandTheme.Charcoal,
+                ForeColor = BrandTheme.DarkGray,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 Cursor = Cursors.Hand

@@ -1,4 +1,4 @@
-﻿using System.Drawing;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using FontAwesome.Sharp;
@@ -106,7 +106,7 @@ namespace SyncVerseStudio
                 {
                     using (var client = new System.Net.Http.HttpClient())
                     {
-                        var imageBytes = await client.GetByteArrayAsync("https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgBlack.png");
+                        var imageBytes = await client.GetByteArrayAsync(BrandTheme.LogoUrlPng);
                         using (var ms = new System.IO.MemoryStream(imageBytes))
                         {
                             var image = Image.FromStream(ms);
@@ -122,7 +122,6 @@ namespace SyncVerseStudio
                 }
                 catch
                 {
-                    // Fallback to local logo
                     this.Invoke(new Action(() =>
                     {
                         try
@@ -143,7 +142,7 @@ namespace SyncVerseStudio
             // 
             this.brandLabel.Text = BrandTheme.BrandName;
             this.brandLabel.Font = new Font("Segoe UI", 24F, FontStyle.Bold);
-            this.brandLabel.ForeColor = BrandTheme.Charcoal;
+            this.brandLabel.ForeColor = BrandTheme.DarkGray;
             this.brandLabel.Location = new Point(0, 200);
             this.brandLabel.Size = new Size(450, 40);
             this.brandLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -168,9 +167,9 @@ namespace SyncVerseStudio
             // 
             // welcomeLabel
             // 
-            this.welcomeLabel.Text = "Welcome Back";
+            this.welcomeLabel.Text = "Welcome";
             this.welcomeLabel.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
-            this.welcomeLabel.ForeColor = BrandTheme.Charcoal;
+            this.welcomeLabel.ForeColor = BrandTheme.DarkGray;
             this.welcomeLabel.Location = new Point(0, 290);
             this.welcomeLabel.Size = new Size(450, 30);
             this.welcomeLabel.TextAlign = ContentAlignment.MiddleCenter;
@@ -180,7 +179,7 @@ namespace SyncVerseStudio
             // userIcon
             // 
             this.userIcon.IconChar = IconChar.User;
-            this.userIcon.IconColor = BrandTheme.OceanBlue;
+            this.userIcon.IconColor = BrandTheme.MediumBlue;
             this.userIcon.IconSize = 24;
             this.userIcon.Size = new Size(24, 24);
             this.userIcon.BackColor = Color.Transparent;
@@ -225,7 +224,7 @@ namespace SyncVerseStudio
             };
             
             this.userIcon.Location = new Point(10, 13);
-            this.userIcon.IconColor = BrandTheme.OceanBlue;
+            this.userIcon.IconColor = BrandTheme.MediumBlue;
             usernamePanel.Controls.Add(this.userIcon);
             usernamePanel.Controls.Add(this.usernameTextBox);
 
@@ -233,7 +232,7 @@ namespace SyncVerseStudio
             // lockIcon
             // 
             this.lockIcon.IconChar = IconChar.Lock;
-            this.lockIcon.IconColor = BrandTheme.OceanBlue;
+            this.lockIcon.IconColor = BrandTheme.MediumBlue;
             this.lockIcon.IconSize = 24;
             this.lockIcon.Size = new Size(24, 24);
             this.lockIcon.BackColor = Color.Transparent;
@@ -279,7 +278,7 @@ namespace SyncVerseStudio
             };
             
             this.lockIcon.Location = new Point(10, 13);
-            this.lockIcon.IconColor = BrandTheme.OceanBlue;
+            this.lockIcon.IconColor = BrandTheme.MediumBlue;
             passwordPanel.Controls.Add(this.lockIcon);
             passwordPanel.Controls.Add(this.passwordTextBox);
 
@@ -288,7 +287,7 @@ namespace SyncVerseStudio
             // 
             this.loginButton.Text = "SIGN IN";
             this.loginButton.Font = new Font("Segoe UI", 13F, FontStyle.Bold);
-            this.loginButton.BackColor = BrandTheme.OceanBlue;
+            this.loginButton.BackColor = BrandTheme.MediumBlue;
             this.loginButton.ForeColor = Color.White;
             this.loginButton.FlatStyle = FlatStyle.Flat;
             this.loginButton.FlatAppearance.BorderSize = 0;

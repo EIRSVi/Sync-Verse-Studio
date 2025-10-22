@@ -9,21 +9,52 @@ namespace SyncVerseStudio.Helpers
     {
         // Brand Colors
         public static readonly Color CoolWhite = Color.FromArgb(215, 232, 250);      // #D7E8FA
-        public static readonly Color Charcoal = Color.FromArgb(118, 84, 44);         // #76542C
-        public static readonly Color LimeGreen = Color.FromArgb(93, 251, 194);       // #5DF9C0
-        public static readonly Color OceanBlue = Color.FromArgb(59, 30, 255);        // #3B1EFF
+        public static readonly Color DarkGray = Color.FromArgb(45, 45, 45);          // #2D2D2D - Dark color
+        public static readonly Color LimeGreen = Color.FromArgb(95, 237, 131);       // #5FED83 - Green 3
+        public static readonly Color LightGreen = Color.FromArgb(191, 255, 209);     // #BFFFD1 - Green 1
+        public static readonly Color LightBlue = Color.FromArgb(158, 236, 255);      // #9EECFF - Blue 1
+        public static readonly Color MediumBlue = Color.FromArgb(48, 148, 255);      // #3094FF - Blue 2
+        public static readonly Color HoverColor = Color.FromArgb(246, 248, 250);     // #f6f8fa
+        public static readonly Color PurpleHover = Color.FromArgb(80, 29, 175);      // #501DAF
 
-// https://raw.githubusercontent.com/EIRSVi/eirsvi/d8339235bb1765d461e284ab51bd1223d4345dce/assets/brand/mainlogo.svg 
-// https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgBlack.png
-// https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgColor.png
-// https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgWhite.png
-// https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/with_padding.png
+// Logo URLs
+// Main SVG Logo: https://raw.githubusercontent.com/EIRSVi/eirsvi/d8339235bb1765d461e284ab51bd1223d4345dce/assets/brand/mainlogo.svg
+// PNG Variants:
+// - Black: https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgBlack.png
+// - Color: https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgColor.png
+// - White: https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgWhite.png
+// - Padded: https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/with_padding.png
+// https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/logo.png
 
-// # Clean and rebuild
+// Build Commands:
 // dotnet clean
 // dotnet restore
 // dotnet build
 // dotnet run --project syncversestudio
+
+// Development Rules:
+// - Never use emoji in UI
+// - Never use gradient colors
+// - Write documentation/guides only when explicitly requested
+
+// Khmer translations for all menu items:
+// ផ្ទាំងគ្រប់គ្រង (Dashboard)
+// គណនី (Accounts)
+// ផលិតផល (Products)
+// អតិថិជន (Customers)
+// ប្រភេទទំនិញ (Categories)
+// អ្នកផ្គត់ផ្គង់ (Suppliers)
+// វិភាគ (Analytics)
+// កំណត់ហេតុសវនកម្ម (Audit Logs)
+// ចំណុចលក់ (Point of Sale)
+// ប្រវត្តិការលក់ (Sales History)
+// របាយការណ៍ស្តុក (Stock Reports)
+// ចាកចេញ (Logout)
+
+
+
+
+
 
 
 
@@ -31,34 +62,38 @@ namespace SyncVerseStudio.Helpers
 
         // UI Element Colors
         public static readonly Color Background = CoolWhite;
-        public static readonly Color PrimaryText = Charcoal;
-        public static readonly Color SecondaryText = Color.FromArgb(90, 70, 40);
-        public static readonly Color AccentPrimary = OceanBlue;
+        public static readonly Color PrimaryText = DarkGray;
+        public static readonly Color SecondaryText = Color.FromArgb(90, 90, 90);
+        public static readonly Color AccentPrimary = DarkGray;
         public static readonly Color AccentSecondary = LimeGreen;
         public static readonly Color CardBackground = Color.White;
         public static readonly Color BorderColor = Color.FromArgb(180, 200, 220);
 
         // Button Colors
-        public static readonly Color ButtonPrimary = OceanBlue;
-        public static readonly Color ButtonSecondary = LimeGreen;
+        public static readonly Color ButtonPrimary = LimeGreen;                      // #5FED83 - Green button
+        public static readonly Color ButtonSecondary = MediumBlue;                   // #3094FF - Blue button
         public static readonly Color ButtonDanger = Color.FromArgb(220, 60, 60);
         public static readonly Color ButtonWarning = Color.FromArgb(255, 165, 0);
         public static readonly Color ButtonText = Color.White;
 
         // Status Colors
-        public static readonly Color Success = LimeGreen;
+        public static readonly Color Success = LimeGreen;                            // #5FED83
         public static readonly Color Error = Color.FromArgb(220, 60, 60);
         public static readonly Color Warning = Color.FromArgb(255, 165, 0);
-        public static readonly Color Info = OceanBlue;
+        public static readonly Color Info = MediumBlue;                              // #3094FF
+        
+        // Icon Colors
+        public static readonly Color IconDark = DarkGray;                            // Dark icons
+        public static readonly Color IconBlue = LightBlue;                           // #9EECFF - Table data icons
 
         // Sidebar/Navigation
-        public static readonly Color SidebarBackground = Charcoal;
+        public static readonly Color SidebarBackground = DarkGray;
         public static readonly Color SidebarText = CoolWhite;
-        public static readonly Color SidebarHover = Color.FromArgb(140, 100, 60);
-        public static readonly Color SidebarActive = OceanBlue;
+        public static readonly Color SidebarHover = HoverColor;
+        public static readonly Color SidebarActive = PurpleHover;
 
         // Header
-        public static readonly Color HeaderBackground = OceanBlue;
+        public static readonly Color HeaderBackground = DarkGray;
         public static readonly Color HeaderText = Color.White;
 
         // Fonts
@@ -70,9 +105,11 @@ namespace SyncVerseStudio.Helpers
         public static readonly Font ButtonFont = new Font("Segoe UI", 12, FontStyle.Bold);
 
         // Brand Assets
-        public const string LogoPath = "assets/brand/noBgColor.png"; // Blue circular logo
-        public const string LogoPathWhite = "assets/brand/noBgWhite.png"; // White version
-        public const string LogoPathBlack = "assets/brand/noBgBlack.png"; // Black version
+        public const string LogoUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/d8339235bb1765d461e284ab51bd1223d4345dce/assets/brand/mainlogo.svg";
+        public const string LogoUrlPng = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/noBgColor.png";
+        public const string LogoPath = "assets/brand/noBgColor.png"; // Local fallback
+        public const string LogoPathWhite = "assets/brand/noBgWhite.png";
+        public const string LogoPathBlack = "assets/brand/noBgBlack.png";
         public const string BrandName = "SYNCVERSE STUDIO";
         public const string BrandTagline = "POS SYSTEM";
 
