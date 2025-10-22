@@ -139,7 +139,7 @@ namespace SyncVerseStudio.Views
             {
                 Dock = DockStyle.Fill,
                 BackColor = Color.White,
-                Padding = new Padding(10, 10, 10, 10)
+                Padding = new Padding(10, 200, 10, 10)
             };
 
             categoriesGrid = new DataGridView
