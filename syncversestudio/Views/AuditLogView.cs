@@ -673,7 +673,7 @@ namespace SyncVerseStudio.Views
                     .Select(a => new
                     {
                         Timestamp = a.Timestamp.ToString("MM/dd/yyyy HH:mm:ss"),
-                        User = a.User != null ? a.User.Username : "System",
+                        User = a.User != null ? (a.User.FirstName + " " + a.User.LastName + " (" + a.User.Username + ")") : "System",
                         Action = a.Action,
                         Table = a.TableName,
                         Details = (a.OldValues ?? "") + " → " + (a.NewValues ?? ""),
@@ -764,7 +764,7 @@ namespace SyncVerseStudio.Views
                     .Select(a => new
                     {
                         Timestamp = a.Timestamp.ToString("MM/dd/yyyy HH:mm:ss"),
-                        User = a.User != null ? a.User.Username : "System",
+                        User = a.User != null ? (a.User.FirstName + " " + a.User.LastName + " (" + a.User.Username + ")") : "System",
                         Action = a.Action,
                         Table = a.TableName,
                         Details = (a.OldValues ?? "") + " → " + (a.NewValues ?? ""),
@@ -802,12 +802,13 @@ namespace SyncVerseStudio.Views
                     using (var writer = new System.IO.StreamWriter(saveDialog.FileName))
                     {
                         // Write header with full user information
-                        writer.WriteLine("Timestamp,User,Role,Email,Action,Table,Details,IP Address,Old Values,New Values");
+                        writer.WriteLine("Timestamp,Full Name,Username,Role,Email,Action,Table,Details,IP Address,Old Values,New Values");
 
                         // Write data
                         foreach (var log in logs)
                         {
                             var timestamp = log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss");
+                            var fullName = log.User != null ? EscapeCsv($"{log.User.FirstName} {log.User.LastName}") : "System";
                             var username = log.User?.Username ?? "System";
                             var role = log.User != null ? log.User.Role.ToString() : "N/A";
                             var email = log.User?.Email ?? "N/A";
@@ -818,7 +819,7 @@ namespace SyncVerseStudio.Views
                             var oldValues = EscapeCsv(log.OldValues ?? "N/A");
                             var newValues = EscapeCsv(log.NewValues ?? "N/A");
 
-                            writer.WriteLine($"{timestamp},{username},{role},{email},{action},{table},{details},{ipAddress},{oldValues},{newValues}");
+                            writer.WriteLine($"{timestamp},{fullName},{username},{role},{email},{action},{table},{details},{ipAddress},{oldValues},{newValues}");
                         }
                     }
 
@@ -865,7 +866,8 @@ namespace SyncVerseStudio.Views
                         {
                             writer.WriteLine("───────────────────────────────────────────────────────────────────────");
                             writer.WriteLine($"Timestamp:    {log.Timestamp:yyyy-MM-dd HH:mm:ss}");
-                            writer.WriteLine($"User:         {log.User?.Username ?? "System"}");
+                            writer.WriteLine($"Full Name:    {(log.User != null ? $"{log.User.FirstName} {log.User.LastName}" : "System")}");
+                            writer.WriteLine($"Username:     {log.User?.Username ?? "System"}");
                             writer.WriteLine($"Role:         {(log.User != null ? log.User.Role.ToString() : "N/A")}");
                             writer.WriteLine($"Email:        {log.User?.Email ?? "N/A"}");
                             writer.WriteLine($"Action:       {log.Action}");
