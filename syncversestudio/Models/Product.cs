@@ -54,6 +54,7 @@ namespace SyncVerseStudio.Models
         public virtual Supplier? Supplier { get; set; }
         public virtual ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
         public virtual ICollection<InventoryMovement> InventoryMovements { get; set; } = new List<InventoryMovement>();
+        public virtual ICollection<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 
         [NotMapped]
         public bool IsLowStock => Quantity <= MinQuantity;

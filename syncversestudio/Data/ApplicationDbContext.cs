@@ -9,6 +9,7 @@ namespace SyncVerseStudio.Data
         public DbSet<Category> Categories { get; set; }
         public DbSet<Supplier> Suppliers { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<ProductImage> ProductImages { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Sale> Sales { get; set; }
         public DbSet<SaleItem> SaleItems { get; set; }
@@ -95,6 +96,16 @@ namespace SyncVerseStudio.Data
                     .WithMany(p => p.InventoryMovements)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure ProductImage entity
+            modelBuilder.Entity<ProductImage>(entity =>
+            {
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.ProductImages)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasIndex(e => new { e.ProductId, e.IsPrimary });
             });
 
             // Configure AuditLog entity

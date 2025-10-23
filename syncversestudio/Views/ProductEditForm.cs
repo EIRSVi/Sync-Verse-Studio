@@ -212,6 +212,24 @@ namespace SyncVerseStudio.Views
             yPos += controlHeight + 40;
 
             // Buttons
+            // Manage Images button (only show for existing products)
+            if (_productId.HasValue)
+            {
+                var manageImagesButton = new Button
+                {
+                    Text = "📷 Manage Images",
+                    Location = new Point(leftMargin, yPos),
+                    Size = new Size(130, 35),
+                    BackColor = Color.FromArgb(59, 130, 246),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                };
+                manageImagesButton.FlatAppearance.BorderSize = 0;
+                manageImagesButton.Click += ManageImagesButton_Click;
+                this.Controls.Add(manageImagesButton);
+            }
+
             cancelButton = new Button
             {
                 Text = "Cancel",
@@ -460,6 +478,15 @@ namespace SyncVerseStudio.Views
             }
 
             return true;
+        }
+
+        private void ManageImagesButton_Click(object sender, EventArgs e)
+        {
+            if (_productId.HasValue)
+            {
+                var imageManagerForm = new ProductImageManagerForm(_productId.Value);
+                imageManagerForm.ShowDialog();
+            }
         }
 
         protected override void Dispose(bool disposing)
