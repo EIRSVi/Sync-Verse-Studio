@@ -7,6 +7,7 @@ using FontAwesome.Sharp;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.IO;
+using System.Linq;
 
 namespace SyncVerseStudio.Views
 {
@@ -22,16 +23,18 @@ namespace SyncVerseStudio.Views
         private Form? _currentChildForm;
         private PictureBox logoPictureBox;
         private List<Panel> menuButtons = new List<Panel>();
+        private LoginForm? _loginForm;
 
-        public MainDashboard(AuthenticationService authService)
+        public MainDashboard(AuthenticationService authService, LoginForm? loginForm = null)
         {
-  _authService = authService;
-   InitializeComponent();
+            _authService = authService;
+            _loginForm = loginForm;
+            InitializeComponent();
             
-     // Set application icon using helper
-    // SyncVerseStudio.Helpers.IconHelper.SetFormIcon(this);
+            // Set application icon using helper
+            // SyncVerseStudio.Helpers.IconHelper.SetFormIcon(this);
             
-  LoadUserInterface();
+            LoadUserInterface();
         }
 
         private void InitializeComponent()
@@ -245,7 +248,7 @@ sidebarPanel.Controls.Add(navHeader);
  case UserRole.Cashier:
  CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CashierDashboardView(_authService)));
  yPos += 50;
- CreateModernMenuItem("Point of Sale", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ModernPOSView(_authService)));
+ CreateModernMenuItem("Modern POS Terminal", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ModernCashierView(_authService)));
      yPos += 50;
  CreateModernMenuItem("Sales History", IconChar.Receipt, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
          yPos += 50;
@@ -621,25 +624,112 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
 
         private async void LogoutButton_Click(object sender, EventArgs e)
         {
-   try
-        {
-    var result = MessageBox.Show(
- "Are you sure you want to logout?",
-          "Confirm Logout",
-      MessageBoxButtons.YesNo,
-  MessageBoxIcon.Question);
+            try
+            {
+                // Create a custom dialog with three options
+                var logoutDialog = new Form()
+                {
+                    Text = "Logout Options",
+                    Size = new Size(400, 200),
+                    StartPosition = FormStartPosition.CenterParent,
+                    FormBorderStyle = FormBorderStyle.FixedDialog,
+                    MaximizeBox = false,
+                    MinimizeBox = false,
+                    BackColor = Color.White
+                };
 
-          if (result == DialogResult.Yes)
-  {
-  await _authService.LogoutAsync();
-        this.Close();
-      }
-          }
+                var messageLabel = new Label()
+                {
+                    Text = "What would you like to do?",
+                    Font = new Font("Segoe UI", 12F, FontStyle.Regular),
+                    Location = new Point(20, 20),
+                    Size = new Size(350, 30),
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+
+                var logoutButton = new Button()
+                {
+                    Text = "Logout (Return to Login)",
+                    Location = new Point(50, 70),
+                    Size = new Size(180, 35),
+                    BackColor = BrandTheme.LimeGreen,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10F),
+                    DialogResult = DialogResult.Yes
+                };
+
+                var exitButton = new Button()
+                {
+                    Text = "Exit Application",
+                    Location = new Point(250, 70),
+                    Size = new Size(120, 35),
+                    BackColor = BrandTheme.Error,
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10F),
+                    DialogResult = DialogResult.Abort
+                };
+
+                var cancelButton = new Button()
+                {
+                    Text = "Cancel",
+                    Location = new Point(150, 120),
+                    Size = new Size(100, 35),
+                    BackColor = Color.FromArgb(108, 117, 125),
+                    ForeColor = Color.White,
+                    FlatStyle = FlatStyle.Flat,
+                    Font = new Font("Segoe UI", 10F),
+                    DialogResult = DialogResult.Cancel
+                };
+
+                logoutButton.FlatAppearance.BorderSize = 0;
+                exitButton.FlatAppearance.BorderSize = 0;
+                cancelButton.FlatAppearance.BorderSize = 0;
+
+                logoutDialog.Controls.AddRange(new Control[] { messageLabel, logoutButton, exitButton, cancelButton });
+                logoutDialog.AcceptButton = logoutButton;
+                logoutDialog.CancelButton = cancelButton;
+
+                DialogResult result;
+                using (logoutDialog)
+                {
+                    result = logoutDialog.ShowDialog(this);
+                }
+
+                if (result == DialogResult.Yes)
+                {
+                    // Logout and return to login form
+                    Console.WriteLine("User chose to logout and return to login");
+                    await _authService.LogoutAsync();
+                    this.Close(); // This will trigger the FormClosed event in LoginForm
+                }
+                else if (result == DialogResult.Abort)
+                {
+                    // Exit application completely
+                    Console.WriteLine("User chose to exit application completely");
+                    await _authService.LogoutAsync();
+                    
+                    // Set the login form to exit mode
+                    _loginForm?.SetExiting();
+                    
+                    // Close this form which will trigger the FormClosed event in LoginForm
+                    this.Close();
+                    
+                    // Exit application
+                    Application.Exit();
+                }
+                else
+                {
+                    Console.WriteLine("User cancelled logout");
+                }
+                // If Cancel, do nothing
+            }
             catch (Exception ex)
-    {
-         MessageBox.Show($"{ex.Message}", "Logout Error",
-         MessageBoxButtons.OK, MessageBoxIcon.Error);
- }
+            {
+                MessageBox.Show($"Logout Error: {ex.Message}", "Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
@@ -653,11 +743,19 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
   base.OnFormClosed(e);
         }
 
- protected override void OnFormClosing(FormClosingEventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
-         try { _currentChildForm?.Hide(); } catch { }
-    base.OnFormClosing(e);
-      }
+            // If user tries to close the main dashboard directly (X button), ask what they want to do
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true; // Cancel the close initially
+                LogoutButton_Click(this, EventArgs.Empty); // Show the logout options dialog
+                return;
+            }
+            
+            try { _currentChildForm?.Hide(); } catch { }
+            base.OnFormClosing(e);
+        }
 
       protected override void Dispose(bool disposing)
         {

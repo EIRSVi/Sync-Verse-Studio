@@ -10,6 +10,7 @@ namespace SyncVerseStudio
     {
         private readonly AuthenticationService _authService;
         private bool _isInitializing = false;
+        private bool _isExiting = false;
 
         public LoginForm()
         {
@@ -129,8 +130,34 @@ namespace SyncVerseStudio
                     
                     // Immediately load dashboard for faster experience
                     this.Hide();
-                    var mainForm = new MainDashboard(_authService);
-                    mainForm.FormClosed += (s, args) => this.Close();
+                    var mainForm = new MainDashboard(_authService, this);
+                    
+                    // When main form closes, show login form again or close application
+                    mainForm.FormClosed += (s, args) => 
+                    {
+                        // Check if application is exiting
+                        if (_isExiting)
+                        {
+                            Console.WriteLine("LoginForm: Application is exiting, closing login form");
+                            this.Close();
+                            return;
+                        }
+                        
+                        Console.WriteLine("LoginForm: MainDashboard closed, returning to login");
+                        
+                        // Clear the form fields for security
+                        this.usernameTextBox.Clear();
+                        this.passwordTextBox.Clear();
+                        this.errorLabel.Text = "";
+                        
+                        // Show login form again
+                        this.Show();
+                        this.WindowState = FormWindowState.Normal;
+                        this.BringToFront();
+                        this.Focus();
+                        this.usernameTextBox.Focus();
+                    };
+                    
                     mainForm.Show();
                 }
                 else
@@ -152,6 +179,33 @@ namespace SyncVerseStudio
                 loginButton.Enabled = true;
                 loginButton.Text = "Login";
             }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            // If user tries to close login form, ask for confirmation
+            if (this.Visible)
+            {
+                var result = MessageBox.Show(
+                    "Are you sure you want to exit SyncVerse Studio?",
+                    "Exit Application",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Question);
+
+                if (result == DialogResult.No)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+            
+            base.OnFormClosing(e);
+        }
+
+        public void SetExiting()
+        {
+            Console.WriteLine("LoginForm: SetExiting() called - application will exit");
+            _isExiting = true;
         }
 
         protected override void Dispose(bool disposing)

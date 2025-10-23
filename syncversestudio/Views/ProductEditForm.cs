@@ -15,8 +15,11 @@ namespace SyncVerseStudio.Views
         private TextBox nameTextBox, descriptionTextBox, barcodeTextBox, skuTextBox;
         private NumericUpDown costPriceNumeric, sellingPriceNumeric, quantityNumeric, minQuantityNumeric;
         private ComboBox categoryCombo, supplierCombo;
-        private Button saveButton, cancelButton, generateBarcodeButton;
+        private Button saveButton, cancelButton, generateBarcodeButton, manageImagesButton;
         private Label titleLabel;
+        private Panel imagePreviewPanel;
+        private PictureBox primaryImageBox;
+        private Label imageCountLabel;
 
         public ProductEditForm(AuthenticationService authService, int? productId = null)
         {
@@ -25,12 +28,16 @@ namespace SyncVerseStudio.Views
             _productId = productId;
             
             InitializeComponent();
-            LoadComboBoxData();
             
-            if (_productId.HasValue)
+            // Load data after form is shown
+            this.Load += async (s, e) => 
             {
-                LoadProduct();
-            }
+                await LoadComboBoxDataAsync();
+                if (_productId.HasValue)
+                {
+                    await LoadProductAsync();
+                }
+            };
         }
 
         private void InitializeComponent()
@@ -38,7 +45,7 @@ namespace SyncVerseStudio.Views
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
             this.BackColor = Color.White;
-            this.ClientSize = new Size(600, 650);
+            this.ClientSize = new Size(850, 650);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
@@ -47,6 +54,7 @@ namespace SyncVerseStudio.Views
             this.Text = _productId.HasValue ? "Edit Product" : "Add Product";
 
             CreateControls();
+            CreateImagePreviewPanel();
         }
 
         private void CreateControls()
@@ -212,28 +220,46 @@ namespace SyncVerseStudio.Views
             yPos += controlHeight + 40;
 
             // Buttons
-            // Manage Images button (only show for existing products)
-            if (_productId.HasValue)
+            // Manage Images button (only for Inventory Clerk role)
+            var currentUser = _authService.CurrentUser;
+            bool canManageImages = currentUser?.Role == UserRole.InventoryClerk || currentUser?.Role == UserRole.Administrator;
+            
+            if (canManageImages)
             {
-                var manageImagesButton = new Button
+                manageImagesButton = new Button
                 {
                     Text = "📷 Manage Images",
                     Location = new Point(leftMargin, yPos),
-                    Size = new Size(130, 35),
+                    Size = new Size(140, 35),
                     BackColor = Color.FromArgb(59, 130, 246),
                     ForeColor = Color.White,
                     FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 9F, FontStyle.Bold)
+                    Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                    Enabled = _productId.HasValue // Enable only after product is saved
                 };
                 manageImagesButton.FlatAppearance.BorderSize = 0;
                 manageImagesButton.Click += ManageImagesButton_Click;
                 this.Controls.Add(manageImagesButton);
+
+                if (!_productId.HasValue)
+                {
+                    var noteLabel = new Label
+                    {
+                        Text = "Save product first to add images",
+                        Font = new Font("Segoe UI", 8F, FontStyle.Italic),
+                        ForeColor = Color.FromArgb(150, 150, 150),
+                        Location = new Point(leftMargin, yPos + 40),
+                        Size = new Size(200, 15),
+                        BackColor = Color.Transparent
+                    };
+                    this.Controls.Add(noteLabel);
+                }
             }
 
             cancelButton = new Button
             {
                 Text = "Cancel",
-                Location = new Point(leftMargin + 150, yPos),
+                Location = new Point(leftMargin + 160, yPos),
                 Size = new Size(80, 35),
                 BackColor = Color.FromArgb(158, 158, 158),
                 ForeColor = Color.White,
@@ -247,7 +273,7 @@ namespace SyncVerseStudio.Views
             saveButton = new Button
             {
                 Text = "Save",
-                Location = new Point(leftMargin + 240, yPos),
+                Location = new Point(leftMargin + 250, yPos),
                 Size = new Size(80, 35),
                 BackColor = Color.FromArgb(24, 119, 18),
                 ForeColor = Color.White,
@@ -275,12 +301,14 @@ namespace SyncVerseStudio.Views
             this.Controls.Add(label);
         }
 
-        private async void LoadComboBoxData()
+        private async System.Threading.Tasks.Task LoadComboBoxDataAsync()
         {
             try
             {
+                using var context = new ApplicationDbContext();
+                
                 // Load categories
-                var categories = await _context.Categories
+                var categories = await context.Categories
                     .Where(c => c.IsActive)
                     .OrderBy(c => c.Name)
                     .ToListAsync();
@@ -296,7 +324,7 @@ namespace SyncVerseStudio.Views
                 categoryCombo.SelectedIndex = 0;
 
                 // Load suppliers
-                var suppliers = await _context.Suppliers
+                var suppliers = await context.Suppliers
                     .Where(s => s.IsActive)
                     .OrderBy(s => s.Name)
                     .ToListAsync();
@@ -318,18 +346,24 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private async void LoadProduct()
+        private async System.Threading.Tasks.Task LoadProductAsync()
         {
             try
             {
-                _product = await _context.Products
+                using var context = new ApplicationDbContext();
+                _product = await context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.ProductImages)
                     .FirstOrDefaultAsync(p => p.Id == _productId);
 
                 if (_product != null)
                 {
-                    nameTextBox.Text = _product.Name;
+                    // Debug: Show what product was loaded
+                    this.Text = $"Edit Product - {_product.Name}";
+                    
+                    // Populate form fields
+                    nameTextBox.Text = _product.Name ?? "";
                     descriptionTextBox.Text = _product.Description ?? "";
                     barcodeTextBox.Text = _product.Barcode ?? "";
                     skuTextBox.Text = _product.SKU ?? "";
@@ -339,31 +373,55 @@ namespace SyncVerseStudio.Views
                     minQuantityNumeric.Value = _product.MinQuantity;
 
                     // Set category
-                    for (int i = 0; i < categoryCombo.Items.Count; i++)
+                    if (_product.CategoryId.HasValue)
                     {
-                        var item = categoryCombo.Items[i] as dynamic;
-                        if (item?.Id == _product.CategoryId)
+                        for (int i = 0; i < categoryCombo.Items.Count; i++)
                         {
-                            categoryCombo.SelectedIndex = i;
-                            break;
+                            var item = categoryCombo.Items[i];
+                            var categoryIdProperty = item.GetType().GetProperty("Id");
+                            if (categoryIdProperty != null)
+                            {
+                                var categoryId = categoryIdProperty.GetValue(item);
+                                if (categoryId != null && categoryId.Equals(_product.CategoryId.Value))
+                                {
+                                    categoryCombo.SelectedIndex = i;
+                                    break;
+                                }
+                            }
                         }
                     }
 
                     // Set supplier
-                    for (int i = 0; i < supplierCombo.Items.Count; i++)
+                    if (_product.SupplierId.HasValue)
                     {
-                        var item = supplierCombo.Items[i] as dynamic;
-                        if (item?.Id == _product.SupplierId)
+                        for (int i = 0; i < supplierCombo.Items.Count; i++)
                         {
-                            supplierCombo.SelectedIndex = i;
-                            break;
+                            var item = supplierCombo.Items[i];
+                            var supplierIdProperty = item.GetType().GetProperty("Id");
+                            if (supplierIdProperty != null)
+                            {
+                                var supplierId = supplierIdProperty.GetValue(item);
+                                if (supplierId != null && supplierId.Equals(_product.SupplierId.Value))
+                                {
+                                    supplierCombo.SelectedIndex = i;
+                                    break;
+                                }
+                            }
                         }
                     }
+
+                    // Load product images
+                    LoadProductImages();
+                }
+                else
+                {
+                    MessageBox.Show($"Product with ID {_productId} not found.", "Product Not Found", 
+                        MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading product: {ex.Message}", "Error", 
+                MessageBox.Show($"Error loading product: {ex.Message}\n\nStack Trace: {ex.StackTrace}", "Error", 
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -480,12 +538,143 @@ namespace SyncVerseStudio.Views
             return true;
         }
 
+        private void CreateImagePreviewPanel()
+        {
+            // Image preview panel on the right side
+            imagePreviewPanel = new Panel
+            {
+                Location = new Point(400, 80),
+                Size = new Size(420, 500),
+                BackColor = Color.FromArgb(248, 250, 252),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+
+            var headerLabel = new Label
+            {
+                Text = "Product Images",
+                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(10, 10),
+                Size = new Size(400, 25),
+                BackColor = Color.Transparent
+            };
+            imagePreviewPanel.Controls.Add(headerLabel);
+
+            imageCountLabel = new Label
+            {
+                Text = "No images",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(10, 35),
+                Size = new Size(400, 20),
+                BackColor = Color.Transparent
+            };
+            imagePreviewPanel.Controls.Add(imageCountLabel);
+
+            primaryImageBox = new PictureBox
+            {
+                Location = new Point(10, 60),
+                Size = new Size(400, 400),
+                SizeMode = PictureBoxSizeMode.Zoom,
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            imagePreviewPanel.Controls.Add(primaryImageBox);
+
+            var placeholderLabel = new Label
+            {
+                Text = "No primary image\nClick 'Manage Images' to add",
+                Font = new Font("Segoe UI", 11F),
+                ForeColor = Color.FromArgb(150, 150, 150),
+                TextAlign = ContentAlignment.MiddleCenter,
+                Location = new Point(50, 200),
+                Size = new Size(300, 60),
+                BackColor = Color.Transparent,
+                Parent = primaryImageBox
+            };
+
+            this.Controls.Add(imagePreviewPanel);
+
+            // Load images if editing existing product
+            if (_productId.HasValue)
+            {
+                LoadProductImages();
+            }
+        }
+
+        private async void LoadProductImages()
+        {
+            try
+            {
+                using var context = new ApplicationDbContext();
+                var images = await context.ProductImages
+                    .Where(img => img.ProductId == _productId && img.IsActive)
+                    .OrderByDescending(img => img.IsPrimary)
+                    .ThenBy(img => img.DisplayOrder)
+                    .ToListAsync();
+
+                if (images.Any())
+                {
+                    imageCountLabel.Text = $"{images.Count} image(s)";
+
+                    var primaryImage = images.FirstOrDefault(img => img.IsPrimary) ?? images.First();
+                    var image = Helpers.ProductImageHelper.LoadImage(primaryImage.ImagePath);
+                    
+                    if (image != null)
+                    {
+                        primaryImageBox.Image = Helpers.ProductImageHelper.ResizeImage(image, 400, 400);
+                        
+                        // Remove placeholder
+                        foreach (Control ctrl in primaryImageBox.Controls.OfType<Label>().ToList())
+                        {
+                            primaryImageBox.Controls.Remove(ctrl);
+                        }
+                    }
+                    else
+                    {
+                        // Show default brand image
+                        var defaultImage = Helpers.ProductImageHelper.GetDefaultBrandImage();
+                        if (defaultImage != null)
+                        {
+                            primaryImageBox.Image = Helpers.ProductImageHelper.ResizeImage(defaultImage, 400, 400);
+                        }
+                    }
+                }
+                else
+                {
+                    imageCountLabel.Text = "No images";
+                    // Show default brand image when no images
+                    var defaultImage = Helpers.ProductImageHelper.GetDefaultBrandImage();
+                    if (defaultImage != null)
+                    {
+                        primaryImageBox.Image = Helpers.ProductImageHelper.ResizeImage(defaultImage, 400, 400);
+                        
+                        // Remove placeholder
+                        foreach (Control ctrl in primaryImageBox.Controls.OfType<Label>().ToList())
+                        {
+                            primaryImageBox.Controls.Remove(ctrl);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                imageCountLabel.Text = $"Error loading images: {ex.Message}";
+            }
+        }
+
         private void ManageImagesButton_Click(object sender, EventArgs e)
         {
             if (_productId.HasValue)
             {
                 var imageManagerForm = new ProductImageManagerForm(_productId.Value);
+                imageManagerForm.FormClosed += (s, args) => LoadProductImages(); // Refresh images when form closes
                 imageManagerForm.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Please save the product first before adding images.", 
+                    "Save Required", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 

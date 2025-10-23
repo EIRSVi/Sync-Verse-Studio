@@ -1,6 +1,7 @@
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace SyncVerseStudio.Helpers
 {
@@ -210,6 +211,340 @@ namespace SyncVerseStudio.Helpers
             await SeedSuppliersAsync(context);
             await SeedCustomersAsync(context);
             await SeedProductsAsync(context);
+        }
+
+        public static async Task RefreshAllDataAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                // Clear existing data (preserve sales and users)
+                // Order is important due to foreign key constraints
+                await ClearProductDataAsync(context);
+                await ClearCategoriesAsync(context);
+                await ClearSuppliersAsync(context);
+                await ClearCustomersAsync(context);
+
+                // Re-seed with fresh data
+                await SeedAllAsync(context);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error refreshing database: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task ClearAllDataAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                // Clear all data except current admin user
+                // Order is important due to foreign key constraints
+                await ClearSalesDataAsync(context);
+                await ClearProductDataAsync(context);
+                await ClearCategoriesAsync(context);
+                await ClearSuppliersAsync(context);
+                await ClearCustomersAsync(context);
+                // Note: We preserve the current admin user for security
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing database: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task ResetDatabaseAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                // This is the most destructive operation - recreates the entire database
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                
+                // Create default admin user
+                await CreateDefaultAdminAsync(context);
+                
+                // Seed with default data
+                await SeedAllAsync(context);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error resetting database: {ex.Message}", ex);
+            }
+        }
+
+        private static async Task ClearProductDataAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                // Clear product images first (foreign key constraint)
+                var productImages = await context.ProductImages.ToListAsync();
+                if (productImages.Any())
+                {
+                    context.ProductImages.RemoveRange(productImages);
+                    await context.SaveChangesAsync();
+                }
+                
+                // Clear products
+                var products = await context.Products.ToListAsync();
+                if (products.Any())
+                {
+                    context.Products.RemoveRange(products);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing product data: {ex.Message}", ex);
+            }
+        }
+
+        private static async Task ClearCategoriesAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                var categories = await context.Categories.ToListAsync();
+                if (categories.Any())
+                {
+                    context.Categories.RemoveRange(categories);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing categories: {ex.Message}", ex);
+            }
+        }
+
+        private static async Task ClearSuppliersAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                var suppliers = await context.Suppliers.ToListAsync();
+                if (suppliers.Any())
+                {
+                    context.Suppliers.RemoveRange(suppliers);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing suppliers: {ex.Message}", ex);
+            }
+        }
+
+        private static async Task ClearCustomersAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                var customers = await context.Customers.ToListAsync();
+                if (customers.Any())
+                {
+                    context.Customers.RemoveRange(customers);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing customers: {ex.Message}", ex);
+            }
+        }
+
+        private static async Task ClearSalesDataAsync(ApplicationDbContext context)
+        {
+            try
+            {
+                // Clear sale items first (foreign key constraint)
+                var saleItems = await context.SaleItems.ToListAsync();
+                if (saleItems.Any())
+                {
+                    context.SaleItems.RemoveRange(saleItems);
+                    await context.SaveChangesAsync();
+                }
+                
+                // Clear sales
+                var sales = await context.Sales.ToListAsync();
+                if (sales.Any())
+                {
+                    context.Sales.RemoveRange(sales);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error clearing sales data: {ex.Message}", ex);
+            }
+        }
+
+        public static async Task AddProductImagesToExistingProductsAsync(ApplicationDbContext context)
+        {
+            // Get all products that don't have images yet
+            var productsWithoutImages = await context.Products
+                .Where(p => !p.ProductImages.Any() && p.IsActive)
+                .ToListAsync();
+
+            foreach (var product in productsWithoutImages)
+            {
+                // Try to find matching image based on product name or existing ImagePath
+                string? imagePath = null;
+                string? imageName = null;
+
+                // First check if product already has an ImagePath set
+                if (!string.IsNullOrEmpty(product.ImagePath))
+                {
+                    imagePath = product.ImagePath;
+                    imageName = Path.GetFileName(product.ImagePath);
+                }
+                else
+                {
+                    // Generate image name based on product name
+                    imageName = GenerateImageNameFromProduct(product.Name);
+                    imagePath = Path.Combine("assets", "product", imageName);
+                }
+
+                // Check if the image file actually exists
+                var fullImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath);
+                bool imageExists = File.Exists(fullImagePath);
+
+                // Create ProductImage entry
+                var productImage = new ProductImage
+                {
+                    ProductId = product.Id,
+                    ImagePath = imagePath,
+                    ImageType = imageExists ? "Local" : "Default",
+                    ImageName = imageName,
+                    IsPrimary = true, // First image is primary
+                    DisplayOrder = 1,
+                    Description = $"Primary image for {product.Name}",
+                    FileSize = imageExists ? new FileInfo(fullImagePath).Length : 0,
+                    FileExtension = Path.GetExtension(imageName),
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now,
+                    IsActive = true
+                };
+
+                context.ProductImages.Add(productImage);
+            }
+
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task AddSpecificImageToProductAsync(ApplicationDbContext context, int productId, string imagePath, bool isPrimary = false)
+        {
+            var product = await context.Products.FindAsync(productId);
+            if (product == null)
+                throw new ArgumentException($"Product with ID {productId} not found");
+
+            // Check if image already exists for this product
+            var existingImage = await context.ProductImages
+                .FirstOrDefaultAsync(pi => pi.ProductId == productId && pi.ImagePath == imagePath);
+
+            if (existingImage != null)
+                return; // Image already exists
+
+            // If this is set as primary, update other images to not be primary
+            if (isPrimary)
+            {
+                var existingPrimaryImages = await context.ProductImages
+                    .Where(pi => pi.ProductId == productId && pi.IsPrimary)
+                    .ToListAsync();
+
+                foreach (var img in existingPrimaryImages)
+                {
+                    img.IsPrimary = false;
+                    img.UpdatedAt = DateTime.Now;
+                }
+            }
+
+            // Get the next display order
+            var maxDisplayOrder = await context.ProductImages
+                .Where(pi => pi.ProductId == productId)
+                .MaxAsync(pi => (int?)pi.DisplayOrder) ?? 0;
+
+            // Check if the image file exists
+            var fullImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath);
+            bool imageExists = File.Exists(fullImagePath);
+
+            var productImage = new ProductImage
+            {
+                ProductId = productId,
+                ImagePath = imagePath,
+                ImageType = imageExists ? "Local" : "URL",
+                ImageName = Path.GetFileName(imagePath),
+                IsPrimary = isPrimary,
+                DisplayOrder = maxDisplayOrder + 1,
+                Description = $"Image for {product.Name}",
+                FileSize = imageExists ? new FileInfo(fullImagePath).Length : 0,
+                FileExtension = Path.GetExtension(imagePath),
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now,
+                IsActive = true
+            };
+
+            context.ProductImages.Add(productImage);
+            await context.SaveChangesAsync();
+        }
+
+        public static async Task AddBulkImagesToProductsAsync(ApplicationDbContext context, Dictionary<string, string> productImageMappings)
+        {
+            foreach (var mapping in productImageMappings)
+            {
+                var productIdentifier = mapping.Key; // Can be product name, barcode, or SKU
+                var imagePath = mapping.Value;
+
+                // Find product by name, barcode, or SKU
+                var product = await context.Products
+                    .FirstOrDefaultAsync(p => 
+                        p.Name.Contains(productIdentifier) || 
+                        p.Barcode == productIdentifier || 
+                        p.SKU == productIdentifier);
+
+                if (product != null)
+                {
+                    await AddSpecificImageToProductAsync(context, product.Id, imagePath, false);
+                }
+            }
+        }
+
+        private static string GenerateImageNameFromProduct(string productName)
+        {
+            // Convert product name to a suitable image filename
+            var imageName = productName.ToLower()
+                .Replace(" ", "-")
+                .Replace("&", "and")
+                .Replace(".", "")
+                .Replace(",", "")
+                .Replace("(", "")
+                .Replace(")", "")
+                .Replace("/", "-");
+
+            // Remove any remaining special characters
+            imageName = System.Text.RegularExpressions.Regex.Replace(imageName, @"[^a-z0-9\-]", "");
+            
+            return $"{imageName}.jpg";
+        }
+
+        private static async Task CreateDefaultAdminAsync(ApplicationDbContext context)
+        {
+            // Create default admin user if none exists
+            var adminExists = await context.Users.AnyAsync(u => u.Role == UserRole.Administrator);
+            if (!adminExists)
+            {
+                var defaultAdmin = new User
+                {
+                    Username = "admin",
+                    FirstName = "System",
+                    LastName = "Administrator",
+                    Email = "admin@syncverse.com",
+                    Password = BCrypt.Net.BCrypt.HashPassword("admin123"), // Default password
+                    Role = UserRole.Administrator,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                };
+
+                context.Users.Add(defaultAdmin);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

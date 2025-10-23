@@ -13,7 +13,6 @@ namespace SyncVerseStudio.Views
 {
     public partial class ProductImageManagerForm : Form
     {
-        private readonly ApplicationDbContext _context;
         private readonly int _productId;
         private Product? _product;
         private FlowLayoutPanel _imagesPanel;
@@ -22,7 +21,6 @@ namespace SyncVerseStudio.Views
 
         public ProductImageManagerForm(int productId)
         {
-            _context = new ApplicationDbContext();
             _productId = productId;
             InitializeComponent();
             LoadProduct();
@@ -190,7 +188,8 @@ namespace SyncVerseStudio.Views
         {
             try
             {
-                _product = await _context.Products
+                using var context = new ApplicationDbContext();
+                _product = await context.Products
                     .Include(p => p.ProductImages)
                     .FirstOrDefaultAsync(p => p.Id == _productId);
 
@@ -211,7 +210,8 @@ namespace SyncVerseStudio.Views
             {
                 _imagesPanel.Controls.Clear();
 
-                var images = await _context.ProductImages
+                using var context = new ApplicationDbContext();
+                var images = await context.ProductImages
                     .Where(img => img.ProductId == _productId && img.IsActive)
                     .OrderByDescending(img => img.IsPrimary)
                     .ThenBy(img => img.DisplayOrder)
@@ -272,12 +272,43 @@ namespace SyncVerseStudio.Views
                 }
                 else
                 {
-                    pictureBox.BackColor = Color.FromArgb(220, 220, 220);
+                    // Show default brand image if product image fails to load
+                    var defaultImage = ProductImageHelper.GetDefaultBrandImage();
+                    if (defaultImage != null)
+                    {
+                        pictureBox.Image = ProductImageHelper.ResizeImage(defaultImage, 160, 160);
+                    }
+                    else
+                    {
+                        pictureBox.BackColor = Color.FromArgb(220, 220, 220);
+                        // Add a label to show the image path for debugging
+                        var debugLabel = new Label
+                        {
+                            Text = $"Failed to load:\n{productImage.ImagePath}",
+                            Font = new Font("Segoe UI", 8F),
+                            ForeColor = Color.Red,
+                            TextAlign = ContentAlignment.MiddleCenter,
+                            Dock = DockStyle.Fill,
+                            BackColor = Color.Transparent
+                        };
+                        pictureBox.Controls.Add(debugLabel);
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 pictureBox.BackColor = Color.FromArgb(220, 220, 220);
+                // Add error message for debugging
+                var errorLabel = new Label
+                {
+                    Text = $"Error:\n{ex.Message}",
+                    Font = new Font("Segoe UI", 8F),
+                    ForeColor = Color.Red,
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.Transparent
+                };
+                pictureBox.Controls.Add(errorLabel);
             }
 
             card.Controls.Add(pictureBox);
@@ -398,6 +429,7 @@ namespace SyncVerseStudio.Views
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
+                    using var context = new ApplicationDbContext();
                     foreach (var filePath in dialog.FileNames)
                     {
                         // Get relative path from assets folder
@@ -405,10 +437,10 @@ namespace SyncVerseStudio.Views
                         string relativePath = filePath.Replace(assetsPath + "\\", "");
 
                         var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, "Local");
-                        _context.ProductImages.Add(productImage);
+                        context.ProductImages.Add(productImage);
                     }
 
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                     LoadImages();
                     MessageBox.Show("Images added successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -476,9 +508,10 @@ namespace SyncVerseStudio.Views
                         return;
                     }
 
+                    using var context = new ApplicationDbContext();
                     var productImage = ProductImageHelper.CreateProductImage(_productId, url, "URL");
-                    _context.ProductImages.Add(productImage);
-                    await _context.SaveChangesAsync();
+                    context.ProductImages.Add(productImage);
+                    await context.SaveChangesAsync();
 
                     urlForm.Close();
                     LoadImages();
@@ -521,16 +554,17 @@ namespace SyncVerseStudio.Views
 
                 if (dialog.ShowDialog() == DialogResult.OK)
                 {
+                    using var context = new ApplicationDbContext();
                     foreach (var filePath in dialog.FileNames)
                     {
                         // Copy image to assets folder
                         string relativePath = ProductImageHelper.CopyImageToAssets(filePath, _product?.Name ?? "Product", _productId);
 
                         var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, "Upload");
-                        _context.ProductImages.Add(productImage);
+                        context.ProductImages.Add(productImage);
                     }
 
-                    await _context.SaveChangesAsync();
+                    await context.SaveChangesAsync();
                     LoadImages();
                     MessageBox.Show("Images uploaded successfully!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
@@ -545,8 +579,9 @@ namespace SyncVerseStudio.Views
         {
             try
             {
+                using var context = new ApplicationDbContext();
                 // Remove primary from all other images
-                var allImages = await _context.ProductImages
+                var allImages = await context.ProductImages
                     .Where(img => img.ProductId == _productId)
                     .ToListAsync();
 
@@ -556,7 +591,7 @@ namespace SyncVerseStudio.Views
                     img.UpdatedAt = DateTime.Now;
                 }
 
-                await _context.SaveChangesAsync();
+                await context.SaveChangesAsync();
                 LoadImages();
                 MessageBox.Show("Primary image updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
@@ -646,9 +681,14 @@ namespace SyncVerseStudio.Views
             {
                 try
                 {
-                    productImage.Description = descTextBox.Text;
-                    productImage.UpdatedAt = DateTime.Now;
-                    await _context.SaveChangesAsync();
+                    using var context = new ApplicationDbContext();
+                    var imageToUpdate = await context.ProductImages.FindAsync(productImage.Id);
+                    if (imageToUpdate != null)
+                    {
+                        imageToUpdate.Description = descTextBox.Text;
+                        imageToUpdate.UpdatedAt = DateTime.Now;
+                        await context.SaveChangesAsync();
+                    }
 
                     editForm.Close();
                     LoadImages();
@@ -691,9 +731,14 @@ namespace SyncVerseStudio.Views
 
                 if (result == DialogResult.Yes)
                 {
+                    using var context = new ApplicationDbContext();
                     // Delete from database
-                    _context.ProductImages.Remove(productImage);
-                    await _context.SaveChangesAsync();
+                    var imageToDelete = await context.ProductImages.FindAsync(productImage.Id);
+                    if (imageToDelete != null)
+                    {
+                        context.ProductImages.Remove(imageToDelete);
+                        await context.SaveChangesAsync();
+                    }
 
                     // Delete physical file if it's a local/upload image
                     if (productImage.ImageType == "Local" || productImage.ImageType == "Upload")
@@ -724,10 +769,7 @@ namespace SyncVerseStudio.Views
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
-            {
-                _context?.Dispose();
-            }
+            // No longer need to dispose _context as we use using statements
             base.Dispose(disposing);
         }
     }

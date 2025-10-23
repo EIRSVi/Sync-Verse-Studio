@@ -13,6 +13,8 @@ namespace SyncVerseStudio.Helpers
     {
         private static readonly string BaseImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "product");
         private static readonly string[] SupportedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+        private static readonly string DefaultBrandImageUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/logo.png";
+        private static Image? _cachedDefaultImage;
 
         static ProductImageHelper()
         {
@@ -178,7 +180,7 @@ namespace SyncVerseStudio.Helpers
         public static Image? GetPrimaryImage(Product product)
         {
             if (product.ProductImages == null || !product.ProductImages.Any())
-                return null;
+                return GetDefaultBrandImage();
 
             var primaryImage = product.ProductImages
                 .Where(img => img.IsActive && img.IsPrimary)
@@ -193,7 +195,54 @@ namespace SyncVerseStudio.Helpers
                     .FirstOrDefault();
             }
 
-            return primaryImage != null ? LoadImage(primaryImage.ImagePath) : null;
+            var image = primaryImage != null ? LoadImage(primaryImage.ImagePath) : null;
+            return image ?? GetDefaultBrandImage();
+        }
+
+        public static Image? GetDefaultBrandImage()
+        {
+            try
+            {
+                if (_cachedDefaultImage != null)
+                    return new Bitmap(_cachedDefaultImage);
+
+                // Try to load from URL
+                _cachedDefaultImage = LoadImageFromUrl(DefaultBrandImageUrl);
+                
+                if (_cachedDefaultImage != null)
+                    return new Bitmap(_cachedDefaultImage);
+
+                // Fallback: Create a simple default image with brand colors
+                return CreateFallbackImage();
+            }
+            catch
+            {
+                return CreateFallbackImage();
+            }
+        }
+
+        private static Image CreateFallbackImage()
+        {
+            var bitmap = new Bitmap(200, 200);
+            using (var graphics = Graphics.FromImage(bitmap))
+            {
+                // Fill with brand color background
+                graphics.Clear(Color.FromArgb(59, 130, 246));
+                
+                // Draw "No Image" text
+                using (var font = new Font("Segoe UI", 14, FontStyle.Bold))
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    var text = "SyncVerse\nPOS";
+                    var format = new StringFormat
+                    {
+                        Alignment = StringAlignment.Center,
+                        LineAlignment = StringAlignment.Center
+                    };
+                    graphics.DrawString(text, font, brush, new RectangleF(0, 0, 200, 200), format);
+                }
+            }
+            return bitmap;
         }
 
         public static Image ResizeImage(Image image, int maxWidth, int maxHeight)
