@@ -493,19 +493,42 @@ namespace SyncVerseStudio.Views
                     _product.UpdatedAt = DateTime.Now;
                 }
 
+                // Save product first
                 await _context.SaveChangesAsync();
+
+                // Reload the product to ensure it's tracked properly
+                if (_product.Id > 0)
+                {
+                    _context.Entry(_product).Reload();
+                }
 
                 // Save temporary images if any
                 if (tempProductImages.Any())
                 {
                     foreach (var tempImage in tempProductImages)
                     {
-                        tempImage.ProductId = _product.Id;
-                        _context.ProductImages.Add(tempImage);
+                        // Create a new ProductImage without ID to avoid identity insert error
+                        var newImage = new ProductImage
+                        {
+                            ProductId = _product.Id,
+                            ImagePath = tempImage.ImagePath,
+                            IsPrimary = tempImage.IsPrimary,
+                            CreatedAt = DateTime.Now,
+                            UpdatedAt = DateTime.Now
+                        };
+                        _context.ProductImages.Add(newImage);
                     }
                     
-                    await _context.SaveChangesAsync();
-                    tempProductImages.Clear();
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                        tempProductImages.Clear();
+                    }
+                    catch (Exception imgEx)
+                    {
+                        MessageBox.Show($"Product saved but error saving images: {imgEx.Message}\n\nInner: {imgEx.InnerException?.Message}", 
+                            "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    }
                 }
 
                 MessageBox.Show("Product saved successfully!", "Success", 

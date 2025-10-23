@@ -248,7 +248,7 @@ sidebarPanel.Controls.Add(navHeader);
  case UserRole.Cashier:
  CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CashierDashboardView(_authService)));
  yPos += 50;
- CreateModernMenuItem("Modern POS Terminal", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ModernCashierView(_authService)));
+ CreateModernMenuItem("Modern POS Terminal", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CashierPOSView(_authService)));
      yPos += 50;
  CreateModernMenuItem("Sales History", IconChar.Receipt, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
          yPos += 50;
