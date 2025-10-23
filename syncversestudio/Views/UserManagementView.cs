@@ -16,6 +16,7 @@ namespace SyncVerseStudio.Views
         private Button addButton, editButton, deleteButton, refreshButton;
         private TextBox searchBox;
         private ComboBox roleFilter, statusFilter;
+        private Label userCountLabel;
 
         public UserManagementView(AuthenticationService authService)
         {
@@ -46,8 +47,8 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 90,
-                Padding = new Padding(20, 10, 20, 10)
+                Height = 130,
+                Padding = new Padding(20, 20, 20, 20)
             };
 
             var titleLabel = new Label
@@ -55,17 +56,21 @@ namespace SyncVerseStudio.Views
                 Text = "USER MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 18),
+                Location = new Point(20, 25),
                 Size = new Size(350, 35)
             };
             topPanel.Controls.Add(titleLabel);
+
+            // Controls positioned at 75px from top for consistent spacing
+            int controlY = 75;
+            int controlHeight = 30;
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search users...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 55),
-                Size = new Size(220, 30)
+                Location = new Point(20, controlY),
+                Size = new Size(200, controlHeight)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
             topPanel.Controls.Add(searchBox);
@@ -74,8 +79,8 @@ namespace SyncVerseStudio.Views
             roleFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(255, 55),
-                Size = new Size(160, 30),
+                Location = new Point(235, controlY),
+                Size = new Size(140, controlHeight),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             roleFilter.Items.AddRange(new object[] { "All Roles", "Administrator", "Cashier", "InventoryClerk" });
@@ -87,8 +92,8 @@ namespace SyncVerseStudio.Views
             statusFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(430, 55),
-                Size = new Size(130, 30),
+                Location = new Point(390, controlY),
+                Size = new Size(120, controlHeight),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             statusFilter.Items.AddRange(new object[] { "All Status", "Active", "Inactive" });
@@ -96,22 +101,35 @@ namespace SyncVerseStudio.Views
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
             topPanel.Controls.Add(statusFilter);
 
-            // Buttons without icons
-            int buttonX = 590;
+            userCountLabel = new Label
+            {
+                Text = "Total: 0",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(525, 82),
+                Size = new Size(100, 20),
+                AutoSize = false,
+                BackColor = Color.Transparent
+            };
+            topPanel.Controls.Add(userCountLabel);
+
+            // Buttons - aligned with search box and filters
+            int buttonX = 700;
+            int buttonSpacing = 10;
             
-            addButton = CreateButton("ADD USER", Color.FromArgb(48, 148, 255), buttonX, 55, 120);
+            addButton = CreateButton("ADD USER", Color.FromArgb(48, 148, 255), buttonX, controlY, 110);
             addButton.Click += AddButton_Click;
-            buttonX += 130;
+            buttonX += 110 + buttonSpacing;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, controlY, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 100;
+            buttonX += 80 + buttonSpacing;
 
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 100);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, controlY, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 110;
+            buttonX += 90 + buttonSpacing;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 110);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, controlY, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
@@ -126,12 +144,12 @@ namespace SyncVerseStudio.Views
             return new Button
             {
                 Text = text,
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 BackColor = backgroundColor,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Location = new Point(x, y),
-                Size = new Size(width, 35),
+                Size = new Size(width, 32),
                 Cursor = Cursors.Hand,
                 TextAlign = ContentAlignment.MiddleCenter,
                 FlatAppearance = { BorderSize = 0 }
@@ -233,6 +251,8 @@ namespace SyncVerseStudio.Views
                     usersGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
                     usersGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
+
+                userCountLabel.Text = $"Total: {users.Count}";
             }
             catch (Exception ex)
             {

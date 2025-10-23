@@ -17,6 +17,7 @@ namespace SyncVerseStudio.Views
         private TextBox searchBox;
         private ComboBox statusFilter;
         private Label titleLabel;
+        private Label categoryCountLabel;
 
 
 
@@ -52,8 +53,8 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(20, 10, 20, 10)
+                Height = 130,
+                Padding = new Padding(20, 20, 20, 20)
             };
 
             titleLabel = new Label
@@ -61,16 +62,19 @@ namespace SyncVerseStudio.Views
                 Text = "CATEGORY MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 18),
+                Location = new Point(20, 25),
                 Size = new Size(450, 35)
             };
             topPanel.Controls.Add(titleLabel);
+
+            // Controls positioned at 75px from top for consistent spacing
+            int controlY = 75;
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search categories...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 55),
+                Location = new Point(20, controlY),
                 Size = new Size(220, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
@@ -79,7 +83,7 @@ namespace SyncVerseStudio.Views
             statusFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(255, 55),
+                Location = new Point(255, controlY),
                 Size = new Size(130, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
@@ -88,26 +92,39 @@ namespace SyncVerseStudio.Views
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
             topPanel.Controls.Add(statusFilter);
 
-            // Buttons without icons
-            int buttonX = 550;
+            categoryCountLabel = new Label
+            {
+                Text = "Total: 0",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(400, 82),
+                Size = new Size(100, 20),
+                AutoSize = false,
+                BackColor = Color.Transparent
+            };
+            topPanel.Controls.Add(categoryCountLabel);
+
+            // Buttons - aligned with search box and filter
+            int buttonX = 440;
+            int buttonSpacing = 10;
             
-            addButton = CreateButton("ADD CATEGORY", Color.FromArgb(48, 148, 255), buttonX, 55, 140);
+            addButton = CreateButton("ADD CATEGORY", Color.FromArgb(48, 148, 255), buttonX, controlY, 140);
             addButton.Click += AddButton_Click;
-            buttonX += 150;
+            buttonX += 140 + buttonSpacing;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 80);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, controlY, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 90;
+            buttonX += 80 + buttonSpacing;
 
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 90);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, controlY, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 100;
+            buttonX += 90 + buttonSpacing;
 
-            exportButton = CreateButton("EXPORT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
+            exportButton = CreateButton("EXPORT", Color.FromArgb(48, 148, 255), buttonX, controlY, 90);
             exportButton.Click += ExportButton_Click;
-            buttonX += 100;
+            buttonX += 90 + buttonSpacing;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 100);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, controlY, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
@@ -218,6 +235,8 @@ namespace SyncVerseStudio.Views
                     categoriesGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
                     categoriesGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
+
+                categoryCountLabel.Text = $"Total: {categories.Count}";
             }
             catch (Exception ex)
             {

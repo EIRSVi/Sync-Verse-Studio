@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using Microsoft.EntityFrameworkCore;
@@ -16,30 +17,12 @@ namespace SyncVerseStudio.Views
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _context;
         
-        // Main panels
-        private Panel headerPanel = null!;
-        private Panel metricsPanel = null!;
-        private Panel chartsPanel = null!;
-        private Panel reportsPanel = null!;
+        private DateTimePicker _fromDatePicker;
+        private DateTimePicker _toDatePicker;
+        private ComboBox _periodComboBox;
         
-        // Date filters
-        private DateTimePicker fromDatePicker = null!;
-        private DateTimePicker toDatePicker = null!;
-        private ComboBox periodFilter = null!;
-        
-        // Metric cards
-        private Label totalSalesLabel = null!;
-        private Label totalRevenueLabel = null!;
-        private Label totalProfitLabel = null!;
-        private Label totalTransactionsLabel = null!;
-        private Label avgTransactionLabel = null!;
-        private Label topProductLabel = null!;
-        
-        // Buttons
-        private IconButton refreshButton = null!;
-        private IconButton exportPdfButton = null!;
-        private IconButton exportExcelButton = null!;
-        private IconButton exportCsvButton = null!;
+        private Dictionary<string, Label> _metricLabels = new Dictionary<string, Label>();
+        private Dictionary<string, Label> _trendLabels = new Dictionary<string, Label>();
 
         public AnalyticsView(AuthenticationService authService)
         {
@@ -53,537 +36,601 @@ namespace SyncVerseStudio.Views
         {
             this.SuspendLayout();
 
-            // Form settings
-            this.Text = "Analytics & Reports";
-            this.Size = new Size(1400, 900);
-            this.BackColor = Color.FromArgb(248, 250, 252);
-            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Name = "AnalyticsView";
+            this.Text = "Analytics Dashboard";
+            this.WindowState = FormWindowState.Normal;
             this.FormBorderStyle = FormBorderStyle.None;
+            this.BackColor = Color.FromArgb(245, 247, 250);
+            this.ClientSize = new Size(1200, 800);
+            this.Padding = new Padding(0);
+            
+            CreateHeaderPanel();
+            CreateContentPanel();
+            
+            this.ResumeLayout(false);
+        }
 
-            // Header Panel
-            headerPanel = new Panel
+        private void CreateHeaderPanel()
+        {
+            var headerPanel = new Panel
             {
-                Dock = DockStyle.Top,
-                Height = 120,
                 BackColor = Color.White,
+                Dock = DockStyle.Top,
+                Height = 140,
                 Padding = new Padding(30, 20, 30, 20)
             };
 
-            var titleIcon = new IconPictureBox
+            // Icon and Title
+            var iconBox = new IconPictureBox
             {
-                IconChar = IconChar.ChartLine,
-                IconColor = Color.FromArgb(255, 152, 0),
-                IconSize = 40,
-                Location = new Point(30, 25),
-                Size = new Size(40, 40)
+                IconChar = IconChar.ChartColumn,
+                IconColor = Color.FromArgb(168, 85, 247),
+                IconSize = 36,
+                Location = new Point(30, 22),
+                Size = new Size(36, 36),
+                BackColor = Color.Transparent
             };
+            headerPanel.Controls.Add(iconBox);
 
             var titleLabel = new Label
             {
-                Text = "Reports  Analytics",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(80, 20),
-                AutoSize = true
+                Text = "Analytics Dashboard",
+                Font = new Font("Segoe UI", 20F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(75, 22),
+                Size = new Size(400, 35),
+                AutoSize = false,
+                BackColor = Color.Transparent
             };
+            headerPanel.Controls.Add(titleLabel);
 
             var subtitleLabel = new Label
             {
-                Text = "Comprehensive Reporting Suite - Real-time Business Intelligence",
-                Font = new Font("Segoe UI", 11),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(80, 55),
-                AutoSize = true
-            };
-
-            // Date filters - Adjusted for 200px padding
-            var filterPanel = new Panel
-            {
-                Location = new Point(230, 85),
-                Size = new Size(940, 35),
+                Text = "Real-time Business Intelligence • Performance Metrics & Insights",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(75, 52),
+                Size = new Size(500, 20),
+                AutoSize = false,
                 BackColor = Color.Transparent
             };
+            headerPanel.Controls.Add(subtitleLabel);
 
+            // Date Range Controls
+            int controlY = 85;
+            
             var fromLabel = new Label
             {
                 Text = "From:",
-                Location = new Point(0, 8),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(71, 85, 105)
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(80, 80, 80),
+                Location = new Point(30, controlY + 5),
+                Size = new Size(40, 20),
+                BackColor = Color.Transparent
             };
+            headerPanel.Controls.Add(fromLabel);
 
-            fromDatePicker = new DateTimePicker
+            _fromDatePicker = new DateTimePicker
             {
-                Location = new Point(50, 5),
-                Width = 150,
+                Location = new Point(75, controlY),
+                Size = new Size(130, 30),
                 Format = DateTimePickerFormat.Short,
-                Value = DateTime.Now.AddMonths(-1)
+                Value = DateTime.Today.AddMonths(-1),
+                Font = new Font("Segoe UI", 9F)
             };
-            fromDatePicker.ValueChanged += DateFilter_Changed;
+            _fromDatePicker.ValueChanged += (s, e) => LoadAnalytics();
+            headerPanel.Controls.Add(_fromDatePicker);
 
             var toLabel = new Label
             {
                 Text = "To:",
-                Location = new Point(220, 8),
-                AutoSize = true,
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(71, 85, 105)
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(80, 80, 80),
+                Location = new Point(220, controlY + 5),
+                Size = new Size(25, 20),
+                BackColor = Color.Transparent
             };
+            headerPanel.Controls.Add(toLabel);
 
-            toDatePicker = new DateTimePicker
+            _toDatePicker = new DateTimePicker
             {
-                Location = new Point(250, 5),
-                Width = 150,
+                Location = new Point(250, controlY),
+                Size = new Size(130, 30),
                 Format = DateTimePickerFormat.Short,
-                Value = DateTime.Now
+                Value = DateTime.Today,
+                Font = new Font("Segoe UI", 9F)
             };
-            toDatePicker.ValueChanged += DateFilter_Changed;
+            _toDatePicker.ValueChanged += (s, e) => LoadAnalytics();
+            headerPanel.Controls.Add(_toDatePicker);
 
-            periodFilter = new ComboBox
+            _periodComboBox = new ComboBox
             {
-                Location = new Point(420, 5),
-                Width = 150,
-                DropDownStyle = ComboBoxStyle.DropDownList
+                Location = new Point(395, controlY),
+                Size = new Size(120, 30),
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9F),
+                FlatStyle = FlatStyle.Flat
             };
-            periodFilter.Items.AddRange(new object[] { "Today", "This Week", "This Month", "This Year", "Custom" });
-            periodFilter.SelectedIndex = 2;
-            periodFilter.SelectedIndexChanged += PeriodFilter_Changed;
+            _periodComboBox.Items.AddRange(new object[] { "Today", "This Week", "This Month", "This Year", "Custom" });
+            _periodComboBox.SelectedIndex = 2;
+            _periodComboBox.SelectedIndexChanged += PeriodComboBox_SelectedIndexChanged;
+            headerPanel.Controls.Add(_periodComboBox);
 
-            refreshButton = new IconButton
+            // Export Buttons
+            int btnX = 670;
+            int btnSpacing = 5;
+
+            var refreshBtn = CreateIconButton(IconChar.Sync, "", Color.FromArgb(59, 130, 246), btnX, controlY, 40);
+            refreshBtn.Click += (s, e) => LoadAnalytics();
+            headerPanel.Controls.Add(refreshBtn);
+            btnX += 40 + btnSpacing;
+
+            var pdfBtn = CreateIconButton(IconChar.FilePdf, "PDF", Color.FromArgb(239, 68, 68), btnX, controlY, 70);
+            pdfBtn.Click += ExportPdf_Click;
+            headerPanel.Controls.Add(pdfBtn);
+            btnX += 70 + btnSpacing;
+
+            var excelBtn = CreateIconButton(IconChar.FileExcel, "Excel", Color.FromArgb(34, 197, 94), btnX, controlY, 75);
+            excelBtn.Click += ExportExcel_Click;
+            headerPanel.Controls.Add(excelBtn);
+            btnX += 75 + btnSpacing;
+
+            var csvBtn = CreateIconButton(IconChar.FileCsv, "CSV", Color.FromArgb(168, 85, 247), btnX, controlY, 70);
+            csvBtn.Click += ExportCsv_Click;
+            headerPanel.Controls.Add(csvBtn);
+
+            this.Controls.Add(headerPanel);
+        }
+
+        private void PeriodComboBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var today = DateTime.Today;
+            switch (_periodComboBox.SelectedIndex)
             {
-                Text = " Refresh",
-                IconChar = IconChar.Sync,
+                case 0: // Today
+                    _fromDatePicker.Value = today;
+                    _toDatePicker.Value = today;
+                    break;
+                case 1: // This Week
+                    _fromDatePicker.Value = today.AddDays(-(int)today.DayOfWeek);
+                    _toDatePicker.Value = today;
+                    break;
+                case 2: // This Month
+                    _fromDatePicker.Value = new DateTime(today.Year, today.Month, 1);
+                    _toDatePicker.Value = today;
+                    break;
+                case 3: // This Year
+                    _fromDatePicker.Value = new DateTime(today.Year, 1, 1);
+                    _toDatePicker.Value = today;
+                    break;
+            }
+            LoadAnalytics();
+        }
+
+        private IconButton CreateIconButton(IconChar icon, string text, Color backgroundColor, int x, int y, int width)
+        {
+            var btn = new IconButton
+            {
+                Text = text,
+                IconChar = icon,
                 IconColor = Color.White,
-                Location = new Point(700, 0),
-                Size = new Size(110, 35),
-                BackColor = Color.FromArgb(59, 130, 246),
+                IconSize = 16,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleRight,
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                BackColor = backgroundColor,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                Cursor = Cursors.Hand
+                Location = new Point(x, y),
+                Size = new Size(width, 30),
+                Cursor = Cursors.Hand,
+                Padding = new Padding(string.IsNullOrEmpty(text) ? 0 : 5, 0, 5, 0)
             };
-            refreshButton.FlatAppearance.BorderSize = 0;
-            refreshButton.Click += RefreshButton_Click;
-
-            exportPdfButton = new IconButton
+            btn.FlatAppearance.BorderSize = 0;
+            if (string.IsNullOrEmpty(text))
             {
-                IconChar = IconChar.FilePdf,
-                IconColor = Color.White,
-                Location = new Point(820, 0),
-                Size = new Size(35, 35),
-                BackColor = Color.FromArgb(220, 38, 38),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            exportPdfButton.FlatAppearance.BorderSize = 0;
-            exportPdfButton.Click += ExportPdf_Click;
-
-            exportExcelButton = new IconButton
-            {
-                IconChar = IconChar.FileExcel,
-                IconColor = Color.White,
-                Location = new Point(865, 0),
-                Size = new Size(35, 35),
-                BackColor = Color.FromArgb(34, 197, 94),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            exportExcelButton.FlatAppearance.BorderSize = 0;
-            exportExcelButton.Click += ExportExcel_Click;
-
-            exportCsvButton = new IconButton
-            {
-                IconChar = IconChar.FileCsv,
-                IconColor = Color.White,
-                Location = new Point(910, 0),
-                Size = new Size(35, 35),
-                BackColor = Color.FromArgb(168, 85, 247),
-                FlatStyle = FlatStyle.Flat,
-                Cursor = Cursors.Hand
-            };
-            exportCsvButton.FlatAppearance.BorderSize = 0;
-            exportCsvButton.Click += ExportCsv_Click;
-
-            filterPanel.Controls.AddRange(new Control[] { 
-                fromLabel, fromDatePicker, toLabel, toDatePicker, periodFilter,
-                refreshButton, exportPdfButton, exportExcelButton, exportCsvButton
-            });
-
-            headerPanel.Controls.AddRange(new Control[] { titleIcon, titleLabel, subtitleLabel, filterPanel });
-
-            // Metrics Panel (KPI Cards) - Added 200px padding
-            metricsPanel = new Panel
-            {
-                Location = new Point(230, 140),
-                Size = new Size(940, 150),
-                BackColor = Color.Transparent
-            };
-
-            CreateMetricCards();
-
-            // Charts Panel - Added 200px padding
-            chartsPanel = new Panel
-            {
-                Location = new Point(230, 310),
-                Size = new Size(940, 280),
-                BackColor = Color.Transparent
-            };
-
-            CreateChartsSection();
-
-            // Reports Panel - Added 200px padding
-            reportsPanel = new Panel
-            {
-                Location = new Point(230, 610),
-                Size = new Size(940, 250),
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            CreateReportsSection();
-
-            // Add all to form
-            this.Controls.AddRange(new Control[] { headerPanel, metricsPanel, chartsPanel, reportsPanel });
-
-            this.ResumeLayout(false);
+                btn.TextAlign = ContentAlignment.MiddleCenter;
+                btn.ImageAlign = ContentAlignment.MiddleCenter;
+            }
+            return btn;
         }
 
-        private void CreateMetricCards()
+        private void CreateContentPanel()
         {
-            int cardWidth = 145;
-            int cardHeight = 140;
-            int spacing = 10;
-
-            // Total Sales Card
-            var salesCard = CreateMetricCard("Total Sales", "$0.00", IconChar.DollarSign, 
-                Color.FromArgb(59, 130, 246), 0 * (cardWidth + spacing), out totalSalesLabel);
-            
-            // Total Revenue Card
-            var revenueCard = CreateMetricCard("Revenue", "$0.00", IconChar.ChartLine, 
-                Color.FromArgb(34, 197, 94), 1 * (cardWidth + spacing), out totalRevenueLabel);
-            
-            // Total Profit Card
-            var profitCard = CreateMetricCard("Profit", "$0.00", IconChar.MoneyBillWave, 
-                Color.FromArgb(168, 85, 247), 2 * (cardWidth + spacing), out totalProfitLabel);
-            
-            // Transactions Card
-            var transactionsCard = CreateMetricCard("Transactions", "0", IconChar.Receipt, 
-                Color.FromArgb(249, 115, 22), 3 * (cardWidth + spacing), out totalTransactionsLabel);
-            
-            // Avg Transaction Card
-            var avgCard = CreateMetricCard("Avg Transaction", "$0.00", IconChar.ChartBar, 
-                Color.FromArgb(236, 72, 153), 4 * (cardWidth + spacing), out avgTransactionLabel);
-            
-            // Top Product Card
-            var topProductCard = CreateMetricCard("Top Product", "N/A", IconChar.Star, 
-                Color.FromArgb(14, 165, 233), 5 * (cardWidth + spacing), out topProductLabel);
-
-            metricsPanel.Controls.AddRange(new Control[] { 
-                salesCard, revenueCard, profitCard, transactionsCard, avgCard, topProductCard 
-            });
-        }
-
-        private Panel CreateMetricCard(string title, string value, IconChar icon, Color color, int xPos, out Label valueLabel)
-        {
-            var card = new Panel
+            var contentPanel = new Panel
             {
-                Location = new Point(xPos, 0),
-                Size = new Size(145, 140),
-                BackColor = Color.White,
-                Padding = new Padding(10)
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(245, 247, 250),
+                Padding = new Padding(30, 20, 30, 20),
+                AutoScroll = true
             };
 
-            var iconBox = new IconPictureBox
-            {
-                IconChar = icon,
-                IconColor = color,
-                IconSize = 28,
-                Location = new Point(10, 10),
-                Size = new Size(28, 28)
-            };
-
-            var titleLbl = new Label
-            {
-                Text = title,
-                Font = new Font("Segoe UI", 8),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(10, 45),
-                Size = new Size(125, 30),
-                AutoEllipsis = true
-            };
-
-            valueLabel = new Label
-            {
-                Text = value,
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(10, 70),
-                Size = new Size(125, 25),
-                AutoEllipsis = true
-            };
-
-            var trendIcon = new IconPictureBox
-            {
-                IconChar = IconChar.ArrowUp,
-                IconColor = Color.FromArgb(34, 197, 94),
-                IconSize = 12,
-                Location = new Point(10, 105),
-                Size = new Size(12, 12)
-            };
-
-            var trendLabel = new Label
-            {
-                Text = "+12.5%",
-                Font = new Font("Segoe UI", 7),
-                ForeColor = Color.FromArgb(34, 197, 94),
-                Location = new Point(25, 103),
-                AutoSize = true
-            };
-
-            card.Controls.AddRange(new Control[] { iconBox, titleLbl, valueLabel, trendIcon, trendLabel });
-            
-            // Add shadow effect
-            card.Paint += (s, e) =>
-            {
-                var rect = card.ClientRectangle;
-                using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
-                {
-                    e.Graphics.DrawRectangle(pen, 0, 0, rect.Width - 1, rect.Height - 1);
-                }
-            };
-
-            return card;
-        }
-
-        private void CreateChartsSection()
-        {
-            // Sales Trend Chart
-            var salesChartPanel = new Panel
+            // Metrics Cards Row
+            var metricsFlow = new FlowLayoutPanel
             {
                 Location = new Point(0, 0),
-                Size = new Size(460, 280),
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            var salesChartTitle = new Label
-            {
-                Text = "Sales Analytics Trends",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(20, 15),
-                AutoSize = true
-            };
-
-            var salesChartIcon = new IconPictureBox
-            {
-                IconChar = IconChar.ChartArea,
-                IconColor = Color.FromArgb(59, 130, 246),
-                IconSize = 20,
-                Location = new Point(420, 15),
-                Size = new Size(20, 20)
-            };
-
-            var salesChartPlaceholder = new Label
-            {
-                Text = "📊 Sales trend chart\n\nDaily, weekly, monthly patterns",
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(20, 80),
-                Size = new Size(420, 180),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            salesChartPanel.Controls.AddRange(new Control[] { salesChartTitle, salesChartIcon, salesChartPlaceholder });
-
-            // Top Products Chart
-            var productsChartPanel = new Panel
-            {
-                Location = new Point(480, 0),
-                Size = new Size(460, 280),
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            var productsChartTitle = new Label
-            {
-                Text = "Top Products & Categories",
-                Font = new Font("Segoe UI", 14, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(20, 15),
-                AutoSize = true
-            };
-
-            var productsChartIcon = new IconPictureBox
-            {
-                IconChar = IconChar.ChartPie,
-                IconColor = Color.FromArgb(168, 85, 247),
-                IconSize = 20,
-                Location = new Point(420, 15),
-                Size = new Size(20, 20)
-            };
-
-            var productsChartPlaceholder = new Label
-            {
-                Text = "📈 Top products chart\n\nBest categories and items",
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(20, 80),
-                Size = new Size(420, 180),
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-
-            productsChartPanel.Controls.AddRange(new Control[] { productsChartTitle, productsChartIcon, productsChartPlaceholder });
-
-            chartsPanel.Controls.AddRange(new Control[] { salesChartPanel, productsChartPanel });
-        }
-
-        private void CreateReportsSection()
-        {
-            var reportsTitle = new Label
-            {
-                Text = "Available Reports",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(0, 0),
-                AutoSize = true
-            };
-
-            var reportsGrid = new FlowLayoutPanel
-            {
-                Location = new Point(0, 40),
-                Size = new Size(900, 190),
-                AutoScroll = true,
-                FlowDirection = FlowDirection.LeftToRight,
+                Size = new Size(1140, 110),
+                BackColor = Color.Transparent,
                 WrapContents = true
             };
 
-            // Report items
-            var reports = new[]
+            CreateMetricCard(metricsFlow, IconChar.DollarSign, "Total Sales", "$0.00", "+0%", Color.FromArgb(59, 130, 246), "sales", true);
+            CreateMetricCard(metricsFlow, IconChar.ChartLine, "Revenue", "$0.00", "+0%", Color.FromArgb(34, 197, 94), "revenue", true);
+            CreateMetricCard(metricsFlow, IconChar.MoneyBillTrendUp, "Profit", "$0.00", "+0%", Color.FromArgb(168, 85, 247), "profit", true);
+            CreateMetricCard(metricsFlow, IconChar.Receipt, "Transactions", "0", "+0%", Color.FromArgb(249, 115, 22), "transactions", true);
+            CreateMetricCard(metricsFlow, IconChar.ChartBar, "Avg Transaction", "$0.00", "+0%", Color.FromArgb(236, 72, 153), "avgtrans", true);
+            CreateMetricCard(metricsFlow, IconChar.Star, "Top Product", "N/A", "", Color.FromArgb(14, 165, 233), "topproduct", false);
+
+            contentPanel.Controls.Add(metricsFlow);
+
+            // Charts Section
+            int chartY = 130;
+            
+            var salesChartPanel = CreateChartPanel("Sales Analytics Trends", IconChar.ChartArea, "Daily, weekly, monthly patterns", chartY, 0, 560);
+            contentPanel.Controls.Add(salesChartPanel);
+
+            var productsChartPanel = CreateChartPanel("Top Products & Categories", IconChar.ChartPie, "Best categories and items", chartY, 580, 560);
+            contentPanel.Controls.Add(productsChartPanel);
+
+            // Performance Insights Section
+            var insightsLabel = new Label
             {
-                ("Sales Analytics Trends", IconChar.ChartLine, Color.FromArgb(59, 130, 246)),
-                ("Revenue & Profit Reports", IconChar.MoneyBillTrendUp, Color.FromArgb(34, 197, 94)),
-                ("Inventory Performance Analysis", IconChar.BoxesStacked, Color.FromArgb(249, 115, 22)),
-                ("Customer Behavior Insights", IconChar.Users, Color.FromArgb(168, 85, 247)),
-                ("Staff Performance Metrics", IconChar.UserTie, Color.FromArgb(236, 72, 153)),
-                ("Business Intelligence Dashboard", IconChar.ChartPie, Color.FromArgb(14, 165, 233)),
-                ("Daily, Weekly, Monthly Reports", IconChar.CalendarDays, Color.FromArgb(139, 92, 246)),
-                ("Loss Prevention Analytics", IconChar.ShieldHalved, Color.FromArgb(239, 68, 68)),
-                ("Comparative Period Analysis", IconChar.ArrowsLeftRight, Color.FromArgb(6, 182, 212)),
-                ("Export to PDF, Excel, CSV", IconChar.FileExport, Color.FromArgb(132, 204, 22))
+                Text = "Performance Insights",
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(0, 520),
+                Size = new Size(300, 35),
+                BackColor = Color.Transparent
+            };
+            contentPanel.Controls.Add(insightsLabel);
+
+            var insightsPanel = new Panel
+            {
+                Location = new Point(0, 565),
+                Size = new Size(1140, 200),
+                BackColor = Color.White,
+                AutoScroll = false
             };
 
-            foreach (var (title, icon, color) in reports)
+            insightsPanel.Paint += (s, e) =>
             {
-                var reportCard = CreateReportCard(title, icon, color);
-                reportsGrid.Controls.Add(reportCard);
-            }
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, insightsPanel.Width - 1, insightsPanel.Height - 1), 12))
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
 
-            reportsPanel.Controls.AddRange(new Control[] { reportsTitle, reportsGrid });
+            CreateInsightItem(insightsPanel, IconChar.ArrowTrendUp, "Sales Growth", "Track revenue trends over time", 20, 20);
+            CreateInsightItem(insightsPanel, IconChar.Users, "Customer Analytics", "Analyze customer behavior patterns", 20, 80);
+            CreateInsightItem(insightsPanel, IconChar.BoxesStacked, "Inventory Insights", "Monitor stock performance", 400, 20);
+            CreateInsightItem(insightsPanel, IconChar.Lightbulb, "Business Intelligence", "Data-driven decision making", 400, 80);
+            CreateInsightItem(insightsPanel, IconChar.Bullseye, "Performance Metrics", "KPI tracking and monitoring", 780, 20);
+            CreateInsightItem(insightsPanel, IconChar.MagnifyingGlassChart, "Detailed Reports", "Comprehensive analytics reports", 780, 80);
+
+            contentPanel.Controls.Add(insightsPanel);
+            this.Controls.Add(contentPanel);
         }
 
-        private Panel CreateReportCard(string title, IconChar icon, Color color)
+        private Panel CreateChartPanel(string title, IconChar icon, string description, int y, int x, int width)
         {
-            var card = new Panel
+            var panel = new Panel
             {
-                Size = new Size(250, 80),
-                BackColor = Color.FromArgb(248, 250, 252),
-                Margin = new Padding(5),
-                Cursor = Cursors.Hand
+                Location = new Point(x, y),
+                Size = new Size(width, 370),
+                BackColor = Color.White
             };
 
-            var iconBox = new IconPictureBox
+            panel.Paint += (s, e) =>
             {
-                IconChar = icon,
-                IconColor = color,
-                IconSize = 28,
-                Location = new Point(15, 26),
-                Size = new Size(28, 28)
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, panel.Width - 1, panel.Height - 1), 12))
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
             };
 
             var titleLabel = new Label
             {
                 Text = title,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(55, 20),
-                Size = new Size(180, 40),
-                AutoEllipsis = true
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(20, 20),
+                Size = new Size(400, 30),
+                BackColor = Color.Transparent
             };
+            panel.Controls.Add(titleLabel);
 
-            var statusLabel = new Label
+            var iconBox = new IconPictureBox
             {
-                Text = "Coming Soon",
-                Font = new Font("Segoe UI", 7),
-                ForeColor = Color.FromArgb(148, 163, 184),
-                Location = new Point(55, 50),
-                AutoSize = true
+                IconChar = icon,
+                IconColor = Color.FromArgb(168, 85, 247),
+                IconSize = 24,
+                Location = new Point(width - 50, 20),
+                Size = new Size(24, 24),
+                BackColor = Color.Transparent
+            };
+            panel.Controls.Add(iconBox);
+
+            var placeholderPanel = new Panel
+            {
+                Location = new Point(20, 70),
+                Size = new Size(width - 40, 280),
+                BackColor = Color.FromArgb(248, 250, 252)
             };
 
-            card.Controls.AddRange(new Control[] { iconBox, titleLabel, statusLabel });
+            placeholderPanel.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, placeholderPanel.Width - 1, placeholderPanel.Height - 1), 8))
+                using (var brush = new SolidBrush(Color.FromArgb(248, 250, 252)))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
 
-            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(241, 245, 249);
-            card.MouseLeave += (s, e) => card.BackColor = Color.FromArgb(248, 250, 252);
+                // Draw placeholder content
+                using (var font = new Font("Segoe UI", 10F))
+                using (var brush = new SolidBrush(Color.FromArgb(150, 150, 150)))
+                {
+                    var text = $"{title}\n\n{description}";
+                    var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
+                    e.Graphics.DrawString(text, font, brush, new RectangleF(0, 0, placeholderPanel.Width, placeholderPanel.Height), sf);
+                }
+            };
 
-            return card;
+            panel.Controls.Add(placeholderPanel);
+            return panel;
         }
 
-        private void LoadAnalytics()
+        private void CreateInsightItem(Panel parent, IconChar icon, string title, string description, int x, int y)
+        {
+            var itemPanel = new Panel
+            {
+                Location = new Point(x, y),
+                Size = new Size(340, 50),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
+            };
+
+            var iconBox = new IconPictureBox
+            {
+                IconChar = icon,
+                IconColor = Color.FromArgb(168, 85, 247),
+                IconSize = 28,
+                Location = new Point(5, 11),
+                Size = new Size(28, 28),
+                BackColor = Color.Transparent
+            };
+            itemPanel.Controls.Add(iconBox);
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 11F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(45, 5),
+                Size = new Size(285, 22),
+                BackColor = Color.Transparent
+            };
+            itemPanel.Controls.Add(titleLabel);
+
+            var descLabel = new Label
+            {
+                Text = description,
+                Font = new Font("Segoe UI", 8.5F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(45, 27),
+                Size = new Size(285, 18),
+                BackColor = Color.Transparent
+            };
+            itemPanel.Controls.Add(descLabel);
+
+            itemPanel.MouseEnter += (s, e) => itemPanel.BackColor = Color.FromArgb(248, 250, 252);
+            itemPanel.MouseLeave += (s, e) => itemPanel.BackColor = Color.Transparent;
+            itemPanel.Click += (s, e) => MessageBox.Show($"{title}\n\n{description}\n\nComing Soon!", "Insight", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+            parent.Controls.Add(itemPanel);
+        }
+
+        private void CreateMetricCard(FlowLayoutPanel parent, IconChar icon, string title, string value, string trend, Color color, string tag, bool showTrend)
+        {
+            var card = new Panel
+            {
+                Size = new Size(180, 90),
+                Margin = new Padding(0, 0, 10, 10),
+                BackColor = Color.White,
+                Tag = tag
+            };
+
+            card.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                var rect = card.ClientRectangle;
+                
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), 10))
+                using (var brush = new SolidBrush(Color.White))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+
+            // Icon with background
+            var iconPanel = new Panel
+            {
+                Size = new Size(40, 40),
+                Location = new Point(15, 15),
+                BackColor = Color.FromArgb(15, color)
+            };
+            iconPanel.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var brush = new SolidBrush(Color.FromArgb(20, color)))
+                {
+                    e.Graphics.FillEllipse(brush, 0, 0, 40, 40);
+                }
+            };
+            card.Controls.Add(iconPanel);
+
+            var iconBox = new IconPictureBox
+            {
+                IconChar = icon,
+                IconColor = color,
+                IconSize = 20,
+                Location = new Point(10, 10),
+                Size = new Size(20, 20),
+                BackColor = Color.Transparent,
+                Parent = iconPanel
+            };
+
+            var titleLabel = new Label
+            {
+                Text = title,
+                Font = new Font("Segoe UI", 8.5F),
+                ForeColor = Color.FromArgb(110, 110, 110),
+                Location = new Point(15, 60),
+                Size = new Size(150, 16),
+                BackColor = Color.Transparent
+            };
+            card.Controls.Add(titleLabel);
+
+            var valueLabel = new Label
+            {
+                Text = value,
+                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(15, 12),
+                Size = new Size(110, 24),
+                BackColor = Color.Transparent,
+                Tag = "value",
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            card.Controls.Add(valueLabel);
+            _metricLabels[tag] = valueLabel;
+
+            if (showTrend)
+            {
+                var trendLabel = new Label
+                {
+                    Text = trend,
+                    Font = new Font("Segoe UI", 8F),
+                    ForeColor = trend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68),
+                    Location = new Point(130, 15),
+                    Size = new Size(45, 16),
+                    BackColor = Color.Transparent,
+                    Tag = "trend",
+                    TextAlign = ContentAlignment.MiddleRight
+                };
+                card.Controls.Add(trendLabel);
+                _trendLabels[tag] = trendLabel;
+            }
+
+            parent.Controls.Add(card);
+        }
+
+        private async void LoadAnalytics()
         {
             try
             {
-                var fromDate = fromDatePicker.Value.Date;
-                var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+                var fromDate = _fromDatePicker?.Value.Date ?? DateTime.Today.AddMonths(-1);
+                var toDate = _toDatePicker?.Value.Date ?? DateTime.Today;
 
-                // Get sales data
-                var sales = _context.Sales
-                    .Include(s => s.SaleItems)
+                // Calculate previous period for comparison
+                var periodDays = (toDate - fromDate).Days;
+                var prevFromDate = fromDate.AddDays(-periodDays - 1);
+                var prevToDate = fromDate.AddDays(-1);
+
+                // Current period data
+                var currentSales = await _context.Sales
                     .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
-                    .ToList();
+                    .SumAsync(s => (decimal?)s.TotalAmount) ?? 0;
 
-                // Calculate metrics
-                var totalSales = sales.Sum(s => s.TotalAmount);
-                var totalTransactions = sales.Count;
-                var avgTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
+                var currentCost = await _context.Sales
+                    .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                    .SelectMany(s => s.SaleItems)
+                    .SumAsync(si => (decimal?)(si.Quantity * si.Product.CostPrice)) ?? 0;
 
-                // Calculate profit
-                var totalProfit = 0m;
-                foreach (var sale in sales)
+                var currentProfit = currentSales - currentCost;
+
+                var currentTransactions = await _context.Sales
+                    .CountAsync(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed);
+
+                var avgTransaction = currentTransactions > 0 ? currentSales / currentTransactions : 0;
+
+                // Previous period data for trends
+                var prevSales = await _context.Sales
+                    .Where(s => s.SaleDate >= prevFromDate && s.SaleDate <= prevToDate && s.Status == SaleStatus.Completed)
+                    .SumAsync(s => (decimal?)s.TotalAmount) ?? 0;
+
+                var prevProfit = prevSales - (await _context.Sales
+                    .Where(s => s.SaleDate >= prevFromDate && s.SaleDate <= prevToDate && s.Status == SaleStatus.Completed)
+                    .SelectMany(s => s.SaleItems)
+                    .SumAsync(si => (decimal?)(si.Quantity * si.Product.CostPrice)) ?? 0);
+
+                var prevTransactions = await _context.Sales
+                    .CountAsync(s => s.SaleDate >= prevFromDate && s.SaleDate <= prevToDate && s.Status == SaleStatus.Completed);
+
+                var prevAvgTransaction = prevTransactions > 0 ? prevSales / prevTransactions : 0;
+
+                // Top product
+                var topProduct = await _context.Sales
+                    .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                    .SelectMany(s => s.SaleItems)
+                    .GroupBy(si => si.Product.Name)
+                    .Select(g => new { Name = g.Key, Total = g.Sum(si => si.Quantity * si.UnitPrice) })
+                    .OrderByDescending(x => x.Total)
+                    .FirstOrDefaultAsync();
+
+                // Calculate trends
+                var salesTrend = CalculateTrend(currentSales, prevSales);
+                var profitTrend = CalculateTrend(currentProfit, prevProfit);
+                var transTrend = CalculateTrend(currentTransactions, prevTransactions);
+                var avgTrend = CalculateTrend(avgTransaction, prevAvgTransaction);
+
+                // Update metric labels
+                if (_metricLabels.ContainsKey("sales"))
+                    _metricLabels["sales"].Text = $"${currentSales:N2}";
+                if (_metricLabels.ContainsKey("revenue"))
+                    _metricLabels["revenue"].Text = $"${currentSales:N2}";
+                if (_metricLabels.ContainsKey("profit"))
+                    _metricLabels["profit"].Text = $"${currentProfit:N2}";
+                if (_metricLabels.ContainsKey("transactions"))
+                    _metricLabels["transactions"].Text = currentTransactions.ToString();
+                if (_metricLabels.ContainsKey("avgtrans"))
+                    _metricLabels["avgtrans"].Text = $"${avgTransaction:N2}";
+                if (_metricLabels.ContainsKey("topproduct"))
                 {
-                    foreach (var item in sale.SaleItems)
-                    {
-                        var product = _context.Products.Find(item.ProductId);
-                        if (product != null)
-                        {
-                            totalProfit += (item.UnitPrice - product.CostPrice) * item.Quantity;
-                        }
-                    }
+                    var productName = topProduct?.Name ?? "N/A";
+                    _metricLabels["topproduct"].Text = productName.Length > 12 ? productName.Substring(0, 12) + "..." : productName;
                 }
 
-                // Get top product
-                var topProduct = _context.SaleItems
-                    .Include(si => si.Product)
-                    .Where(si => si.Sale.SaleDate >= fromDate && si.Sale.SaleDate <= toDate)
-                    .GroupBy(si => si.ProductId)
-                    .Select(g => new { ProductId = g.Key, TotalQty = g.Sum(si => si.Quantity) })
-                    .OrderByDescending(x => x.TotalQty)
-                    .FirstOrDefault();
-
-                string topProductName = "N/A";
-                if (topProduct != null)
+                // Update trend labels
+                if (_trendLabels.ContainsKey("sales"))
                 {
-                    var product = _context.Products.Find(topProduct.ProductId);
-                    topProductName = product?.Name ?? "N/A";
+                    _trendLabels["sales"].Text = salesTrend;
+                    _trendLabels["sales"].ForeColor = salesTrend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
                 }
-
-                // Update UI
-                totalSalesLabel.Text = $"${totalSales:N2}";
-                totalRevenueLabel.Text = $"${totalSales:N2}";
-                totalProfitLabel.Text = $"${totalProfit:N2}";
-                totalTransactionsLabel.Text = totalTransactions.ToString();
-                avgTransactionLabel.Text = $"${avgTransaction:N2}";
-                topProductLabel.Text = topProductName.Length > 15 ? topProductName.Substring(0, 15) + "..." : topProductName;
+                if (_trendLabels.ContainsKey("revenue"))
+                {
+                    _trendLabels["revenue"].Text = salesTrend;
+                    _trendLabels["revenue"].ForeColor = salesTrend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                }
+                if (_trendLabels.ContainsKey("profit"))
+                {
+                    _trendLabels["profit"].Text = profitTrend;
+                    _trendLabels["profit"].ForeColor = profitTrend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                }
+                if (_trendLabels.ContainsKey("transactions"))
+                {
+                    _trendLabels["transactions"].Text = transTrend;
+                    _trendLabels["transactions"].ForeColor = transTrend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                }
+                if (_trendLabels.ContainsKey("avgtrans"))
+                {
+                    _trendLabels["avgtrans"].Text = avgTrend;
+                    _trendLabels["avgtrans"].ForeColor = avgTrend.StartsWith("+") ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                }
             }
             catch (Exception ex)
             {
@@ -591,44 +638,14 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private void DateFilter_Changed(object? sender, EventArgs e)
+        private string CalculateTrend(decimal current, decimal previous)
         {
-            periodFilter.SelectedIndex = 4; // Set to Custom
-            LoadAnalytics();
+            if (previous == 0) return current > 0 ? "+100%" : "0%";
+            var change = ((current - previous) / previous) * 100;
+            return $"{(change >= 0 ? "+" : "")}{change:N2}%";
         }
 
-        private void PeriodFilter_Changed(object? sender, EventArgs e)
-        {
-            switch (periodFilter.SelectedIndex)
-            {
-                case 0: // Today
-                    fromDatePicker.Value = DateTime.Today;
-                    toDatePicker.Value = DateTime.Today;
-                    break;
-                case 1: // This Week
-                    fromDatePicker.Value = DateTime.Today.AddDays(-(int)DateTime.Today.DayOfWeek);
-                    toDatePicker.Value = DateTime.Today;
-                    break;
-                case 2: // This Month
-                    fromDatePicker.Value = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-                    toDatePicker.Value = DateTime.Today;
-                    break;
-                case 3: // This Year
-                    fromDatePicker.Value = new DateTime(DateTime.Today.Year, 1, 1);
-                    toDatePicker.Value = DateTime.Today;
-                    break;
-                case 4: // Custom
-                    return;
-            }
-            LoadAnalytics();
-        }
-
-        private void RefreshButton_Click(object? sender, EventArgs e)
-        {
-            LoadAnalytics();
-        }
-
-        private void ExportPdf_Click(object? sender, EventArgs e)
+        private void ExportPdf_Click(object sender, EventArgs e)
         {
             try
             {
@@ -653,7 +670,7 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private void ExportExcel_Click(object? sender, EventArgs e)
+        private void ExportExcel_Click(object sender, EventArgs e)
         {
             try
             {
@@ -678,7 +695,7 @@ namespace SyncVerseStudio.Views
             }
         }
 
-        private void ExportCsv_Click(object? sender, EventArgs e)
+        private void ExportCsv_Click(object sender, EventArgs e)
         {
             try
             {
@@ -705,35 +722,33 @@ namespace SyncVerseStudio.Views
 
         private void ExportToPdf(string filePath)
         {
+            var fromDate = _fromDatePicker.Value.Date;
+            var toDate = _toDatePicker.Value.Date;
+            var sales = _context.Sales
+                .Include(s => s.SaleItems)
+                .ThenInclude(si => si.Product)
+                .Include(s => s.Customer)
+                .Include(s => s.Cashier)
+                .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
+                .OrderByDescending(s => s.SaleDate)
+                .ToList();
+
             using (var writer = new System.IO.StreamWriter(filePath))
             {
                 writer.WriteLine("SYNCVERSE STUDIO - ANALYTICS REPORT");
                 writer.WriteLine("=" + new string('=', 60));
                 writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                writer.WriteLine($"Period: {fromDatePicker.Value:yyyy-MM-dd} to {toDatePicker.Value:yyyy-MM-dd}");
+                writer.WriteLine($"Period: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd}");
                 writer.WriteLine();
                 writer.WriteLine("KEY PERFORMANCE INDICATORS");
                 writer.WriteLine("-" + new string('-', 60));
-                writer.WriteLine($"Total Sales:        {totalSalesLabel.Text}");
-                writer.WriteLine($"Revenue:            {totalRevenueLabel.Text}");
-                writer.WriteLine($"Profit:             {totalProfitLabel.Text}");
-                writer.WriteLine($"Transactions:       {totalTransactionsLabel.Text}");
-                writer.WriteLine($"Avg Transaction:    {avgTransactionLabel.Text}");
-                writer.WriteLine($"Top Product:        {topProductLabel.Text}");
+                writer.WriteLine($"Total Sales:        {_metricLabels["sales"].Text}");
+                writer.WriteLine($"Revenue:            {_metricLabels["revenue"].Text}");
+                writer.WriteLine($"Profit:             {_metricLabels["profit"].Text}");
+                writer.WriteLine($"Transactions:       {_metricLabels["transactions"].Text}");
+                writer.WriteLine($"Avg Transaction:    {_metricLabels["avgtrans"].Text}");
+                writer.WriteLine($"Top Product:        {_metricLabels["topproduct"].Text}");
                 writer.WriteLine();
-                
-                // Get detailed sales data
-                var fromDate = fromDatePicker.Value.Date;
-                var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
-                var sales = _context.Sales
-                    .Include(s => s.SaleItems)
-                    .ThenInclude(si => si.Product)
-                    .Include(s => s.Customer)
-                    .Include(s => s.Cashier)
-                    .Where(s => s.SaleDate >= fromDate && s.SaleDate <= toDate && s.Status == SaleStatus.Completed)
-                    .OrderByDescending(s => s.SaleDate)
-                    .ToList();
-
                 writer.WriteLine("DETAILED TRANSACTIONS");
                 writer.WriteLine("-" + new string('-', 60));
                 foreach (var sale in sales)
@@ -748,8 +763,8 @@ namespace SyncVerseStudio.Views
 
         private void ExportToExcel(string filePath)
         {
-            var fromDate = fromDatePicker.Value.Date;
-            var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+            var fromDate = _fromDatePicker.Value.Date;
+            var toDate = _toDatePicker.Value.Date;
             var sales = _context.Sales
                 .Include(s => s.SaleItems)
                 .ThenInclude(si => si.Product)
@@ -761,23 +776,18 @@ namespace SyncVerseStudio.Views
 
             using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
             {
-                // Write header
                 writer.WriteLine("SYNCVERSE STUDIO - ANALYTICS REPORT");
                 writer.WriteLine($"Generated: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
-                writer.WriteLine($"Period: {fromDatePicker.Value:yyyy-MM-dd} to {toDatePicker.Value:yyyy-MM-dd}");
+                writer.WriteLine($"Period: {fromDate:yyyy-MM-dd} to {toDate:yyyy-MM-dd}");
                 writer.WriteLine();
-                
-                // KPIs
                 writer.WriteLine("KEY METRICS");
-                writer.WriteLine($"Total Sales\t{totalSalesLabel.Text}");
-                writer.WriteLine($"Revenue\t{totalRevenueLabel.Text}");
-                writer.WriteLine($"Profit\t{totalProfitLabel.Text}");
-                writer.WriteLine($"Transactions\t{totalTransactionsLabel.Text}");
-                writer.WriteLine($"Avg Transaction\t{avgTransactionLabel.Text}");
-                writer.WriteLine($"Top Product\t{topProductLabel.Text}");
+                writer.WriteLine($"Total Sales\t{_metricLabels["sales"].Text}");
+                writer.WriteLine($"Revenue\t{_metricLabels["revenue"].Text}");
+                writer.WriteLine($"Profit\t{_metricLabels["profit"].Text}");
+                writer.WriteLine($"Transactions\t{_metricLabels["transactions"].Text}");
+                writer.WriteLine($"Avg Transaction\t{_metricLabels["avgtrans"].Text}");
+                writer.WriteLine($"Top Product\t{_metricLabels["topproduct"].Text}");
                 writer.WriteLine();
-                
-                // Detailed data
                 writer.WriteLine("TRANSACTION DETAILS");
                 writer.WriteLine("Invoice Number\tDate\tCashier\tCustomer\tTotal Amount\tPayment Method\tStatus");
                 foreach (var sale in sales)
@@ -790,8 +800,8 @@ namespace SyncVerseStudio.Views
 
         private void ExportToCsv(string filePath)
         {
-            var fromDate = fromDatePicker.Value.Date;
-            var toDate = toDatePicker.Value.Date.AddDays(1).AddSeconds(-1);
+            var fromDate = _fromDatePicker.Value.Date;
+            var toDate = _toDatePicker.Value.Date;
             var sales = _context.Sales
                 .Include(s => s.SaleItems)
                 .ThenInclude(si => si.Product)
@@ -803,10 +813,8 @@ namespace SyncVerseStudio.Views
 
             using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
             {
-                // Write CSV header
                 writer.WriteLine("Invoice Number,Date,Time,Cashier,Customer,Subtotal,Tax,Discount,Total Amount,Payment Method,Status");
                 
-                // Write data rows
                 foreach (var sale in sales)
                 {
                     var subtotal = sale.TotalAmount - sale.TaxAmount + sale.DiscountAmount;
@@ -816,6 +824,17 @@ namespace SyncVerseStudio.Views
                         $"\"{sale.PaymentMethod}\",\"{sale.Status}\"");
                 }
             }
+        }
+
+        private GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
+        {
+            var path = new GraphicsPath();
+            path.AddArc(rect.X, rect.Y, radius, radius, 180, 90);
+            path.AddArc(rect.Right - radius, rect.Y, radius, radius, 270, 90);
+            path.AddArc(rect.Right - radius, rect.Bottom - radius, radius, radius, 0, 90);
+            path.AddArc(rect.X, rect.Bottom - radius, radius, radius, 90, 90);
+            path.CloseFigure();
+            return path;
         }
 
         protected override void Dispose(bool disposing)

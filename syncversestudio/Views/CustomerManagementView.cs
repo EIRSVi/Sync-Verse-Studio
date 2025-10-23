@@ -44,8 +44,8 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(20, 10, 20, 10)
+                Height = 130,
+                Padding = new Padding(20, 20, 20, 20)
             };
 
             var titleLabel = new Label
@@ -53,47 +53,52 @@ namespace SyncVerseStudio.Views
                 Text = "CUSTOMER MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 18),
-                Size = new Size(400, 35)
-            };
-
-            customerCountLabel = new Label
-            {
-                Text = "Total Customers: 0",
-                Font = new Font("Segoe UI", 10F),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(330, 20),
-                Size = new Size(200, 25)
+                Location = new Point(20, 25),
+                Size = new Size(500, 35),
+                AutoSize = false
             };
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search customers...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 45),
-                Size = new Size(250, 25)
+                Location = new Point(20, 75),
+                Size = new Size(220, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
 
-            // Buttons
-            int buttonX = 600;
-            addButton = CreateButton("ADD CUSTOMER", Color.FromArgb(48, 148, 255), buttonX, 45, 140);
+            customerCountLabel = new Label
+            {
+                Text = "Total: 0",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(255, 82),
+                Size = new Size(100, 20),
+                AutoSize = false,
+                BackColor = Color.Transparent
+            };
+
+            // Buttons - aligned with search box
+            int buttonX = 500;
+            int buttonSpacing = 10;
+            
+            addButton = CreateButton("ADD CUSTOMER", Color.FromArgb(48, 148, 255), buttonX, 75, 140);
             addButton.Click += AddButton_Click;
-            buttonX += 150;
+            buttonX += 140 + buttonSpacing;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 45, 80);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 75, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 90;
+            buttonX += 80 + buttonSpacing;
 
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 45, 90);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 75, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 100;
+            buttonX += 90 + buttonSpacing;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 45, 100);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 75, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
-                titleLabel, customerCountLabel, searchBox, 
+                titleLabel, searchBox, customerCountLabel,
                 addButton, editButton, deleteButton, refreshButton
             });
 
@@ -225,7 +230,7 @@ namespace SyncVerseStudio.Views
                     customersGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
 
-                customerCountLabel.Text = $"Total Customers: {customers.Count}";
+                customerCountLabel.Text = $"Total: {customers.Count}";
             }
             catch (Exception ex)
             {
@@ -300,7 +305,7 @@ namespace SyncVerseStudio.Views
                     customersGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
 
-                customerCountLabel.Text = $"Total Customers: {customers.Count}";
+                customerCountLabel.Text = $"Total: {customers.Count}";
             }
             catch (Exception ex)
             {

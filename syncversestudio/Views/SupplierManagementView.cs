@@ -46,8 +46,8 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 80,
-                Padding = new Padding(20, 10, 20, 10)
+                Height = 130,
+                Padding = new Padding(20, 20, 20, 20)
             };
 
             var titleLabel = new Label
@@ -55,58 +55,66 @@ namespace SyncVerseStudio.Views
                 Text = "SUPPLIER MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 18),
-                Size = new Size(400, 35)
+                Location = new Point(20, 25),
+                Size = new Size(500, 35),
+                AutoSize = false
             };
 
-            supplierCountLabel = new Label
-            {
-                Text = "Total Suppliers: 0",
-                Font = new Font("Segoe UI", 10F),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(330, 20),
-                Size = new Size(200, 25)
-            };
+            // Controls positioned at 75px from top for consistent spacing
+            int controlY = 75;
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search suppliers...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 45),
-                Size = new Size(200, 25)
+                Location = new Point(20, controlY),
+                Size = new Size(180, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
 
             statusFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(240, 45),
-                Size = new Size(120, 25),
+                Location = new Point(215, controlY),
+                Size = new Size(140, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             statusFilter.Items.AddRange(new[] { "All Status", "Active", "Inactive" });
             statusFilter.SelectedIndex = 0;
             statusFilter.SelectedIndexChanged += StatusFilter_SelectedIndexChanged;
 
-            // Buttons
+            supplierCountLabel = new Label
+            {
+                Text = "Total: 0",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(370, 82),
+                Size = new Size(100, 20),
+                AutoSize = false,
+                BackColor = Color.Transparent
+            };
+
+            // Buttons - aligned with search box and filter
             int buttonX = 600;
-            addButton = CreateButton("ADD SUPPLIER", Color.FromArgb(48, 148, 255), buttonX, 45, 130);
+            int buttonSpacing = 10;
+            
+            addButton = CreateButton("ADD SUPPLIER", Color.FromArgb(48, 148, 255), buttonX, controlY, 130);
             addButton.Click += AddButton_Click;
-            buttonX += 140;
+            buttonX += 130 + buttonSpacing;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 45, 80);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, controlY, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 90;
+            buttonX += 80 + buttonSpacing;
 
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 45, 90);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, controlY, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 100;
+            buttonX += 90 + buttonSpacing;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 45, 100);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, controlY, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
-                titleLabel, supplierCountLabel, searchBox, statusFilter,
+                titleLabel, searchBox, statusFilter, supplierCountLabel,
                 addButton, editButton, deleteButton, refreshButton
             });
 

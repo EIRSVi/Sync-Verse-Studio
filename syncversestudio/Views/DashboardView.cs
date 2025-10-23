@@ -34,7 +34,7 @@ namespace SyncVerseStudio.Views
 
             _refreshTimer = new System.Windows.Forms.Timer
             {
-                Interval = 1000 // Update every 1 second for real-time feel
+                Interval = 5000 // Update every 5 seconds - reduced frequency for stability
             };
             _refreshTimer.Tick += async (s, e) => await RefreshLiveDataAsync();
         }
@@ -548,20 +548,42 @@ namespace SyncVerseStudio.Views
                     .Select(g => new { Name = g.Key, Count = g.Count() })
                     .ToListAsync();
                 
-                _categoryData.Clear();
-                foreach (var cat in categoryData)
+                // Only update if data has changed
+                bool dataChanged = false;
+                if (_categoryData.Count != categoryData.Count)
                 {
-                    _categoryData.Add(new CategoryData
+                    dataChanged = true;
+                }
+                else
+                {
+                    for (int i = 0; i < categoryData.Count; i++)
                     {
-                        Name = cat.Name,
-                        Count = cat.Count,
-                        Color = categoryColors.ContainsKey(cat.Name) ? categoryColors[cat.Name] : Color.FromArgb(168, 85, 247)
-                    });
+                        var existing = _categoryData.FirstOrDefault(c => c.Name == categoryData[i].Name);
+                        if (existing == null || existing.Count != categoryData[i].Count)
+                        {
+                            dataChanged = true;
+                            break;
+                        }
+                    }
                 }
                 
-                // Refresh pie chart
-                var piePanel = this.Controls.Find("PieChartDrawing", true).FirstOrDefault();
-                piePanel?.Invalidate();
+                if (dataChanged)
+                {
+                    _categoryData.Clear();
+                    foreach (var cat in categoryData)
+                    {
+                        _categoryData.Add(new CategoryData
+                        {
+                            Name = cat.Name,
+                            Count = cat.Count,
+                            Color = categoryColors.ContainsKey(cat.Name) ? categoryColors[cat.Name] : Color.FromArgb(168, 85, 247)
+                        });
+                    }
+                    
+                    // Only refresh pie chart if data actually changed
+                    var piePanel = this.Controls.Find("PieChartDrawing", true).FirstOrDefault();
+                    piePanel?.Invalidate();
+                }
             }
             catch { }
         }
@@ -574,7 +596,11 @@ namespace SyncVerseStudio.Views
 
             try
             {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                // High quality rendering - no animation
+                e.Graphics.SmoothingMode = SmoothingMode.HighQuality;
+                e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                e.Graphics.CompositingQuality = CompositingQuality.HighQuality;
+                e.Graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
                 
                 // Use real data from database
                 if (_categoryData.Count == 0) return;
@@ -582,20 +608,19 @@ namespace SyncVerseStudio.Views
                 int total = _categoryData.Sum(c => c.Count);
                 if (total == 0) return;
 
-                // Draw pie chart - adjusted for smaller panel
+                // Draw pie chart - stable positioning
                 int centerX = 130;
                 int centerY = 135;
                 int radius = 100;
 
                 float startAngle = 0;
                 int legendY = 20;
-                int sliceIndex = 0;
 
                 foreach (var category in _categoryData)
                 {
                     float sweepAngle = (category.Count / (float)total) * 360;
                     
-                    // Simple pie chart - no hover effects
+                    // Static pie chart - no animations or effects
                     Rectangle pieRect = new Rectangle(centerX - radius, centerY - radius, radius * 2, radius * 2);
                         
                     using (var brush = new SolidBrush(category.Color))
@@ -603,13 +628,13 @@ namespace SyncVerseStudio.Views
                         e.Graphics.FillPie(brush, pieRect, startAngle, sweepAngle);
                     }
 
-                    // Draw white border between slices
+                    // Draw white border between slices for clarity
                     using (var pen = new Pen(Color.White, 3))
                     {
                         e.Graphics.DrawPie(pen, pieRect, startAngle, sweepAngle);
                     }
 
-                    // Draw legend - adjusted for smaller panel
+                    // Draw legend
                     int legendX = 280;
                     
                     // Color box
@@ -618,7 +643,7 @@ namespace SyncVerseStudio.Views
                         e.Graphics.FillRectangle(brush, legendX, legendY, 16, 16);
                     }
 
-                    // Category name - supports both English and Khmer
+                    // Category name
                     using (var font = GetKhmerFont(9.5F, FontStyle.Regular))
                     using (var brush = new SolidBrush(Color.FromArgb(60, 60, 60)))
                     {
@@ -638,7 +663,7 @@ namespace SyncVerseStudio.Views
                     startAngle += sweepAngle;
                 }
 
-                // Draw center circle for donut effect - adjusted size
+                // Draw center circle for donut effect
                 int innerRadius = 40;
                 Rectangle innerRect = new Rectangle(centerX - innerRadius, centerY - innerRadius, innerRadius * 2, innerRadius * 2);
                 using (var brush = new SolidBrush(Color.White))
@@ -646,7 +671,7 @@ namespace SyncVerseStudio.Views
                     e.Graphics.FillEllipse(brush, innerRect);
                 }
 
-                // Draw total in center - adjusted font size
+                // Draw total in center
                 using (var font = GetKhmerFont(14F, FontStyle.Bold))
                 using (var brush = new SolidBrush(Color.FromArgb(30, 30, 30)))
                 {

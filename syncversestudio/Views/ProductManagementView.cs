@@ -16,6 +16,7 @@ namespace SyncVerseStudio.Views
         private Button addButton, editButton, deleteButton, refreshButton;
         private TextBox searchBox;
         private ComboBox categoryFilter;
+        private Label productCountLabel;
 
         public ProductManagementView(AuthenticationService authService)
         {
@@ -47,8 +48,8 @@ namespace SyncVerseStudio.Views
             {
                 BackColor = Color.White,
                 Dock = DockStyle.Top,
-                Height = 90,
-                Padding = new Padding(20, 10, 20, 10)
+                Height = 130,
+                Padding = new Padding(20, 20, 20, 20)
             };
 
             var titleLabel = new Label
@@ -56,16 +57,19 @@ namespace SyncVerseStudio.Views
                 Text = "PRODUCT MANAGEMENT",
                 Font = new Font("Segoe UI", 18F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(20, 18),
+                Location = new Point(20, 25),
                 Size = new Size(400, 35)
             };
             topPanel.Controls.Add(titleLabel);
+
+            // Controls positioned at 75px from top for consistent spacing
+            int controlY = 75;
 
             searchBox = new TextBox
             {
                 PlaceholderText = "Search products...",
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(20, 55),
+                Location = new Point(20, controlY),
                 Size = new Size(220, 30)
             };
             searchBox.TextChanged += SearchBox_TextChanged;
@@ -74,28 +78,42 @@ namespace SyncVerseStudio.Views
             categoryFilter = new ComboBox
             {
                 Font = new Font("Segoe UI", 10F),
-                Location = new Point(255, 55),
+                Location = new Point(255, controlY),
                 Size = new Size(160, 30),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
             categoryFilter.SelectedIndexChanged += CategoryFilter_SelectedIndexChanged;
             topPanel.Controls.Add(categoryFilter);
 
-            // Buttons
-            int buttonX = 440;
-            addButton = CreateButton("ADD PRODUCT", Color.FromArgb(48, 148, 255), buttonX, 55, 140);
+            productCountLabel = new Label
+            {
+                Text = "Total: 0",
+                Font = new Font("Segoe UI", 9F),
+                ForeColor = Color.FromArgb(120, 120, 120),
+                Location = new Point(430, 82),
+                Size = new Size(100, 20),
+                AutoSize = false,
+                BackColor = Color.Transparent
+            };
+            topPanel.Controls.Add(productCountLabel);
+
+            // Buttons - aligned with search box and filter
+            int buttonX = 650;
+            int buttonSpacing = 10;
+            
+            addButton = CreateButton("ADD PRODUCT", Color.FromArgb(48, 148, 255), buttonX, controlY, 140);
             addButton.Click += AddButton_Click;
-            buttonX += 150;
+            buttonX += 140 + buttonSpacing;
 
-            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, 55, 90);
+            editButton = CreateButton("EDIT", Color.FromArgb(48, 148, 255), buttonX, controlY, 80);
             editButton.Click += EditButton_Click;
-            buttonX += 100;
+            buttonX += 80 + buttonSpacing;
 
-            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, 55, 100);
+            deleteButton = CreateButton("DELETE", Color.FromArgb(255, 0, 80), buttonX, controlY, 90);
             deleteButton.Click += DeleteButton_Click;
-            buttonX += 110;
+            buttonX += 90 + buttonSpacing;
 
-            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, 55, 110);
+            refreshButton = CreateButton("REFRESH", Color.FromArgb(117, 117, 117), buttonX, controlY, 100);
             refreshButton.Click += RefreshButton_Click;
 
             topPanel.Controls.AddRange(new Control[] {
@@ -210,6 +228,8 @@ namespace SyncVerseStudio.Views
                     productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
                     productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
                 }
+
+                productCountLabel.Text = $"Total: {products.Count}";
             }
             catch (Exception ex)
             {
