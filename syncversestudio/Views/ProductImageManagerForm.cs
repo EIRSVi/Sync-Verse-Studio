@@ -436,7 +436,7 @@ namespace SyncVerseStudio.Views
                         string assetsPath = ProductImageHelper.GetImageFullPath("");
                         string relativePath = filePath.Replace(assetsPath + "\\", "");
 
-                        var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, "Local");
+                        var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, false);
                         context.ProductImages.Add(productImage);
                     }
 
@@ -509,7 +509,7 @@ namespace SyncVerseStudio.Views
                     }
 
                     using var context = new ApplicationDbContext();
-                    var productImage = ProductImageHelper.CreateProductImage(_productId, url, "URL");
+                    var productImage = ProductImageHelper.CreateProductImage(_productId, url, false);
                     context.ProductImages.Add(productImage);
                     await context.SaveChangesAsync();
 
@@ -558,9 +558,9 @@ namespace SyncVerseStudio.Views
                     foreach (var filePath in dialog.FileNames)
                     {
                         // Copy image to assets folder
-                        string relativePath = ProductImageHelper.CopyImageToAssets(filePath, _product?.Name ?? "Product", _productId);
+                        string relativePath = ProductImageHelper.CopyImageToAssets(filePath);
 
-                        var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, "Upload");
+                        var productImage = ProductImageHelper.CreateProductImage(_productId, relativePath, false);
                         context.ProductImages.Add(productImage);
                     }
 

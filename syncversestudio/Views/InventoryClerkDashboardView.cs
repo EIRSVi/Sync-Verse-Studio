@@ -108,7 +108,7 @@ namespace SyncVerseStudio.Views
             headerPanel.Controls.Add(subtitleLabel);
 
             // User info and logout section
-            var currentUser = _authService.GetCurrentUser();
+            var currentUser = _authService.CurrentUser;
             var userLabel = new Label
             {
                 Text = $"Welcome, {currentUser?.FirstName ?? "User"}",

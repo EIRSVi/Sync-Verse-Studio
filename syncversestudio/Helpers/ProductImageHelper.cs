@@ -1,333 +1,377 @@
 using System;
 using System.Drawing;
-using System.Drawing.Imaging;
+using System.Drawing.Drawing2D;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using SyncVerseStudio.Models;
 
 namespace SyncVerseStudio.Helpers
 {
+    /// <summary>
+    /// Helper class for handling product images in the POS system
+    /// </summary>
     public static class ProductImageHelper
     {
-        private static readonly string BaseImagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "product");
-        private static readonly string[] SupportedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
-        private static readonly string DefaultBrandImageUrl = "https://raw.githubusercontent.com/EIRSVi/eirsvi/refs/heads/docs/assets/brand/logo.png";
-        private static Image? _cachedDefaultImage;
-
-        static ProductImageHelper()
+        private static readonly HttpClient _httpClient = new HttpClient();
+        
+        /// <summary>
+        /// Get the primary image for a product
+        /// </summary>
+        public static Image GetPrimaryImage(Product product)
         {
-            // Ensure the directory exists
-            if (!Directory.Exists(BaseImagePath))
+            try
             {
-                Directory.CreateDirectory(BaseImagePath);
+                if (product?.ProductImages != null && product.ProductImages.Count > 0)
+                {
+                    var primaryImage = product.ProductImages.FirstOrDefault(img => img.IsPrimary) 
+                                     ?? product.ProductImages.First();
+                    
+                    if (!string.IsNullOrEmpty(primaryImage.ImagePath))
+                    {
+                        if (File.Exists(primaryImage.ImagePath))
+                        {
+                            return Image.FromFile(primaryImage.ImagePath);
+                        }
+                        else if (Uri.IsWellFormedUriString(primaryImage.ImagePath, UriKind.Absolute))
+                        {
+                            // Try to load from URL (async operation, return null for now)
+                            return null;
+                        }
+                    }
+                }
+            }
+            catch
+            {
+                // Return null on any error
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// Get the default brand image
+        /// </summary>
+        public static Image GetDefaultBrandImage()
+        {
+            try
+            {
+                // Try to load the brand logo from local assets
+                var logoPath = Path.Combine(Application.StartupPath, "assets", "brand", "noBgColor.png");
+                if (File.Exists(logoPath))
+                {
+                    return Image.FromFile(logoPath);
+                }
+
+                // Try alternative paths
+                var altPaths = new[]
+                {
+                    Path.Combine(Application.StartupPath, "assets", "logo.png"),
+                    Path.Combine(Application.StartupPath, "logo.png"),
+                    Path.Combine(Directory.GetCurrentDirectory(), "assets", "brand", "noBgColor.png")
+                };
+
+                foreach (var path in altPaths)
+                {
+                    if (File.Exists(path))
+                    {
+                        return Image.FromFile(path);
+                    }
+                }
+            }
+            catch
+            {
+                // Ignore errors and return null
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Resize an image to fit within the specified dimensions while maintaining aspect ratio
+        /// </summary>
+        public static Image ResizeImage(Image originalImage, int maxWidth, int maxHeight)
+        {
+            if (originalImage == null)
+                return null;
+
+            try
+            {
+                // Calculate the scaling factor
+                float scaleX = (float)maxWidth / originalImage.Width;
+                float scaleY = (float)maxHeight / originalImage.Height;
+                float scale = Math.Min(scaleX, scaleY);
+
+                // Calculate new dimensions
+                int newWidth = (int)(originalImage.Width * scale);
+                int newHeight = (int)(originalImage.Height * scale);
+
+                // Create new bitmap with high quality settings
+                var resizedImage = new Bitmap(newWidth, newHeight);
+                using (var graphics = Graphics.FromImage(resizedImage))
+                {
+                    graphics.CompositingQuality = CompositingQuality.HighQuality;
+                    graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
+                    graphics.SmoothingMode = SmoothingMode.HighQuality;
+                    graphics.PixelOffsetMode = PixelOffsetMode.HighQuality;
+
+                    graphics.DrawImage(originalImage, 0, 0, newWidth, newHeight);
+                }
+
+                return resizedImage;
+            }
+            catch
+            {
+                return originalImage; // Return original on error
             }
         }
 
-        public static string GetImageFullPath(string imagePath)
+        /// <summary>
+        /// Create a placeholder image with the product name
+        /// </summary>
+        public static Image CreatePlaceholderImage(string productName, int width, int height)
         {
-            if (string.IsNullOrEmpty(imagePath))
-                return string.Empty;
+            try
+            {
+                var bitmap = new Bitmap(width, height);
+                using (var graphics = Graphics.FromImage(bitmap))
+                {
+                    graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
 
-            // If it's a URL, return as is
-            if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
-                return imagePath;
+                    // Fill background with light gray
+                    using (var brush = new SolidBrush(Color.FromArgb(248, 250, 252)))
+                    {
+                        graphics.FillRectangle(brush, 0, 0, width, height);
+                    }
 
-            // If it's already a full path, return as is
-            if (Path.IsPathRooted(imagePath))
-                return imagePath;
+                    // Draw border
+                    using (var pen = new Pen(Color.FromArgb(226, 232, 240), 2))
+                    {
+                        graphics.DrawRectangle(pen, 1, 1, width - 2, height - 2);
+                    }
 
-            // Otherwise, combine with base path
-            return Path.Combine(BaseImagePath, imagePath);
+                    // Draw text
+                    var displayText = string.IsNullOrEmpty(productName) ? "No Image" : 
+                                    productName.Length > 15 ? productName.Substring(0, 12) + "..." : productName;
+
+                    using (var font = new Font("Segoe UI", 10F, FontStyle.Bold))
+                    using (var textBrush = new SolidBrush(Color.FromArgb(100, 116, 139)))
+                    {
+                        var textSize = graphics.MeasureString(displayText, font);
+                        var x = (width - textSize.Width) / 2;
+                        var y = (height - textSize.Height) / 2;
+                        graphics.DrawString(displayText, font, textBrush, x, y);
+                    }
+                }
+
+                return bitmap;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
-        public static Image? LoadImage(string imagePath)
+        /// <summary>
+        /// Download image from URL asynchronously
+        /// </summary>
+        public static async Task<Image> DownloadImageAsync(string imageUrl)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imageUrl) || !Uri.IsWellFormedUriString(imageUrl, UriKind.Absolute))
+                    return null;
+
+                var response = await _httpClient.GetAsync(imageUrl);
+                if (response.IsSuccessStatusCode)
+                {
+                    var imageBytes = await response.Content.ReadAsByteArrayAsync();
+                    using (var stream = new MemoryStream(imageBytes))
+                    {
+                        return Image.FromStream(stream);
+                    }
+                }
+            }
+            catch
+            {
+                // Return null on any error
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Load image from file path or URL
+        /// </summary>
+        public static Image LoadImage(string imagePath)
         {
             try
             {
                 if (string.IsNullOrEmpty(imagePath))
                     return null;
 
-                // Handle URL images
-                if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
+                if (File.Exists(imagePath))
                 {
-                    return LoadImageFromUrl(imagePath);
+                    return Image.FromFile(imagePath);
                 }
-
-                // Handle local images
-                string fullPath = GetImageFullPath(imagePath);
-                if (File.Exists(fullPath))
+                else if (Uri.IsWellFormedUriString(imagePath, UriKind.Absolute))
                 {
-                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read))
-                    {
-                        return Image.FromStream(stream);
-                    }
+                    // For URLs, return null for now (could implement async loading)
+                    return null;
                 }
-
-                return null;
             }
             catch
             {
-                return null;
+                // Return null on error
             }
+
+            return null;
         }
 
-        public static Image? LoadImageFromUrl(string url)
+        /// <summary>
+        /// Get the full path for an image
+        /// </summary>
+        public static string GetImageFullPath(string imagePath)
         {
-            try
-            {
-                using (var client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromSeconds(10);
-                    var response = client.GetAsync(url).Result;
-                    if (response.IsSuccessStatusCode)
-                    {
-                        using (var stream = response.Content.ReadAsStreamAsync().Result)
-                        {
-                            return Image.FromStream(stream);
-                        }
-                    }
-                }
-                return null;
-            }
-            catch
-            {
-                return null;
-            }
+            if (string.IsNullOrEmpty(imagePath))
+                return string.Empty;
+
+            if (Path.IsPathRooted(imagePath))
+                return imagePath;
+
+            return Path.Combine(Application.StartupPath, "assets", "images", imagePath);
         }
 
-        public static string SaveUploadedImage(Image image, string productName, int productId)
+        /// <summary>
+        /// Get supported image extensions filter for file dialogs
+        /// </summary>
+        public static string GetSupportedExtensionsFilter()
         {
-            try
-            {
-                // Generate unique filename
-                string sanitizedName = SanitizeFileName(productName);
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                string fileName = $"{sanitizedName}_{productId}_{timestamp}.png";
-                string fullPath = Path.Combine(BaseImagePath, fileName);
-
-                // Save image
-                image.Save(fullPath, ImageFormat.Png);
-
-                // Return relative path
-                return fileName;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to save image: {ex.Message}");
-            }
+            return "Image Files|*.jpg;*.jpeg;*.png;*.bmp;*.gif;*.tiff;*.webp;*.ico|" +
+                   "JPEG Files|*.jpg;*.jpeg|" +
+                   "PNG Files|*.png|" +
+                   "BMP Files|*.bmp|" +
+                   "GIF Files|*.gif|" +
+                   "TIFF Files|*.tiff|" +
+                   "WebP Files|*.webp|" +
+                   "Icon Files|*.ico|" +
+                   "All Files|*.*";
         }
 
-        public static string CopyImageToAssets(string sourcePath, string productName, int productId)
+        /// <summary>
+        /// Check if a file is a supported image type
+        /// </summary>
+        public static bool IsSupportedImageType(string filePath)
         {
-            try
-            {
-                if (!File.Exists(sourcePath))
-                    throw new FileNotFoundException("Source image not found");
+            if (string.IsNullOrEmpty(filePath))
+                return false;
 
-                string extension = Path.GetExtension(sourcePath).ToLower();
-                if (!SupportedExtensions.Contains(extension))
-                    throw new NotSupportedException($"Image format {extension} is not supported");
-
-                // Generate unique filename
-                string sanitizedName = SanitizeFileName(productName);
-                string timestamp = DateTime.Now.ToString("yyyyMMddHHmmss");
-                string fileName = $"{sanitizedName}_{productId}_{timestamp}{extension}";
-                string destPath = Path.Combine(BaseImagePath, fileName);
-
-                // Copy file
-                File.Copy(sourcePath, destPath, true);
-
-                // Return relative path
-                return fileName;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Failed to copy image: {ex.Message}");
-            }
+            var extension = Path.GetExtension(filePath).ToLower();
+            var supportedExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff", ".webp", ".ico" };
+            
+            return supportedExtensions.Contains(extension);
         }
 
-        public static ProductImage CreateProductImage(int productId, string imagePath, string imageType, bool isPrimary = false)
+        /// <summary>
+        /// Create a product image record
+        /// </summary>
+        public static ProductImage CreateProductImage(int productId, string imagePath, bool isPrimary = false)
         {
-            var productImage = new ProductImage
+            return new ProductImage
             {
                 ProductId = productId,
                 ImagePath = imagePath,
-                ImageType = imageType,
                 IsPrimary = isPrimary,
-                ImageName = Path.GetFileName(imagePath),
                 CreatedAt = DateTime.Now,
-                UpdatedAt = DateTime.Now,
-                IsActive = true
+                UpdatedAt = DateTime.Now
             };
-
-            // Get file info if it's a local file
-            if (imageType == "Local" || imageType == "Upload")
-            {
-                string fullPath = GetImageFullPath(imagePath);
-                if (File.Exists(fullPath))
-                {
-                    var fileInfo = new FileInfo(fullPath);
-                    productImage.FileSize = fileInfo.Length;
-                    productImage.FileExtension = fileInfo.Extension;
-                }
-            }
-
-            return productImage;
         }
 
-        public static Image? GetPrimaryImage(Product product)
-        {
-            if (product.ProductImages == null || !product.ProductImages.Any())
-                return GetDefaultBrandImage();
-
-            var primaryImage = product.ProductImages
-                .Where(img => img.IsActive && img.IsPrimary)
-                .OrderBy(img => img.DisplayOrder)
-                .FirstOrDefault();
-
-            if (primaryImage == null)
-            {
-                primaryImage = product.ProductImages
-                    .Where(img => img.IsActive)
-                    .OrderBy(img => img.DisplayOrder)
-                    .FirstOrDefault();
-            }
-
-            var image = primaryImage != null ? LoadImage(primaryImage.ImagePath) : null;
-            return image ?? GetDefaultBrandImage();
-        }
-
-        public static Image? GetDefaultBrandImage()
-        {
-            try
-            {
-                if (_cachedDefaultImage != null)
-                    return new Bitmap(_cachedDefaultImage);
-
-                // Try to load from URL
-                _cachedDefaultImage = LoadImageFromUrl(DefaultBrandImageUrl);
-                
-                if (_cachedDefaultImage != null)
-                    return new Bitmap(_cachedDefaultImage);
-
-                // Fallback: Create a simple default image with brand colors
-                return CreateFallbackImage();
-            }
-            catch
-            {
-                return CreateFallbackImage();
-            }
-        }
-
-        private static Image CreateFallbackImage()
-        {
-            var bitmap = new Bitmap(200, 200);
-            using (var graphics = Graphics.FromImage(bitmap))
-            {
-                // Fill with brand color background
-                graphics.Clear(Color.FromArgb(59, 130, 246));
-                
-                // Draw "No Image" text
-                using (var font = new Font("Segoe UI", 14, FontStyle.Bold))
-                using (var brush = new SolidBrush(Color.White))
-                {
-                    var text = "SyncVerse\nPOS";
-                    var format = new StringFormat
-                    {
-                        Alignment = StringAlignment.Center,
-                        LineAlignment = StringAlignment.Center
-                    };
-                    graphics.DrawString(text, font, brush, new RectangleF(0, 0, 200, 200), format);
-                }
-            }
-            return bitmap;
-        }
-
-        public static Image ResizeImage(Image image, int maxWidth, int maxHeight)
-        {
-            int width = image.Width;
-            int height = image.Height;
-
-            // Calculate new dimensions while maintaining aspect ratio
-            if (width > maxWidth || height > maxHeight)
-            {
-                double ratioX = (double)maxWidth / width;
-                double ratioY = (double)maxHeight / height;
-                double ratio = Math.Min(ratioX, ratioY);
-
-                width = (int)(width * ratio);
-                height = (int)(height * ratio);
-            }
-
-            var resized = new Bitmap(width, height);
-            using (var graphics = Graphics.FromImage(resized))
-            {
-                graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
-                graphics.DrawImage(image, 0, 0, width, height);
-            }
-
-            return resized;
-        }
-
-        public static bool DeleteImage(string imagePath)
-        {
-            try
-            {
-                if (string.IsNullOrEmpty(imagePath))
-                    return false;
-
-                // Don't delete URL images
-                if (imagePath.StartsWith("http://") || imagePath.StartsWith("https://"))
-                    return true;
-
-                string fullPath = GetImageFullPath(imagePath);
-                if (File.Exists(fullPath))
-                {
-                    File.Delete(fullPath);
-                    return true;
-                }
-
-                return false;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-
+        /// <summary>
+        /// Check if a URL is a valid image URL
+        /// </summary>
         public static bool IsValidImageUrl(string url)
         {
             if (string.IsNullOrEmpty(url))
                 return false;
 
-            if (!Uri.TryCreate(url, UriKind.Absolute, out Uri? uriResult))
+            if (!Uri.IsWellFormedUriString(url, UriKind.Absolute))
                 return false;
 
-            if (uriResult.Scheme != Uri.UriSchemeHttp && uriResult.Scheme != Uri.UriSchemeHttps)
-                return false;
+            var uri = new Uri(url);
+            var extension = Path.GetExtension(uri.LocalPath).ToLower();
+            var validExtensions = new[] { ".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff" };
 
-            // Check if URL ends with image extension
-            string extension = Path.GetExtension(uriResult.AbsolutePath).ToLower();
-            return SupportedExtensions.Contains(extension);
+            return validExtensions.Contains(extension);
         }
 
-        private static string SanitizeFileName(string fileName)
+        /// <summary>
+        /// Copy image to assets folder
+        /// </summary>
+        public static string CopyImageToAssets(string sourcePath)
         {
-            var invalidChars = Path.GetInvalidFileNameChars();
-            var sanitized = string.Join("_", fileName.Split(invalidChars, StringSplitOptions.RemoveEmptyEntries));
-            return sanitized.Length > 50 ? sanitized.Substring(0, 50) : sanitized;
+            try
+            {
+                if (!File.Exists(sourcePath))
+                    return string.Empty;
+
+                var assetsDir = Path.Combine(Application.StartupPath, "assets", "images");
+                Directory.CreateDirectory(assetsDir);
+
+                var fileName = Path.GetFileName(sourcePath);
+                var destinationPath = Path.Combine(assetsDir, fileName);
+
+                // If file exists, create unique name
+                int counter = 1;
+                while (File.Exists(destinationPath))
+                {
+                    var nameWithoutExt = Path.GetFileNameWithoutExtension(sourcePath);
+                    var extension = Path.GetExtension(sourcePath);
+                    fileName = $"{nameWithoutExt}_{counter}{extension}";
+                    destinationPath = Path.Combine(assetsDir, fileName);
+                    counter++;
+                }
+
+                File.Copy(sourcePath, destinationPath);
+                return Path.Combine("assets", "images", fileName);
+            }
+            catch
+            {
+                return string.Empty;
+            }
         }
 
-        public static string[] GetSupportedExtensions()
+        /// <summary>
+        /// Delete an image file
+        /// </summary>
+        public static bool DeleteImage(string imagePath)
         {
-            return SupportedExtensions;
+            try
+            {
+                var fullPath = GetImageFullPath(imagePath);
+                if (File.Exists(fullPath))
+                {
+                    File.Delete(fullPath);
+                    return true;
+                }
+            }
+            catch
+            {
+                // Ignore errors
+            }
+
+            return false;
         }
 
-        public static string GetSupportedExtensionsFilter()
+        /// <summary>
+        /// Dispose of the HTTP client when the application shuts down
+        /// </summary>
+        public static void Dispose()
         {
-            return "Image Files|*.jpg;*.jpeg;*.png;*.gif;*.bmp;*.webp|All Files|*.*";
+            _httpClient?.Dispose();
         }
     }
 }
