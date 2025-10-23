@@ -1,6 +1,7 @@
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace SyncVerseStudio.Views
@@ -221,8 +222,8 @@ Size = new Size(540, 25)
         {
                 firstNameTextBox.Text = _customer.FirstName ?? "";
  lastNameTextBox.Text = _customer.LastName ?? "";
- emailTextBox.Text = _customer.Email ?? "";
-        phoneTextBox.Text = _customer.Phone ?? "";
+ emailTextBox.Text = _customer.DecryptedEmail ?? "";
+        phoneTextBox.Text = _customer.DecryptedPhone ?? "";
         addressTextBox.Text = _customer.Address ?? "";
        loyaltyPointsNumeric.Value = _customer.LoyaltyPoints;
 
@@ -282,8 +283,8 @@ Size = new Size(540, 25)
     {
         FirstName = firstNameTextBox.Text.Trim(),
         LastName = lastNameTextBox.Text.Trim(),
-             Email = string.IsNullOrEmpty(emailTextBox.Text.Trim()) ? null : emailTextBox.Text.Trim(),
-  Phone = string.IsNullOrEmpty(phoneTextBox.Text.Trim()) ? null : phoneTextBox.Text.Trim(),
+             Email = string.IsNullOrEmpty(emailTextBox.Text.Trim()) ? null : EncryptionHelper.Encrypt(emailTextBox.Text.Trim()),
+  Phone = string.IsNullOrEmpty(phoneTextBox.Text.Trim()) ? null : EncryptionHelper.Encrypt(phoneTextBox.Text.Trim()),
     Address = string.IsNullOrEmpty(addressTextBox.Text.Trim()) ? null : addressTextBox.Text.Trim(),
           LoyaltyPoints = (int)loyaltyPointsNumeric.Value,
     CreatedAt = DateTime.Now
@@ -298,12 +299,12 @@ Size = new Size(540, 25)
           else
            {
            // Update existing customer
-        var oldValues = $"Name: {_customer.FullName}, Email: {_customer.Email}, Phone: {_customer.Phone}";
+        var oldValues = $"Name: {_customer.FullName}, Email: {_customer.MaskedEmail}, Phone: {_customer.MaskedPhone}";
 
        _customer.FirstName = firstNameTextBox.Text.Trim();
             _customer.LastName = lastNameTextBox.Text.Trim();
-         _customer.Email = string.IsNullOrEmpty(emailTextBox.Text.Trim()) ? null : emailTextBox.Text.Trim();
-          _customer.Phone = string.IsNullOrEmpty(phoneTextBox.Text.Trim()) ? null : phoneTextBox.Text.Trim();
+         _customer.Email = string.IsNullOrEmpty(emailTextBox.Text.Trim()) ? null : EncryptionHelper.Encrypt(emailTextBox.Text.Trim());
+          _customer.Phone = string.IsNullOrEmpty(phoneTextBox.Text.Trim()) ? null : EncryptionHelper.Encrypt(phoneTextBox.Text.Trim());
          _customer.Address = string.IsNullOrEmpty(addressTextBox.Text.Trim()) ? null : addressTextBox.Text.Trim();
          _customer.LoyaltyPoints = (int)loyaltyPointsNumeric.Value;
 

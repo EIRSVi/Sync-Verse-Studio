@@ -34,8 +34,14 @@ namespace SyncVerseStudio.Models
 
         public int MinQuantity { get; set; } = 10;
 
-        [StringLength(255)]
+        [StringLength(500)]
         public string? ImagePath { get; set; }
+
+        [StringLength(500)]
+        public string? ImageUrl { get; set; }
+
+        [StringLength(500)]
+        public string? QRCodePath { get; set; }
 
         public bool IsActive { get; set; } = true;
 

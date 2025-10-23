@@ -187,6 +187,11 @@ namespace SyncVerseStudio.Services
             }
         }
 
+        public ApplicationDbContext GetDbContext()
+        {
+            return _context;
+        }
+
         public void Dispose()
         {
             _context?.Dispose();

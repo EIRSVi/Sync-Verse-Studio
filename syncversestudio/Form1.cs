@@ -26,8 +26,9 @@ namespace SyncVerseStudio
             this.Load += LoginForm_Load;
 
             // Set default test credentials for development
-            this.usernameTextBox.Text = "vi";
-            this.passwordTextBox.Text = "vi";
+            // cavi 123456 | icv 123456 | vi vi
+            this.usernameTextBox.Text = "icv";
+            this.passwordTextBox.Text = "123456";
         }
 
         private async void LoginForm_Load(object sender, EventArgs e)

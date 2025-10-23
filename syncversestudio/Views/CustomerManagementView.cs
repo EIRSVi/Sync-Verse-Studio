@@ -187,23 +187,6 @@ namespace SyncVerseStudio.Views
             try
             {
                 var customers = await _context.Customers
-                    .Select(c => new
-                    {
-                        c.Id,
-                        c.FirstName,
-                        c.LastName,
-                        c.Email,
-                        c.Phone,
-                        c.Address,
-                        c.LoyaltyPoints,
-                        TotalPurchases = _context.Sales
-                            .Where(s => s.CustomerId == c.Id && s.Status == SaleStatus.Completed)
-                            .Sum(s => (decimal?)s.TotalAmount) ?? 0,
-                        LastPurchase = _context.Sales
-                            .Where(s => s.CustomerId == c.Id && s.Status == SaleStatus.Completed)
-                            .Max(s => (DateTime?)s.SaleDate),
-                        c.CreatedAt
-                    })
                     .OrderBy(c => c.FirstName)
                     .ThenBy(c => c.LastName)
                     .ToListAsync();
@@ -212,16 +195,24 @@ namespace SyncVerseStudio.Views
 
                 foreach (var customer in customers)
                 {
+                    var totalPurchases = await _context.Sales
+                        .Where(s => s.CustomerId == customer.Id && s.Status == SaleStatus.Completed)
+                        .SumAsync(s => (decimal?)s.TotalAmount) ?? 0;
+                    
+                    var lastPurchase = await _context.Sales
+                        .Where(s => s.CustomerId == customer.Id && s.Status == SaleStatus.Completed)
+                        .MaxAsync(s => (DateTime?)s.SaleDate);
+
                     var rowIndex = customersGrid.Rows.Add(
                         customer.Id,
                         customer.FirstName ?? "",
                         customer.LastName ?? "",
-                        customer.Email ?? "",
-                        customer.Phone ?? "",
+                        customer.MaskedEmail ?? "",
+                        customer.MaskedPhone ?? "",
                         customer.Address ?? "",
                         customer.LoyaltyPoints,
-                        customer.TotalPurchases,
-                        customer.LastPurchase,
+                        totalPurchases,
+                        lastPurchase,
                         customer.CreatedAt
                     );
 
@@ -256,29 +247,10 @@ namespace SyncVerseStudio.Views
                 {
                     query = query.Where(c => 
                         (c.FirstName != null && c.FirstName.ToLower().Contains(searchTerm)) ||
-                        (c.LastName != null && c.LastName.ToLower().Contains(searchTerm)) ||
-                        (c.Email != null && c.Email.ToLower().Contains(searchTerm)) ||
-                        (c.Phone != null && c.Phone.Contains(searchTerm)));
+                        (c.LastName != null && c.LastName.ToLower().Contains(searchTerm)));
                 }
 
                 var customers = await query
-                    .Select(c => new
-                    {
-                        c.Id,
-                        c.FirstName,
-                        c.LastName,
-                        c.Email,
-                        c.Phone,
-                        c.Address,
-                        c.LoyaltyPoints,
-                        TotalPurchases = _context.Sales
-                            .Where(s => s.CustomerId == c.Id && s.Status == SaleStatus.Completed)
-                            .Sum(s => (decimal?)s.TotalAmount) ?? 0,
-                        LastPurchase = _context.Sales
-                            .Where(s => s.CustomerId == c.Id && s.Status == SaleStatus.Completed)
-                            .Max(s => (DateTime?)s.SaleDate),
-                        c.CreatedAt
-                    })
                     .OrderBy(c => c.FirstName)
                     .ThenBy(c => c.LastName)
                     .ToListAsync();
@@ -287,16 +259,24 @@ namespace SyncVerseStudio.Views
 
                 foreach (var customer in customers)
                 {
+                    var totalPurchases = await _context.Sales
+                        .Where(s => s.CustomerId == customer.Id && s.Status == SaleStatus.Completed)
+                        .SumAsync(s => (decimal?)s.TotalAmount) ?? 0;
+                    
+                    var lastPurchase = await _context.Sales
+                        .Where(s => s.CustomerId == customer.Id && s.Status == SaleStatus.Completed)
+                        .MaxAsync(s => (DateTime?)s.SaleDate);
+
                     var rowIndex = customersGrid.Rows.Add(
                         customer.Id,
                         customer.FirstName ?? "",
                         customer.LastName ?? "",
-                        customer.Email ?? "",
-                        customer.Phone ?? "",
+                        customer.MaskedEmail ?? "",
+                        customer.MaskedPhone ?? "",
                         customer.Address ?? "",
                         customer.LoyaltyPoints,
-                        customer.TotalPurchases,
-                        customer.LastPurchase,
+                        totalPurchases,
+                        lastPurchase,
                         customer.CreatedAt
                     );
 

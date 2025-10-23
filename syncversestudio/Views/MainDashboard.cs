@@ -235,6 +235,8 @@ sidebarPanel.Controls.Add(navHeader);
  yPos +=50;
  CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
  yPos +=50;
+ CreateModernMenuItem("Database Seeder", IconChar.Database, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new DatabaseSeedView(_authService.GetDbContext())));
+ yPos +=50;
  CreateModernMenuItem("Analytics", IconChar.ChartPie, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AnalyticsView(_authService)));
  yPos +=50;
  CreateModernMenuItem("Audit Logs", IconChar.FileText, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
@@ -251,15 +253,15 @@ sidebarPanel.Controls.Add(navHeader);
       break;
 
         case UserRole.InventoryClerk:
-        CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new DashboardView(_authService)));
+        CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new InventoryClerkDashboardView(_authService)));
       yPos += 50;
-    CreateModernMenuItem("Products", IconChar.Box, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
+    CreateModernMenuItem("Products", IconChar.Box, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ProductManagementView(_authService)));
     yPos += 50;
-                CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
+                CreateModernMenuItem("Categories", IconChar.Tags, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CategoryManagementView(_authService)));
          yPos += 50;
-          CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
+          CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
   yPos += 50;
- CreateModernMenuItem("Stock Reports", IconChar.FileAlt, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
+ CreateModernMenuItem("Stock Reports", IconChar.FileAlt, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new InventoryReportsView(_authService)));
     break;
 }
         }
@@ -523,13 +525,17 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
     }
             
             // Load appropriate dashboard based on role
-            if (_authService.CurrentUser.Role == UserRole.Cashier)
+            switch (_authService.CurrentUser.Role)
             {
-                SafeLoadChildForm(() => new CashierDashboardView(_authService));
-            }
-            else
-            {
-                SafeLoadChildForm(() => new DashboardView(_authService));
+                case UserRole.Cashier:
+                    SafeLoadChildForm(() => new CashierDashboardView(_authService));
+                    break;
+                case UserRole.InventoryClerk:
+                    SafeLoadChildForm(() => new InventoryClerkDashboardView(_authService));
+                    break;
+                default:
+                    SafeLoadChildForm(() => new DashboardView(_authService));
+                    break;
             }
  }
 
@@ -583,6 +589,11 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
      }
+
+     public void LoadView(Form childForm)
+        {
+            LoadChildForm(childForm);
+        }
 
      private void LoadChildForm(Form childForm)
         {

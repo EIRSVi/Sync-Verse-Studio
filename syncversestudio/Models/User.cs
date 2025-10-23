@@ -30,6 +30,15 @@ namespace SyncVerseStudio.Models
         [Required]
         public UserRole Role { get; set; }
 
+        [StringLength(500)]
+        public string? ProfileImagePath { get; set; }
+
+        [StringLength(500)]
+        public string? ProfileImageUrl { get; set; }
+
+        [StringLength(500)]
+        public string? QRCodePath { get; set; }
+
         public bool IsActive { get; set; } = true;
         
         public DateTime CreatedAt { get; set; } = DateTime.Now;
