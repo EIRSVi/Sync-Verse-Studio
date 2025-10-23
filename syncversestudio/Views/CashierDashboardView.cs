@@ -17,33 +17,42 @@ namespace SyncVerseStudio.Views
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _context;
         
-        // Panels
-        private Panel headerPanel = null!;
-        private Panel metricsPanel = null!;
-        private Panel recentSalesPanel = null!;
-        private Panel todayStatsPanel = null!;
+        // Main panels
+        private Panel sidebarPanel = null!;
+        private Panel topBarPanel = null!;
+        private Panel productsPanel = null!;
+        private Panel cartPanel = null!;
+        private Panel bottomBarPanel = null!;
         
-        // Metric labels
-        private Label todaySalesLabel = null!;
-        private Label todayTransactionsLabel = null!;
-        private Label avgTransactionLabel = null!;
-        private Label myTotalSalesLabel = null!;
-        private Label customersServedLabel = null!;
-        private Label cashPaymentsLabel = null!;
+        // Product display
+        private FlowLayoutPanel productCardsPanel = null!;
+        private FlowLayoutPanel categoryButtonsPanel = null!;
         
-        // Recent sales grid
-        private DataGridView recentSalesGrid = null!;
+        // Cart
+        private FlowLayoutPanel cartItemsPanel = null!;
+        private List<CartItem> cartItems = new List<CartItem>();
         
-        // Timer for auto-refresh
-        private System.Windows.Forms.Timer refreshTimer = null!;
+        // Labels
+        private Label userLabel = null!;
+        private Label subtotalLabel = null!;
+        private Label taxLabel = null!;
+        private Label totalLabel = null!;
+        private Label itemCountLabel = null!;
+        private Label discountLabel = null!;
+        
+        // Buttons
+        private Button payButton = null!;
+        private TextBox searchBox = null!;
+        
+        private decimal taxRate = 0.05m; // 5% tax
 
         public CashierDashboardView(AuthenticationService authService)
         {
             _authService = authService;
             _context = new ApplicationDbContext();
             InitializeComponent();
-            LoadDashboard();
-            StartAutoRefresh();
+            LoadCategories();
+            LoadProducts();
         }
 
         private void InitializeComponent()
@@ -51,507 +60,643 @@ namespace SyncVerseStudio.Views
             this.SuspendLayout();
 
             // Form settings
-            this.Text = "Cashier Dashboard";
-            this.Size = new Size(1400, 900);
-            this.BackColor = BrandTheme.Background;
-            this.StartPosition = FormStartPosition.CenterScreen;
+            this.Text = "LITHOSPOS - Cashier";
+            this.WindowState = FormWindowState.Maximized;
+            this.BackColor = Color.FromArgb(245, 245, 245);
             this.FormBorderStyle = FormBorderStyle.None;
 
-            // Header Panel
-            headerPanel = new Panel
+            // Top Bar Panel
+            topBarPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 100,
-                BackColor = BrandTheme.HeaderBackground,
-                Padding = new Padding(30, 20, 30, 20)
+                Height = 70,
+                BackColor = Color.White
             };
+            CreateTopBar();
 
-            var welcomeIcon = new IconPictureBox
+            // Sidebar Panel (Categories)
+            sidebarPanel = new Panel
             {
-                IconChar = IconChar.CashRegister,
-                IconColor = BrandTheme.HeaderText,
-                IconSize = 40,
-                Location = new Point(30, 30),
-                Size = new Size(40, 40)
+                Dock = DockStyle.Left,
+                Width = 220,
+                BackColor = Color.FromArgb(95, 73, 64),
+                Padding = new Padding(0, 10, 0, 0)
             };
+            CreateSidebar();
 
-            var welcomeLabel = new Label
+            // Cart Panel (Right side)
+            cartPanel = new Panel
             {
-                Text = $"Welcome back, {_authService.CurrentUser.FullName}!",
-                Font = BrandTheme.TitleFont,
-                ForeColor = BrandTheme.HeaderText,
-                Location = new Point(80, 20),
-                AutoSize = true
-            };
-
-            var roleLabel = new Label
-            {
-                Text = "Cashier Dashboard - Point of Sale Operations",
-                Font = BrandTheme.BodyFont,
-                ForeColor = BrandTheme.CoolWhite,
-                Location = new Point(80, 55),
-                AutoSize = true
-            };
-
-            var timeLabel = new Label
-            {
-                Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy - hh:mm tt"),
-                Font = BrandTheme.SmallFont,
-                ForeColor = BrandTheme.HeaderText,
-                Location = new Point(1050, 35),
-                AutoSize = true
-            };
-
-            headerPanel.Controls.AddRange(new Control[] { welcomeIcon, welcomeLabel, roleLabel, timeLabel });
-
-            // Metrics Panel (KPI Cards)
-            metricsPanel = new Panel
-            {
-                Location = new Point(30, 120),
-                Size = new Size(1340, 140),
-                BackColor = Color.Transparent
-            };
-
-            CreateMetricCards();
-
-            // Today's Stats Panel - Expanded
-            todayStatsPanel = new Panel
-            {
-                Location = new Point(30, 280),
-                Size = new Size(440, 560),
+                Dock = DockStyle.Right,
+                Width = 420,
                 BackColor = Color.White,
                 Padding = new Padding(20)
             };
+            CreateCartPanel();
 
-            CreateTodayStatsSection();
-
-            // Performance Panel - Expanded
-            var performancePanel = new Panel
+            // Bottom Bar Panel (Payment)
+            bottomBarPanel = new Panel
             {
-                Location = new Point(490, 280),
-                Size = new Size(440, 560),
-                BackColor = Color.White,
+                Dock = DockStyle.Bottom,
+                Height = 80,
+                BackColor = Color.FromArgb(95, 73, 64)
+            };
+            CreateBottomBar();
+
+            // Products Panel (Center)
+            productsPanel = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Color.FromArgb(245, 245, 245),
                 Padding = new Padding(20)
             };
-
-            CreatePerformanceSection(performancePanel);
-
-            // Recent Sales Panel
-            recentSalesPanel = new Panel
-            {
-                Location = new Point(950, 280),
-                Size = new Size(420, 560),
-                BackColor = Color.White,
-                Padding = new Padding(20)
-            };
-
-            CreateRecentSalesSection();
+            CreateProductsPanel();
 
             // Add all to form
             this.Controls.AddRange(new Control[] { 
-                headerPanel, metricsPanel, 
-                todayStatsPanel, performancePanel, recentSalesPanel 
+                productsPanel, cartPanel, sidebarPanel, bottomBarPanel, topBarPanel
             });
 
             this.ResumeLayout(false);
         }
 
-        private void CreateMetricCards()
+        private void CreateTopBar()
         {
-            int cardWidth = 210;
-            int spacing = 15;
-
-            // Today's Sales
-            var todaySalesCard = CreateMetricCard("Today's Sales", "$0.00", IconChar.DollarSign, 
-                Color.FromArgb(34, 197, 94), 0 * (cardWidth + spacing), out todaySalesLabel);
-            
-            // Today's Transactions
-            var transactionsCard = CreateMetricCard("Transactions", "0", IconChar.Receipt, 
-                Color.FromArgb(59, 130, 246), 1 * (cardWidth + spacing), out todayTransactionsLabel);
-            
-            // Average Transaction
-            var avgCard = CreateMetricCard("Avg Transaction", "$0.00", IconChar.ChartLine, 
-                Color.FromArgb(168, 85, 247), 2 * (cardWidth + spacing), out avgTransactionLabel);
-            
-            // My Total Sales
-            var myTotalCard = CreateMetricCard("My Total Sales", "$0.00", IconChar.Award, 
-                Color.FromArgb(249, 115, 22), 3 * (cardWidth + spacing), out myTotalSalesLabel);
-            
-            // Customers Served
-            var customersCard = CreateMetricCard("Customers Served", "0", IconChar.Users, 
-                Color.FromArgb(236, 72, 153), 4 * (cardWidth + spacing), out customersServedLabel);
-            
-            // Cash Payments
-            var cashCard = CreateMetricCard("Cash Payments", "$0.00", IconChar.MoneyBill, 
-                Color.FromArgb(14, 165, 233), 5 * (cardWidth + spacing), out cashPaymentsLabel);
-
-            metricsPanel.Controls.AddRange(new Control[] { 
-                todaySalesCard, transactionsCard, avgCard, myTotalCard, customersCard, cashCard 
-            });
-        }
-
-        private Panel CreateMetricCard(string title, string value, IconChar icon, Color color, int xPos, out Label valueLabel)
-        {
-            var card = new Panel
+            // Logo
+            var logoIcon = new IconPictureBox
             {
-                Location = new Point(xPos, 0),
-                Size = new Size(210, 140),
-                BackColor = Color.White,
-                Padding = new Padding(15)
-            };
-
-            var iconBox = new IconPictureBox
-            {
-                IconChar = icon,
-                IconColor = color,
+                IconChar = IconChar.Store,
+                IconColor = Color.FromArgb(95, 73, 64),
                 IconSize = 32,
-                Location = new Point(15, 15),
+                Location = new Point(20, 20),
                 Size = new Size(32, 32)
             };
 
-            var titleLbl = new Label
+            var logoLabel = new Label
             {
-                Text = title,
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(15, 55),
+                Text = "LITHOSPOS",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                ForeColor = Color.FromArgb(95, 73, 64),
+                Location = new Point(60, 20),
                 AutoSize = true
             };
 
-            valueLabel = new Label
+            // Search Box
+            searchBox = new TextBox
             {
-                Text = value,
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
+                Location = new Point(250, 20),
+                Size = new Size(300, 30),
+                Font = new Font("Segoe UI", 12),
+                PlaceholderText = "Search products..."
+            };
+            searchBox.TextChanged += SearchBox_TextChanged;
+
+            // User Info
+            userLabel = new Label
+            {
+                Text = $"User: {_authService.CurrentUser.FullName}",
+                Font = new Font("Segoe UI", 10),
+                ForeColor = Color.FromArgb(95, 73, 64),
+                AutoSize = true
+            };
+            userLabel.Location = new Point(topBarPanel.Width - userLabel.Width - 20, 25);
+
+            topBarPanel.Controls.AddRange(new Control[] { logoIcon, logoLabel, searchBox, userLabel });
+        }
+
+        private void CreateSidebar()
+        {
+            categoryButtonsPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                FlowDirection = FlowDirection.TopDown,
+                AutoScroll = true,
+                WrapContents = false,
+                Padding = new Padding(0)
+            };
+
+            sidebarPanel.Controls.Add(categoryButtonsPanel);
+        }
+
+        private void CreateProductsPanel()
+        {
+            productCardsPanel = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                Padding = new Padding(10),
+                BackColor = Color.FromArgb(245, 245, 245)
+            };
+
+            productsPanel.Controls.Add(productCardsPanel);
+        }
+
+        private void CreateCartPanel()
+        {
+            var cartTitle = new Label
+            {
+                Text = "Current Order",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(15, 75),
+                Location = new Point(20, 10),
                 AutoSize = true
             };
 
-            var updateLabel = new Label
+            cartItemsPanel = new FlowLayoutPanel
             {
-                Text = "Live",
-                Font = new Font("Segoe UI", 8),
+                Location = new Point(20, 50),
+                Size = new Size(380, 500),
+                AutoScroll = true,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                BackColor = Color.White
+            };
+
+            // Summary Panel
+            var summaryPanel = new Panel
+            {
+                Location = new Point(20, 560),
+                Size = new Size(380, 150),
+                BackColor = Color.FromArgb(248, 250, 252)
+            };
+
+            itemCountLabel = new Label
+            {
+                Text = "Items: 0",
+                Font = new Font("Segoe UI", 11),
+                Location = new Point(10, 10),
+                AutoSize = true
+            };
+
+            subtotalLabel = new Label
+            {
+                Text = "Subtotal: dh 0.00",
+                Font = new Font("Segoe UI", 11),
+                Location = new Point(10, 35),
+                AutoSize = true
+            };
+
+            discountLabel = new Label
+            {
+                Text = "Discount: dh 0.0",
+                Font = new Font("Segoe UI", 11),
                 ForeColor = Color.FromArgb(34, 197, 94),
-                Location = new Point(15, 115),
+                Location = new Point(10, 60),
                 AutoSize = true
             };
 
-            card.Controls.AddRange(new Control[] { iconBox, titleLbl, valueLabel, updateLabel });
-            
-            // Add shadow effect
-            card.Paint += (s, e) =>
+            taxLabel = new Label
             {
-                var rect = card.ClientRectangle;
-                using (var pen = new Pen(Color.FromArgb(226, 232, 240), 1))
-                {
-                    e.Graphics.DrawRectangle(pen, 0, 0, rect.Width - 1, rect.Height - 1);
-                }
+                Text = "VAT 5.0%: dh 0.00",
+                Font = new Font("Segoe UI", 11),
+                Location = new Point(10, 85),
+                AutoSize = true
             };
+
+            totalLabel = new Label
+            {
+                Text = "dh 0.00",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                ForeColor = Color.FromArgb(95, 73, 64),
+                Location = new Point(10, 110),
+                AutoSize = true
+            };
+
+            summaryPanel.Controls.AddRange(new Control[] { 
+                itemCountLabel, subtotalLabel, discountLabel, taxLabel, totalLabel 
+            });
+
+            cartPanel.Controls.AddRange(new Control[] { cartTitle, cartItemsPanel, summaryPanel });
+        }
+
+        private void CreateBottomBar()
+        {
+            var menuButton = new Button
+            {
+                Text = "☰",
+                Font = new Font("Segoe UI", 20, FontStyle.Bold),
+                Size = new Size(80, 60),
+                Location = new Point(20, 10),
+                BackColor = Color.FromArgb(75, 53, 44),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            menuButton.FlatAppearance.BorderSize = 0;
+
+            var ordersButton = new Button
+            {
+                Text = "ORDERS",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                Size = new Size(150, 60),
+                Location = new Point(320, 10),
+                BackColor = Color.FromArgb(75, 53, 44),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            ordersButton.FlatAppearance.BorderSize = 0;
+
+            var cashLabel = new Label
+            {
+                Text = "💰 CASH",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.White,
+                AutoSize = true,
+                Location = new Point(640, 25)
+            };
+
+            payButton = new Button
+            {
+                Text = "Pay",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                Size = new Size(200, 60),
+                BackColor = Color.FromArgb(255, 152, 0),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            payButton.FlatAppearance.BorderSize = 0;
+            payButton.Click += PayButton_Click;
+            
+            // Position pay button on the right
+            payButton.Location = new Point(bottomBarPanel.Width - payButton.Width - 20, 10);
+
+            bottomBarPanel.Controls.AddRange(new Control[] { 
+                menuButton, ordersButton, cashLabel, payButton 
+            });
+        }
+
+        private void LoadCategories()
+        {
+            try
+            {
+                var categories = _context.Categories
+                    .Where(c => c.IsActive)
+                    .OrderBy(c => c.Name)
+                    .ToList();
+
+                categoryButtonsPanel.Controls.Clear();
+
+                // Add "All" button
+                var allButton = CreateCategoryButton("All", null);
+                categoryButtonsPanel.Controls.Add(allButton);
+
+                foreach (var category in categories)
+                {
+                    var button = CreateCategoryButton(category.Name, category.Id);
+                    categoryButtonsPanel.Controls.Add(button);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading categories: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private Button CreateCategoryButton(string name, int? categoryId)
+        {
+            var button = new Button
+            {
+                Text = name,
+                Size = new Size(220, 50),
+                BackColor = Color.FromArgb(95, 73, 64),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                FlatStyle = FlatStyle.Flat,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Padding = new Padding(20, 0, 0, 0),
+                Cursor = Cursors.Hand,
+                Tag = categoryId
+            };
+            button.FlatAppearance.BorderSize = 0;
+            button.Click += (s, e) => FilterByCategory(categoryId);
+            
+            button.MouseEnter += (s, e) => button.BackColor = Color.FromArgb(75, 53, 44);
+            button.MouseLeave += (s, e) => button.BackColor = Color.FromArgb(95, 73, 64);
+
+            return button;
+        }
+
+        private void FilterByCategory(int? categoryId)
+        {
+            LoadProducts(categoryId);
+        }
+
+        private void LoadProducts(int? categoryId = null, string searchText = "")
+        {
+            try
+            {
+                var query = _context.Products
+                    .Include(p => p.Category)
+                    .Where(p => p.Quantity > 0 && p.IsActive);
+
+                if (categoryId.HasValue)
+                {
+                    query = query.Where(p => p.CategoryId == categoryId.Value);
+                }
+
+                if (!string.IsNullOrWhiteSpace(searchText))
+                {
+                    query = query.Where(p => p.Name.Contains(searchText) || 
+                                           (p.Barcode != null && p.Barcode.Contains(searchText)));
+                }
+
+                var products = query.OrderBy(p => p.Name).ToList();
+
+                productCardsPanel.Controls.Clear();
+
+                foreach (var product in products)
+                {
+                    var card = CreateProductCard(product);
+                    productCardsPanel.Controls.Add(card);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading products: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private Panel CreateProductCard(Product product)
+        {
+            var card = new Panel
+            {
+                Size = new Size(180, 240),
+                BackColor = Color.White,
+                Margin = new Padding(10),
+                Cursor = Cursors.Hand
+            };
+
+            // Product image placeholder
+            var imageBox = new PictureBox
+            {
+                Size = new Size(180, 140),
+                Location = new Point(0, 0),
+                BackColor = Color.FromArgb(240, 240, 240),
+                SizeMode = PictureBoxSizeMode.Zoom
+            };
+
+            // Try to load product image
+            try
+            {
+                if (!string.IsNullOrEmpty(product.ImagePath) && File.Exists(product.ImagePath))
+                {
+                    imageBox.Image = Image.FromFile(product.ImagePath);
+                }
+                else
+                {
+                    var imagePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "assets", "product", $"{product.Id}.jpg");
+                    if (File.Exists(imagePath))
+                    {
+                        imageBox.Image = Image.FromFile(imagePath);
+                    }
+                }
+            }
+            catch { }
+
+            var nameLabel = new Label
+            {
+                Text = product.Name,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Location = new Point(10, 150),
+                Size = new Size(160, 40),
+                ForeColor = Color.FromArgb(30, 41, 59)
+            };
+
+            var priceLabel = new Label
+            {
+                Text = $"dh {product.SellingPrice:N2}",
+                Font = new Font("Segoe UI", 14, FontStyle.Bold),
+                ForeColor = Color.FromArgb(95, 73, 64),
+                Location = new Point(10, 195),
+                AutoSize = true
+            };
+
+            var stockLabel = new Label
+            {
+                Text = $"Stock: {product.Quantity}",
+                Font = new Font("Segoe UI", 8),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Location = new Point(10, 220),
+                AutoSize = true
+            };
+
+            card.Controls.AddRange(new Control[] { imageBox, nameLabel, priceLabel, stockLabel });
+            
+            card.Click += (s, e) => AddToCart(product);
+            imageBox.Click += (s, e) => AddToCart(product);
+            nameLabel.Click += (s, e) => AddToCart(product);
+            priceLabel.Click += (s, e) => AddToCart(product);
 
             return card;
         }
 
-        private void CreateTodayStatsSection()
+        private void AddToCart(Product product)
         {
-            var title = new Label
+            var existingItem = cartItems.FirstOrDefault(i => i.ProductId == product.Id);
+            
+            if (existingItem != null)
             {
-                Text = "Today's Performance",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(0, 0),
-                AutoSize = true
-            };
-
-            var subtitle = new Label
+                if (existingItem.Quantity < product.Quantity)
+                {
+                    existingItem.Quantity++;
+                }
+                else
+                {
+                    MessageBox.Show("Insufficient stock!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
+            }
+            else
             {
-                Text = DateTime.Now.ToString("dddd, MMMM dd, yyyy"),
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(0, 30),
-                AutoSize = true
-            };
-
-            // Stats items
-            var yPos = 70;
-            var stats = new[]
-            {
-                ("First Sale", "N/A", IconChar.Clock, Color.FromArgb(34, 197, 94)),
-                ("Last Sale", "N/A", IconChar.Clock, Color.FromArgb(59, 130, 246)),
-                ("Peak Hour", "N/A", IconChar.ChartLine, Color.FromArgb(168, 85, 247)),
-                ("Payment Methods", "Cash: 0 | Card: 0", IconChar.CreditCard, Color.FromArgb(249, 115, 22))
-            };
-
-            foreach (var (label, value, icon, color) in stats)
-            {
-                var statItem = CreateStatItem(label, value, icon, color, yPos);
-                todayStatsPanel.Controls.Add(statItem);
-                yPos += 45;
+                cartItems.Add(new CartItem
+                {
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    UnitPrice = product.SellingPrice,
+                    Quantity = 1,
+                    MaxStock = product.Quantity
+                });
             }
 
-            todayStatsPanel.Controls.AddRange(new Control[] { title, subtitle });
+            UpdateCart();
         }
 
-        private Panel CreateStatItem(string label, string value, IconChar icon, Color color, int yPos)
+        private void UpdateCart()
+        {
+            cartItemsPanel.Controls.Clear();
+
+            foreach (var item in cartItems)
+            {
+                var itemPanel = CreateCartItemPanel(item);
+                cartItemsPanel.Controls.Add(itemPanel);
+            }
+
+            UpdateTotals();
+        }
+
+        private Panel CreateCartItemPanel(CartItem item)
         {
             var panel = new Panel
             {
-                Location = new Point(0, yPos),
-                Size = new Size(400, 40),
-                BackColor = Color.Transparent
+                Size = new Size(360, 80),
+                BackColor = Color.FromArgb(248, 250, 252),
+                Margin = new Padding(0, 5, 0, 5),
+                Padding = new Padding(10)
             };
 
-            var iconBox = new IconPictureBox
+            var nameLabel = new Label
             {
-                IconChar = icon,
-                IconColor = color,
-                IconSize = 20,
-                Location = new Point(0, 10),
-                Size = new Size(20, 20)
+                Text = item.ProductName,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold),
+                Location = new Point(10, 10),
+                Size = new Size(200, 20),
+                ForeColor = Color.FromArgb(30, 41, 59)
             };
 
-            var labelText = new Label
+            var priceLabel = new Label
             {
-                Text = label,
-                Font = new Font("Segoe UI", 9, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(30, 0),
-                AutoSize = true
-            };
-
-            var valueText = new Label
-            {
-                Text = value,
+                Text = $"dh {item.UnitPrice:N2}",
                 Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(30, 18),
+                Location = new Point(10, 35),
+                AutoSize = true,
+                ForeColor = Color.FromArgb(100, 116, 139)
+            };
+
+            var qtyLabel = new Label
+            {
+                Text = $"{item.Quantity} x",
+                Font = new Font("Segoe UI", 10),
+                Location = new Point(10, 55),
                 AutoSize = true
             };
 
-            panel.Controls.AddRange(new Control[] { iconBox, labelText, valueText });
+            var totalLabel = new Label
+            {
+                Text = $"dh {item.Total:N2}",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(95, 73, 64),
+                Location = new Point(250, 30),
+                AutoSize = true
+            };
+
+            var removeButton = new Button
+            {
+                Text = "×",
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Size = new Size(30, 30),
+                Location = new Point(320, 25),
+                BackColor = Color.FromArgb(239, 68, 68),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Cursor = Cursors.Hand
+            };
+            removeButton.FlatAppearance.BorderSize = 0;
+            removeButton.Click += (s, e) => RemoveFromCart(item);
+
+            panel.Controls.AddRange(new Control[] { 
+                nameLabel, priceLabel, qtyLabel, totalLabel, removeButton 
+            });
+
             return panel;
         }
 
-        private void CreateRecentSalesSection()
+        private void RemoveFromCart(CartItem item)
         {
-            var title = new Label
-            {
-                Text = "Recent Transactions",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(0, 0),
-                AutoSize = true
-            };
-
-            var subtitle = new Label
-            {
-                Text = "Last 10 sales",
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(0, 30),
-                AutoSize = true
-            };
-
-            recentSalesGrid = new DataGridView
-            {
-                Location = new Point(0, 60),
-                Size = new Size(380, 480),
-                BackgroundColor = Color.White,
-                BorderStyle = BorderStyle.None,
-                AllowUserToAddRows = false,
-                AllowUserToDeleteRows = false,
-                ReadOnly = true,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None,
-                RowHeadersVisible = false,
-                DefaultCellStyle = new DataGridViewCellStyle
-                {
-                    Font = new Font("Segoe UI", 10),
-                    Padding = new Padding(5),
-                    SelectionBackColor = Color.FromArgb(219, 234, 254),
-                    SelectionForeColor = Color.FromArgb(30, 41, 59)
-                },
-                ColumnHeadersDefaultCellStyle = new DataGridViewCellStyle
-                {
-                    BackColor = Color.FromArgb(248, 250, 252),
-                    ForeColor = Color.FromArgb(30, 41, 59),
-                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                    Padding = new Padding(8),
-                    Alignment = DataGridViewContentAlignment.MiddleLeft
-                },
-                ColumnHeadersHeight = 40,
-                RowTemplate = { Height = 45 }
-            };
-
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
-            { 
-                Name = "Invoice", 
-                HeaderText = "Invoice #", 
-                Width = 120,
-                DefaultCellStyle = new DataGridViewCellStyle { Font = new Font("Consolas", 9, FontStyle.Bold) }
-            });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
-            { 
-                Name = "Time", 
-                HeaderText = "Time", 
-                Width = 80,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
-            { 
-                Name = "Amount", 
-                HeaderText = "Amount", 
-                Width = 90,
-                DefaultCellStyle = new DataGridViewCellStyle 
-                { 
-                    Alignment = DataGridViewContentAlignment.MiddleRight,
-                    Font = new Font("Segoe UI", 10, FontStyle.Bold),
-                    ForeColor = Color.FromArgb(34, 197, 94)
-                }
-            });
-            recentSalesGrid.Columns.Add(new DataGridViewTextBoxColumn 
-            { 
-                Name = "Status", 
-                HeaderText = "Status", 
-                Width = 90,
-                DefaultCellStyle = new DataGridViewCellStyle { Alignment = DataGridViewContentAlignment.MiddleCenter }
-            });
-
-            recentSalesPanel.Controls.AddRange(new Control[] { title, subtitle, recentSalesGrid });
+            cartItems.Remove(item);
+            UpdateCart();
         }
 
-        private void CreatePerformanceSection(Panel panel)
+        private void UpdateTotals()
         {
-            var title = new Label
-            {
-                Text = "Performance Insights",
-                Font = new Font("Segoe UI", 16, FontStyle.Bold),
-                ForeColor = Color.FromArgb(30, 41, 59),
-                Location = new Point(0, 0),
-                AutoSize = true
-            };
+            var subtotal = cartItems.Sum(i => i.Total);
+            var discount = 0m;
+            var tax = subtotal * taxRate;
+            var total = subtotal - discount + tax;
 
-            var subtitle = new Label
-            {
-                Text = "Your sales performance metrics",
-                Font = new Font("Segoe UI", 9),
-                ForeColor = Color.FromArgb(100, 116, 139),
-                Location = new Point(0, 30),
-                AutoSize = true
-            };
+            itemCountLabel.Text = $"Items: {cartItems.Sum(i => i.Quantity)}";
+            subtotalLabel.Text = $"Subtotal: dh {subtotal:N2}";
+            discountLabel.Text = $"Discount: dh {discount:N2}";
+            taxLabel.Text = $"VAT {taxRate * 100:N1}%: dh {tax:N2}";
+            totalLabel.Text = $"dh {total:N2}";
+        }
 
-            // Performance metrics
-            var yPos = 70;
-            var metrics = new[]
-            {
-                ("Sales Target", "Goal: $1,000 | Achieved: $0", IconChar.Bullseye, Color.FromArgb(34, 197, 94)),
-                ("Customer Satisfaction", "Rating: N/A", IconChar.Star, Color.FromArgb(249, 115, 22)),
-                ("Transaction Speed", "Avg: N/A minutes", IconChar.Clock, Color.FromArgb(59, 130, 246)),
-                ("Top Selling Item", "N/A", IconChar.Trophy, Color.FromArgb(168, 85, 247))
-            };
+        private void SearchBox_TextChanged(object? sender, EventArgs e)
+        {
+            LoadProducts(null, searchBox.Text);
+        }
 
-            foreach (var (label, value, icon, color) in metrics)
+        private void PayButton_Click(object? sender, EventArgs e)
+        {
+            if (cartItems.Count == 0)
             {
-                var metricItem = CreateStatItem(label, value, icon, color, yPos);
-                panel.Controls.Add(metricItem);
-                yPos += 45;
+                MessageBox.Show("Cart is empty!", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
             }
 
-            panel.Controls.AddRange(new Control[] { title, subtitle });
-        }
-
-        private void LoadDashboard()
-        {
             try
             {
-                var today = DateTime.Today;
-                var cashierId = _authService.CurrentUser.Id;
+                var subtotal = cartItems.Sum(i => i.Total);
+                var tax = subtotal * taxRate;
+                var total = subtotal + tax;
 
-                // Get today's sales for this cashier
-                var todaySales = _context.Sales
-                    .Include(s => s.SaleItems)
-                    .Include(s => s.Customer)
-                    .Where(s => s.CashierId == cashierId && 
-                               s.SaleDate >= today && 
-                               s.Status == SaleStatus.Completed)
-                    .ToList();
+                var sale = new Sale
+                {
+                    InvoiceNumber = GenerateInvoiceNumber(),
+                    SaleDate = DateTime.Now,
+                    CashierId = _authService.CurrentUser.Id,
+                    TaxAmount = tax,
+                    TotalAmount = total,
+                    PaymentMethod = PaymentMethod.Cash,
+                    Status = SaleStatus.Completed,
+                    SaleItems = cartItems.Select(i => new SaleItem
+                    {
+                        ProductId = i.ProductId,
+                        Quantity = i.Quantity,
+                        UnitPrice = i.UnitPrice,
+                        TotalPrice = i.Total
+                    }).ToList()
+                };
 
-                // Calculate metrics
-                var todayTotal = todaySales.Sum(s => s.TotalAmount);
-                var todayCount = todaySales.Count;
-                var avgTransaction = todayCount > 0 ? todayTotal / todayCount : 0;
+                _context.Sales.Add(sale);
 
-                // Get all-time sales for this cashier
-                var allTimeSales = _context.Sales
-                    .Where(s => s.CashierId == cashierId && s.Status == SaleStatus.Completed)
-                    .Sum(s => s.TotalAmount);
+                // Update stock
+                foreach (var item in cartItems)
+                {
+                    var product = _context.Products.Find(item.ProductId);
+                    if (product != null)
+                    {
+                        product.Quantity -= item.Quantity;
+                        product.UpdatedAt = DateTime.Now;
+                    }
+                }
 
-                // Get unique customers served today
-                var customersServed = todaySales.Where(s => s.CustomerId.HasValue).Select(s => s.CustomerId).Distinct().Count();
+                _context.SaveChanges();
 
-                // Get cash payments today
-                var cashPayments = todaySales.Where(s => s.PaymentMethod == PaymentMethod.Cash).Sum(s => s.TotalAmount);
+                MessageBox.Show($"Sale completed!\nInvoice: {sale.InvoiceNumber}\nTotal: dh {total:N2}", 
+                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
-                // Update UI
-                todaySalesLabel.Text = $"${todayTotal:N2}";
-                todayTransactionsLabel.Text = todayCount.ToString();
-                avgTransactionLabel.Text = $"${avgTransaction:N2}";
-                myTotalSalesLabel.Text = $"${allTimeSales:N2}";
-                customersServedLabel.Text = customersServed.ToString();
-                cashPaymentsLabel.Text = $"${cashPayments:N2}";
-
-                // Load recent sales
-                LoadRecentSales();
+                // Clear cart
+                cartItems.Clear();
+                UpdateCart();
+                LoadProducts();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading dashboard: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"Error processing sale: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
-        private void LoadRecentSales()
+        private string GenerateInvoiceNumber()
         {
-            try
-            {
-                var cashierId = _authService.CurrentUser.Id;
-                var recentSales = _context.Sales
-                    .Where(s => s.CashierId == cashierId)
-                    .OrderByDescending(s => s.SaleDate)
-                    .Take(10)
-                    .ToList();
-
-                recentSalesGrid.Rows.Clear();
-                foreach (var sale in recentSales)
-                {
-                    recentSalesGrid.Rows.Add(
-                        sale.InvoiceNumber,
-                        sale.SaleDate.ToString("HH:mm"),
-                        $"${sale.TotalAmount:N2}",
-                        sale.Status.ToString()
-                    );
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading recent sales: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void StartAutoRefresh()
-        {
-            refreshTimer = new System.Windows.Forms.Timer
-            {
-                Interval = 30000 // Refresh every 30 seconds
-            };
-            refreshTimer.Tick += (s, e) => LoadDashboard();
-            refreshTimer.Start();
+            return $"INV-{DateTime.Now:yyyyMMdd}-{DateTime.Now.Ticks % 10000:D4}";
         }
 
         protected override void Dispose(bool disposing)
         {
             if (disposing)
             {
-                refreshTimer?.Stop();
-                refreshTimer?.Dispose();
                 _context?.Dispose();
             }
             base.Dispose(disposing);
