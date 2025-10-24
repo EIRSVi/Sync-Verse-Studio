@@ -35,6 +35,7 @@ namespace SyncVerseStudio.Data
             });
 
             // Configure Product entity
+            //jhjkhjkhkjhkh hhkhkjhkjhkh
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasIndex(e => e.Barcode).IsUnique();
