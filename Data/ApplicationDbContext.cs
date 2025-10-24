@@ -17,7 +17,7 @@ namespace SyncVerseStudio.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=DESKTOP-6RCREN5\\MSSQLSERVER01;Initial Catalog=khmerdatabase;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Application Name=\"SyncVerse Studio\";Command Timeout=0");
+            optionsBuilder.UseSqlServer("Documents\myasfsfawetw235sdf.accdb");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -33,7 +33,7 @@ namespace SyncVerseStudio.Data
                     .HasMaxLength(20);
             });
 
-            // Configure Product entity
+            // Configure Product entity \ TEST FROM MIDNANA
             modelBuilder.Entity<Product>(entity =>
             {
                 entity.HasIndex(e => e.Barcode).IsUnique();
