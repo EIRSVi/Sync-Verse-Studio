@@ -48,7 +48,7 @@ namespace SyncVerseStudio.Data
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // Configure Sale entity
+            // Configure Sale entity \ KAJSHKJDKSAHKDHKSH
             modelBuilder.Entity<Sale>(entity =>
             {
                 entity.HasIndex(e => e.InvoiceNumber).IsUnique();
