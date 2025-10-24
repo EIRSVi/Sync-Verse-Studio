@@ -68,7 +68,8 @@ namespace SyncVerseStudio.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Configure SaleItem entity
+            // Configure SaleItem entity 
+        // GOLD OR BIT
             modelBuilder.Entity<SaleItem>(entity =>
             {
                 entity.HasOne(d => d.Sale)
