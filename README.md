@@ -50,6 +50,69 @@ SyncVerse Studio is a modern, feature-rich POS application that provides complet
 
 ## Installation and Setup
 
+### Git Commands
+
+Here are some useful Git commands for managing the SyncVerse Studio project:
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/yourusername/syncverse-studio.git
+   ```
+
+2. **Check the status of your repository:**
+
+   ```bash
+   git status
+   ```
+
+3. **Add changes to staging:**
+
+   ```bash
+   git add .
+   ```
+
+4. **Commit changes with a message:**
+
+   ```bash
+   git commit -m "Update README with Git commands"
+   ```
+
+5. **Push changes to the remote repository:**
+
+   ```bash
+   git push origin main
+   ```
+
+6. **Pull the latest changes from the remote repository:**
+
+   ```bash
+   git pull origin main
+   ```
+
+7. **Create a new branch:**
+
+   ```bash
+   git checkout -b feature/new-feature
+   ```
+
+8. **Switch to an existing branch:**
+
+   ```bash
+   git checkout develop
+   ```
+
+9. **Merge a branch into the current branch:**
+
+   ```bash
+   git merge feature/new-feature
+   ```
+
+10. **View commit history:**
+    ```bash
+    git log --oneline
+    ```
+
 ### Prerequisites
 
 - Windows 10 or later
@@ -58,12 +121,6 @@ SyncVerse Studio is a modern, feature-rich POS application that provides complet
 - Visual Studio 2022 or later (recommended)
 
 ### Installation Steps
-
-# Initialize the repository if not already done
-
-git add .
-git commit -m "Merge branch 'branch-name' and resolve conflicts"
-git push origin main
 
 3. Update database connection string (if needed)
    Edit `syncversestudio/Data/ApplicationDbContext.cs` and modify the connection string
