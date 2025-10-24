@@ -2,6 +2,8 @@
 
 A comprehensive desktop Point of Sale (POS) system built with .NET 8 and Windows Forms, designed for retail businesses to manage sales, inventory, customers, and operations efficiently.
 
+TEST: Hello from GTCAT
+
 ## Project Overview
 
 SyncVerse Studio is a modern, feature-rich POS application that provides complete business management capabilities including real-time sales processing, inventory tracking, customer management, and detailed reporting. The system implements role-based access control with dedicated interfaces for Administrators, Cashiers, and Inventory Clerks.
@@ -22,21 +24,25 @@ SyncVerse Studio is a modern, feature-rich POS application that provides complet
 ## Technology Stack
 
 ### Core Framework
+
 - .NET 8.0 (Windows Desktop)
 - Windows Forms for UI
 - C# 12
 
 ### Database
+
 - Entity Framework Core 8.0
 - SQL Server LocalDB
 - Code-First approach with migrations
 
 ### UI Components
+
 - FontAwesome.Sharp 6.3.0 for icons
 - MaterialSkin.2 2.1.0 for modern UI elements
 - Custom-drawn controls with GDI+
 
 ### Architecture
+
 - Model-View-Controller (MVC) pattern
 - Repository pattern for data access
 - Service layer for business logic
@@ -53,31 +59,29 @@ SyncVerse Studio is a modern, feature-rich POS application that provides complet
 
 ### Installation Steps
 
-1. Clone the repository
-```bash
-git clone https://github.com/yourusername/syncverse-studio.git
-cd syncverse-studio
-```
+# Initialize the repository if not already done
 
-2. Restore NuGet packages
-```bash
-dotnet restore
-```
+git add .
+git commit -m "Merge branch 'branch-name' and resolve conflicts"
+git push origin main
 
 3. Update database connection string (if needed)
-Edit `syncversestudio/Data/ApplicationDbContext.cs` and modify the connection string
+   Edit `syncversestudio/Data/ApplicationDbContext.cs` and modify the connection string
 
 4. Apply database migrations
+
 ```bash
 dotnet ef database update --project syncversestudio
 ```
 
 5. Build the solution
+
 ```bash
 dotnet build syncversestudio/syncversestudio.csproj
 ```
 
 6. Run the application
+
 ```bash
 dotnet run --project syncversestudio/syncversestudio.csproj
 ```
@@ -86,34 +90,39 @@ dotnet run --project syncversestudio/syncversestudio.csproj
 
 After initial setup, use these credentials:
 
-- Administrator:  
-- Cashier:  
-- Inventory Clerk: 
+- Administrator:
+- Cashier:
+- Inventory Clerk:
 
 ## Build and Run
 
 ### Development Build
+
 ```bash
 dotnet build syncversestudio/syncversestudio.csproj --configuration Debug
 ```
 
 ### Production Build
+
 ```bash
 dotnet build syncversestudio/syncversestudio.csproj --configuration Release
 ```
 
 ### Run Application
+
 ```bash
 cd syncversestudio/bin/Debug/net8.0-windows
 ./syncversestudio.exe
 ```
 
 ### Create Migrations
+
 ```bash
 dotnet ef migrations add MigrationName --project syncversestudio
 ```
 
 ### Update Database
+
 ```bash
 dotnet ef database update --project syncversestudio
 ```
@@ -125,21 +134,25 @@ The application follows a layered architecture pattern with clear separation of 
 ### Layer Structure
 
 **Presentation Layer (Views)**
+
 - Windows Forms UI components
 - User interaction handling
 - Data binding and validation
 
 **Business Logic Layer (Services)**
+
 - AuthenticationService: User authentication and session management
 - Business rules and validation
 - Transaction coordination
 
 **Data Access Layer (Data)**
+
 - ApplicationDbContext: EF Core database context
 - Entity configurations
 - Database migrations
 
 **Domain Layer (Models)**
+
 - Entity classes
 - Business objects
 - Enumerations
@@ -152,18 +165,18 @@ graph TB
         V[Views/Forms]
         C[Controllers/Event Handlers]
     end
-    
+
     subgraph "Business Layer"
         S[Services]
         BL[Business Logic]
     end
-    
+
     subgraph "Data Layer"
         M[Models/Entities]
         DB[(Database)]
         CTX[DbContext]
     end
-    
+
     V -->|User Action| C
     C -->|Request| S
     S -->|Business Rules| BL
@@ -205,26 +218,26 @@ graph LR
 graph TD
     A[User Login] -->|Authenticate| B[Main Dashboard]
     B -->|Load| C[User Role Check]
-    
+
     C -->|Administrator| D[Admin Menu]
     C -->|Cashier| E[Cashier Menu]
     C -->|Inventory Clerk| F[Clerk Menu]
-    
+
     D --> D1[User Management]
     D --> D2[Product Management]
     D --> D3[Sales Reports]
     D --> D4[Analytics]
     D --> D5[System Settings]
-    
+
     E --> E1[POS Terminal]
     E --> E2[Sales History]
     E --> E3[Customer Lookup]
-    
+
     F --> F1[Inventory Management]
     F --> F2[Stock Adjustment]
     F --> F3[Supplier Management]
     F --> F4[Product Images]
-    
+
     D1 -->|CRUD| G[Database]
     D2 -->|CRUD| G
     D3 -->|Query| G
@@ -239,36 +252,36 @@ graph TB
     subgraph "User Management"
         U[User]
     end
-    
+
     subgraph "Product Management"
         P[Product]
         PI[ProductImage]
         C[Category]
         S[Supplier]
     end
-    
+
     subgraph "Sales Management"
         SA[Sale]
         SI[SaleItem]
         CU[Customer]
     end
-    
+
     subgraph "Audit"
         AL[AuditLog]
     end
-    
+
     U -->|Creates| SA
     U -->|Performs| AL
-    
+
     P -->|BelongsTo| C
     P -->|SuppliedBy| S
     P -->|HasMany| PI
     P -->|SoldIn| SI
-    
+
     SA -->|HasMany| SI
     SA -->|BelongsTo| CU
     SA -->|ProcessedBy| U
-    
+
     SI -->|References| P
 ```
 
@@ -277,6 +290,7 @@ graph TB
 ### Core Entities
 
 **User**
+
 - Id (PK, Identity)
 - Username (Unique, Required)
 - PasswordHash (Required)
@@ -287,6 +301,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **Product**
+
 - Id (PK, Identity)
 - Name (Required)
 - Description
@@ -299,6 +314,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **ProductImage**
+
 - Id (PK, Identity)
 - ProductId (FK, Required)
 - ImagePath (Required)
@@ -306,6 +322,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **Category**
+
 - Id (PK, Identity)
 - Name (Required, Unique)
 - Description
@@ -313,6 +330,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **Supplier**
+
 - Id (PK, Identity)
 - Name (Required)
 - ContactPerson
@@ -322,6 +340,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **Customer**
+
 - Id (PK, Identity)
 - FirstName, LastName
 - Email, Phone
@@ -330,6 +349,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **Sale**
+
 - Id (PK, Identity)
 - InvoiceNumber (Unique, Required)
 - CashierId (FK, Required)
@@ -341,6 +361,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **SaleItem**
+
 - Id (PK, Identity)
 - SaleId (FK, Required)
 - ProductId (FK, Required)
@@ -349,6 +370,7 @@ graph TB
 - CreatedAt, UpdatedAt
 
 **AuditLog**
+
 - Id (PK, Identity)
 - UserId (FK, Required)
 - Action (Required)
@@ -413,6 +435,7 @@ graph TB
 ## User Role Permissions
 
 ### Administrator
+
 - Full system access
 - User management (CRUD)
 - Product management (CRUD)
@@ -425,6 +448,7 @@ graph TB
 - Database management
 
 ### Cashier
+
 - POS terminal access
 - Process sales transactions
 - View sales history
@@ -435,6 +459,7 @@ graph TB
 - No administrative functions
 
 ### Inventory Clerk
+
 - Product management (CRUD)
 - Product image management
 - Stock adjustment
@@ -461,6 +486,7 @@ The ApplicationDbContext is configured with:
 ### Key Configurations
 
 **Product Entity**
+
 ```csharp
 modelBuilder.Entity<Product>()
     .HasOne(p => p.Category)
@@ -476,6 +502,7 @@ modelBuilder.Entity<Product>()
 ```
 
 **Sale Entity**
+
 ```csharp
 modelBuilder.Entity<Sale>()
     .HasOne(s => s.Cashier)
