@@ -59,18 +59,36 @@ SyncVerse Studio is a modern, feature-rich POS application that provides complet
 
 ### Installation Steps
 
-1. Clone the repository
+# Initialize the repository if not already done
 
-```bash
-git clone https://github.com/yourusername/syncverse-studio.git
-cd syncverse-studio
-```
+git init
 
-2. Restore NuGet packages
+# Add all files
 
-```bash
-dotnet restore
-```
+git add .
+
+# Create initial commit
+
+git commit -m "Initial commit: Project setup and documentation"
+
+# Rename the default branch to main (if needed)
+
+git branch -M main
+
+# Add the remote repository
+
+git remote add origin https://github.com/EIRSVi/sync-verse-studio.git
+
+# Push to main branch
+
+git push -u origin main
+
+git remote -v
+
+# Remove git folder and reinitialize
+
+rm -rf .git
+git init
 
 3. Update database connection string (if needed)
    Edit `syncversestudio/Data/ApplicationDbContext.cs` and modify the connection string
