@@ -35,6 +35,7 @@ namespace SyncVerseStudio.Data
             });
 
             // Configure Product entity
+            //skfskjfksj 
             //jhjkhjkhkjhkh hhkhkjhkjhkh
             modelBuilder.Entity<Product>(entity =>
             {
