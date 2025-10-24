@@ -502,21 +502,57 @@ namespace SyncVerseStudio.Views
                     _context.Entry(_product).Reload();
                 }
 
-                // Save temporary images if any
+                // Handle product images
                 if (tempProductImages.Any())
                 {
+                    // Get existing images from database
+                    var existingImages = await _context.ProductImages
+                        .Where(img => img.ProductId == _product.Id)
+                        .ToListAsync();
+
+                    // Update or add images
                     foreach (var tempImage in tempProductImages)
                     {
-                        // Create a new ProductImage without ID to avoid identity insert error
-                        var newImage = new ProductImage
+                        // Check if this image already exists (by Id or ImagePath)
+                        var existingImage = existingImages.FirstOrDefault(ei => 
+                            (tempImage.Id > 0 && ei.Id == tempImage.Id) || 
+                            ei.ImagePath == tempImage.ImagePath);
+
+                        if (existingImage != null)
                         {
-                            ProductId = _product.Id,
-                            ImagePath = tempImage.ImagePath,
-                            IsPrimary = tempImage.IsPrimary,
-                            CreatedAt = DateTime.Now,
-                            UpdatedAt = DateTime.Now
-                        };
-                        _context.ProductImages.Add(newImage);
+                            // Update existing image
+                            existingImage.IsPrimary = tempImage.IsPrimary;
+                            existingImage.DisplayOrder = tempImage.DisplayOrder;
+                            existingImage.IsActive = tempImage.IsActive;
+                            existingImage.UpdatedAt = DateTime.Now;
+                        }
+                        else
+                        {
+                            // Add new image
+                            var newImage = new ProductImage
+                            {
+                                ProductId = _product.Id,
+                                ImagePath = tempImage.ImagePath,
+                                IsPrimary = tempImage.IsPrimary,
+                                DisplayOrder = tempImage.DisplayOrder,
+                                IsActive = true,
+                                CreatedAt = DateTime.Now,
+                                UpdatedAt = DateTime.Now
+                            };
+                            _context.ProductImages.Add(newImage);
+                        }
+                    }
+
+                    // Mark removed images as inactive
+                    foreach (var existingImage in existingImages)
+                    {
+                        if (!tempProductImages.Any(ti => 
+                            (ti.Id > 0 && ti.Id == existingImage.Id) || 
+                            ti.ImagePath == existingImage.ImagePath))
+                        {
+                            existingImage.IsActive = false;
+                            existingImage.UpdatedAt = DateTime.Now;
+                        }
                     }
                     
                     try
@@ -727,6 +763,15 @@ namespace SyncVerseStudio.Views
                         .OrderByDescending(img => img.IsPrimary)
                         .ThenBy(img => img.DisplayOrder)
                         .ToListAsync();
+
+                    // Debug: Log image paths
+                    System.Diagnostics.Debug.WriteLine($"Loading {images.Count} images for product {_productId}");
+                    foreach (var img in images)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"  Image ID: {img.Id}, Path: {img.ImagePath}, IsPrimary: {img.IsPrimary}");
+                        var fullPath = ProductImageHelper.GetImageFullPath(img.ImagePath);
+                        System.Diagnostics.Debug.WriteLine($"  Full Path: {fullPath}, Exists: {File.Exists(fullPath)}");
+                    }
 
                     // Load existing images into temp collection for editing
                     tempProductImages.Clear();
@@ -992,22 +1037,42 @@ namespace SyncVerseStudio.Views
             {
                 try
                 {
+                    System.Diagnostics.Debug.WriteLine($"Attempting to load primary image: {primaryImage.ImagePath}");
                     var image = ProductImageHelper.LoadImage(primaryImage.ImagePath);
+                    
                     if (image != null)
                     {
+                        System.Diagnostics.Debug.WriteLine($"Image loaded successfully, size: {image.Width}x{image.Height}");
+                        
+                        // Dispose old image to prevent memory leaks
+                        if (primaryImageBox.Image != null)
+                        {
+                            var oldImage = primaryImageBox.Image;
+                            primaryImageBox.Image = null;
+                            oldImage.Dispose();
+                        }
+                        
                         primaryImageBox.Image = ProductImageHelper.ResizeImage(image, 470, 300);
                         
                         // Remove placeholder
                         foreach (Control ctrl in primaryImageBox.Controls.OfType<Label>().ToList())
                         {
                             primaryImageBox.Controls.Remove(ctrl);
+                            ctrl.Dispose();
                         }
                     }
+                    else
+                    {
+                        System.Diagnostics.Debug.WriteLine($"Image returned null for path: {primaryImage.ImagePath}");
+                        var fullPath = ProductImageHelper.GetImageFullPath(primaryImage.ImagePath);
+                        ShowImagePlaceholder($"Image not found\nPath: {primaryImage.ImagePath}\nFull: {fullPath}\nExists: {File.Exists(fullPath)}");
+                    }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    // Show placeholder on error
-                    ShowImagePlaceholder();
+                    System.Diagnostics.Debug.WriteLine($"Exception loading image: {ex.Message}\n{ex.StackTrace}");
+                    // Show placeholder on error with error message
+                    ShowImagePlaceholder($"Error loading image:\n{ex.Message}");
                 }
 
                 // Add thumbnails
@@ -1022,22 +1087,33 @@ namespace SyncVerseStudio.Views
             {
                 ShowImagePlaceholder();
             }
+            
+            // Force refresh
+            primaryImageBox.Refresh();
+            thumbnailsPanel.Refresh();
         }
 
-        private void ShowImagePlaceholder()
+        private void ShowImagePlaceholder(string? message = null)
         {
-            primaryImageBox.Image = null;
+            // Dispose old image to prevent memory leaks
+            if (primaryImageBox.Image != null)
+            {
+                var oldImage = primaryImageBox.Image;
+                primaryImageBox.Image = null;
+                oldImage.Dispose();
+            }
             
             // Remove existing placeholder
             foreach (Control ctrl in primaryImageBox.Controls.OfType<Label>().ToList())
             {
                 primaryImageBox.Controls.Remove(ctrl);
+                ctrl.Dispose();
             }
 
             // Add new placeholder
             var placeholderLabel = new Label
             {
-                Text = "No primary image\nClick 'Add Images' to add",
+                Text = message ?? "No primary image\nClick 'Add Images' to add",
                 Font = new Font("Segoe UI", 10F),
                 ForeColor = Color.FromArgb(150, 150, 150),
                 TextAlign = ContentAlignment.MiddleCenter,
@@ -1074,11 +1150,36 @@ namespace SyncVerseStudio.Views
                 {
                     pictureBox.Image = ProductImageHelper.ResizeImage(image, 68, 60);
                 }
+                else
+                {
+                    // Show "no image" text
+                    pictureBox.BackColor = Color.FromArgb(248, 250, 252);
+                    var noImageLabel = new Label
+                    {
+                        Text = "No\nImage",
+                        Font = new Font("Segoe UI", 7F),
+                        ForeColor = Color.FromArgb(150, 150, 150),
+                        TextAlign = ContentAlignment.MiddleCenter,
+                        Dock = DockStyle.Fill,
+                        BackColor = Color.Transparent
+                    };
+                    pictureBox.Controls.Add(noImageLabel);
+                }
             }
-            catch
+            catch (Exception ex)
             {
                 // Show error icon
                 pictureBox.BackColor = Color.FromArgb(248, 250, 252);
+                var errorLabel = new Label
+                {
+                    Text = "Error",
+                    Font = new Font("Segoe UI", 7F),
+                    ForeColor = Color.FromArgb(239, 68, 68),
+                    TextAlign = ContentAlignment.MiddleCenter,
+                    Dock = DockStyle.Fill,
+                    BackColor = Color.Transparent
+                };
+                pictureBox.Controls.Add(errorLabel);
             }
 
             thumbnailPanel.Controls.Add(pictureBox);

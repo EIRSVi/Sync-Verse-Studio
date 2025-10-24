@@ -102,11 +102,11 @@ namespace SyncVerseStudio.Helpers
             var customersPlainData = new List<(string Email, string Phone, string FirstName, string LastName, string? FacebookId)>
             {
                 // Sample customer data - will be encrypted before storage
-                ("customer1@example.com", "0123456789", "Phan", "Danuphon", "FB001"),
-                ("customer2@example.com", "0987654321", "Samnang", "Dy", "FB002"),
-                ("customer3@example.com", "0111222333", "Sokla", "Choeun", "FB003"),
-                ("customer4@example.com", "0444555666", "Channa", "Phork", "FB004"),
-                ("customer5@example.com", "0777888999", "Vinthyratthanak", "Pha", "FB005")
+                ("customer1@example.com", "0123456789", "Pha", "**phon", "FB001"),
+                ("customer2@example.com", "0987654321", "Samnan*", "D**", "FB002"),
+                ("customer3@example.com", "0111222333", "Sok*a", "Cho**n", "FB003"),
+                ("customer4@example.com", "0444555666", "Cha**a", "P*ork", "FB004"),
+                ("customer5@example.com", "0777888999", "Vin*******hanak", "Ph*", "FB005")
             };
 
             foreach (var (email, phone, firstName, lastName, facebookId) in customersPlainData)

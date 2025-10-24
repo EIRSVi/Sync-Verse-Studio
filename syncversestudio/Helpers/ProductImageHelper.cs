@@ -213,19 +213,53 @@ namespace SyncVerseStudio.Helpers
                 if (string.IsNullOrEmpty(imagePath))
                     return null;
 
+                // Check if it's a URL first
+                if (Uri.IsWellFormedUriString(imagePath, UriKind.Absolute) && 
+                    (imagePath.StartsWith("http://") || imagePath.StartsWith("https://")))
+                {
+                    // For URLs, try to download synchronously (not ideal but works)
+                    try
+                    {
+                        using (var client = new System.Net.WebClient())
+                        {
+                            var imageBytes = client.DownloadData(imagePath);
+                            using (var stream = new MemoryStream(imageBytes))
+                            {
+                                return Image.FromStream(stream);
+                            }
+                        }
+                    }
+                    catch
+                    {
+                        return null;
+                    }
+                }
+
+                // Try direct path first
                 if (File.Exists(imagePath))
                 {
-                    return Image.FromFile(imagePath);
+                    // Use a stream to avoid file locking issues
+                    using (var stream = new FileStream(imagePath, FileMode.Open, FileAccess.Read))
+                    {
+                        return Image.FromStream(stream);
+                    }
                 }
-                else if (Uri.IsWellFormedUriString(imagePath, UriKind.Absolute))
+
+                // Try as relative path
+                var fullPath = GetImageFullPath(imagePath);
+                if (File.Exists(fullPath))
                 {
-                    // For URLs, return null for now (could implement async loading)
-                    return null;
+                    // Use a stream to avoid file locking issues
+                    using (var stream = new FileStream(fullPath, FileMode.Open, FileAccess.Read))
+                    {
+                        return Image.FromStream(stream);
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // Return null on error
+                // Log error for debugging
+                System.Diagnostics.Debug.WriteLine($"Error loading image '{imagePath}': {ex.Message}");
             }
 
             return null;
@@ -239,9 +273,22 @@ namespace SyncVerseStudio.Helpers
             if (string.IsNullOrEmpty(imagePath))
                 return string.Empty;
 
+            // If it's a URL, return as-is
+            if (Uri.IsWellFormedUriString(imagePath, UriKind.Absolute) && 
+                (imagePath.StartsWith("http://") || imagePath.StartsWith("https://")))
+                return imagePath;
+
+            // If it's already an absolute path, return as-is
             if (Path.IsPathRooted(imagePath))
                 return imagePath;
 
+            // If the path already contains "assets", combine with StartupPath
+            if (imagePath.Contains("assets"))
+            {
+                return Path.Combine(Application.StartupPath, imagePath);
+            }
+
+            // Otherwise, assume it's just a filename in the images folder
             return Path.Combine(Application.StartupPath, "assets", "images", imagePath);
         }
 

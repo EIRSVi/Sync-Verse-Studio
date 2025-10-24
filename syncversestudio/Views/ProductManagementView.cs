@@ -177,15 +177,16 @@ namespace SyncVerseStudio.Views
             // Configure columns
             productsGrid.Columns.AddRange(new DataGridViewColumn[]
             {
-                new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", Width = 50, Visible = false },
-                new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Product Name", Width = 200 },
+                new DataGridViewTextBoxColumn { Name = "Id", HeaderText = "ID", Width = 60, Visible = true },
+                new DataGridViewImageColumn { Name = "Image", HeaderText = "Image", Width = 80, ImageLayout = DataGridViewImageCellLayout.Zoom },
+                new DataGridViewTextBoxColumn { Name = "Name", HeaderText = "Product Name", Width = 180 },
                 new DataGridViewTextBoxColumn { Name = "SKU", HeaderText = "SKU", Width = 100 },
-                new DataGridViewTextBoxColumn { Name = "Category", HeaderText = "Category", Width = 120 },
-                new DataGridViewTextBoxColumn { Name = "Supplier", HeaderText = "Supplier", Width = 120 },
-                new DataGridViewTextBoxColumn { Name = "CostPrice", HeaderText = "Cost Price", Width = 100 },
-                new DataGridViewTextBoxColumn { Name = "SellingPrice", HeaderText = "Selling Price", Width = 100 },
-                new DataGridViewTextBoxColumn { Name = "Quantity", HeaderText = "Stock", Width = 80 },
-                new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 100 }
+                new DataGridViewTextBoxColumn { Name = "Category", HeaderText = "Category", Width = 110 },
+                new DataGridViewTextBoxColumn { Name = "Supplier", HeaderText = "Supplier", Width = 110 },
+                new DataGridViewTextBoxColumn { Name = "CostPrice", HeaderText = "Cost Price", Width = 90 },
+                new DataGridViewTextBoxColumn { Name = "SellingPrice", HeaderText = "Selling Price", Width = 90 },
+                new DataGridViewTextBoxColumn { Name = "Quantity", HeaderText = "Stock", Width = 70 },
+                new DataGridViewTextBoxColumn { Name = "Status", HeaderText = "Status", Width = 90 }
             });
 
             // Format currency columns
@@ -203,6 +204,7 @@ namespace SyncVerseStudio.Views
                 var products = await _context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.ProductImages)
                     .Where(p => p.IsActive)
                     .OrderBy(p => p.Name)
                     .ToListAsync();
@@ -212,8 +214,32 @@ namespace SyncVerseStudio.Views
                 foreach (var product in products)
                 {
                     var status = product.IsLowStock ? "Low Stock" : "In Stock";
+                    
+                    // Get primary image or first image
+                    var primaryImage = product.ProductImages?.FirstOrDefault(img => img.IsPrimary && img.IsActive) 
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.IsActive);
+                    
+                    Image? productImage = null;
+                    if (primaryImage != null)
+                    {
+                        try
+                        {
+                            productImage = ProductImageHelper.LoadImage(primaryImage.ImagePath);
+                            if (productImage != null)
+                            {
+                                // Resize for thumbnail display
+                                productImage = ProductImageHelper.ResizeImage(productImage, 60, 60);
+                            }
+                        }
+                        catch
+                        {
+                            // If image fails to load, leave as null
+                        }
+                    }
+                    
                     var rowIndex = productsGrid.Rows.Add(
                         product.Id,
+                        productImage,
                         product.Name,
                         product.SKU,
                         product.Category?.Name ?? "No Category",
@@ -227,6 +253,9 @@ namespace SyncVerseStudio.Views
                     // Keep white background for all rows
                     productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
                     productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
+                    
+                    // Set row height to accommodate image
+                    productsGrid.Rows[rowIndex].Height = 65;
                 }
 
                 productCountLabel.Text = $"Total: {products.Count}";
@@ -283,12 +312,14 @@ namespace SyncVerseStudio.Views
                 var query = _context.Products
                     .Include(p => p.Category)
                     .Include(p => p.Supplier)
+                    .Include(p => p.ProductImages)
                     .Where(p => p.IsActive);
 
                 if (!string.IsNullOrEmpty(searchTerm))
                 {
                     query = query.Where(p => 
                         p.Name.ToLower().Contains(searchTerm) ||
+                        p.Id.ToString().Contains(searchTerm) ||
                         (p.SKU != null && p.SKU.ToLower().Contains(searchTerm)) ||
                         (p.Barcode != null && p.Barcode.ToLower().Contains(searchTerm)));
                 }
@@ -305,8 +336,32 @@ namespace SyncVerseStudio.Views
                 foreach (var product in products)
                 {
                     var status = product.IsLowStock ? "Low Stock" : "In Stock";
+                    
+                    // Get primary image or first image
+                    var primaryImage = product.ProductImages?.FirstOrDefault(img => img.IsPrimary && img.IsActive) 
+                                    ?? product.ProductImages?.FirstOrDefault(img => img.IsActive);
+                    
+                    Image? productImage = null;
+                    if (primaryImage != null)
+                    {
+                        try
+                        {
+                            productImage = ProductImageHelper.LoadImage(primaryImage.ImagePath);
+                            if (productImage != null)
+                            {
+                                // Resize for thumbnail display
+                                productImage = ProductImageHelper.ResizeImage(productImage, 60, 60);
+                            }
+                        }
+                        catch
+                        {
+                            // If image fails to load, leave as null
+                        }
+                    }
+                    
                     var rowIndex = productsGrid.Rows.Add(
                         product.Id,
+                        productImage,
                         product.Name,
                         product.SKU,
                         product.Category?.Name ?? "No Category",
@@ -320,6 +375,9 @@ namespace SyncVerseStudio.Views
                     // Keep white background for all rows
                     productsGrid.Rows[rowIndex].DefaultCellStyle.BackColor = Color.White;
                     productsGrid.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.FromArgb(30, 30, 30);
+                    
+                    // Set row height to accommodate image
+                    productsGrid.Rows[rowIndex].Height = 65;
                 }
             }
             catch (Exception ex)

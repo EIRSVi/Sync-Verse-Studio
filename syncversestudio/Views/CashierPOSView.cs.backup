@@ -1,44 +1,47 @@
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
-using SyncVerseStudio.Services;
+using System.Linq;
+using System.Windows.Forms;
+using Microsoft.EntityFrameworkCore;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Services;
 using SyncVerseStudio.Helpers;
-using Microsoft.EntityFrameworkCore;
 using FontAwesome.Sharp;
+using System.Threading.Tasks;
 
 namespace SyncVerseStudio.Views
 {
     /// <summary>
-    /// Modern Full-Screen Point of Sale System
-    /// Professional cashier interface with complete transaction management
+    /// Modern, clean Point of Sale interface
+    /// Three-panel layout: Products | Shopping Cart | Recent Sales
     /// </summary>
     public partial class CashierPOSView : Form
     {
         private readonly AuthenticationService _authService;
         private readonly ApplicationDbContext _context;
-        
-        // UI Components
+        private decimal _taxRate = 0.10m;
+        private System.Windows.Forms.Timer _statusTimer;
+
+        // Main Panels
         private Panel _sidebarPanel, _productsPanel, _cartPanel, _recentSalesPanel;
         private FlowLayoutPanel _productCardsPanel;
+        private ListView _cartListView, _recentSalesListView;
+        
+        // Controls
         private TextBox _searchBox, _cashAmountBox;
         private ComboBox _categoryFilter;
         private Label _subtotalLabel, _taxLabel, _totalLabel, _changeLabel;
-        private Button _clearCartButton, _completeSaleButton, _holdButton;
-        private ListView _cartListView, _recentSalesListView;
+        private Button _completeSaleButton, _clearCartButton, _holdButton;
         private RadioButton _cashRadio, _cardRadio, _mobileRadio;
-        
-        // Settings
-        private decimal _taxRate = 0.10m; // 10% tax
-        private System.Windows.Forms.Timer _statusTimer;
 
         public CashierPOSView(AuthenticationService authService)
         {
             _authService = authService;
             _context = new ApplicationDbContext();
+            
             InitializeComponent();
-            SetupEventHandlers();
-            LoadTaxSettings();
             LoadData();
         }
 
