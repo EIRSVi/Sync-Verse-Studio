@@ -107,61 +107,7 @@ namespace SyncVerseStudio.Views
             };
             headerPanel.Controls.Add(subtitleLabel);
 
-            // User info and logout section
-            var currentUser = _authService.CurrentUser;
-            var userLabel = new Label
-            {
-                Text = $"Welcome, {currentUser?.FirstName ?? "User"}",
-                Font = new Font("Segoe UI", 10F),
-                ForeColor = Color.FromArgb(120, 120, 120),
-                Location = new Point(950, 25),
-                Size = new Size(150, 20),
-                TextAlign = ContentAlignment.MiddleRight,
-                BackColor = Color.Transparent
-            };
-            headerPanel.Controls.Add(userLabel);
-
-            var backupButton = new IconButton
-            {
-                Text = "Backup",
-                IconChar = IconChar.Download,
-                IconColor = Color.FromArgb(52, 152, 219),
-                IconSize = 16,
-                Size = new Size(80, 30),
-                Location = new Point(990, 45),
-                BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(52, 152, 219),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9F),
-                TextAlign = ContentAlignment.MiddleRight,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand
-            };
-            backupButton.FlatAppearance.BorderSize = 1;
-            backupButton.FlatAppearance.BorderColor = Color.FromArgb(52, 152, 219);
-            backupButton.Click += BackupDatabase_Click;
-            headerPanel.Controls.Add(backupButton);
-
-            var logoutButton = new IconButton
-            {
-                Text = "Logout",
-                IconChar = IconChar.SignOutAlt,
-                IconColor = Color.FromArgb(231, 76, 60),
-                IconSize = 16,
-                Size = new Size(90, 30),
-                Location = new Point(1080, 45),
-                BackColor = Color.Transparent,
-                ForeColor = Color.FromArgb(231, 76, 60),
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 9F),
-                TextAlign = ContentAlignment.MiddleRight,
-                ImageAlign = ContentAlignment.MiddleLeft,
-                Cursor = Cursors.Hand
-            };
-            logoutButton.FlatAppearance.BorderSize = 1;
-            logoutButton.FlatAppearance.BorderColor = Color.FromArgb(231, 76, 60);
-            logoutButton.Click += LogoutButton_Click;
-            headerPanel.Controls.Add(logoutButton);
+            // User info and logout section removed - cleaner header design
 
             this.Controls.Add(headerPanel);
         }
