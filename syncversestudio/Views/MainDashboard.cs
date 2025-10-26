@@ -238,8 +238,6 @@ sidebarPanel.Controls.Add(navHeader);
  yPos +=50;
  CreateModernMenuItem("Suppliers", IconChar.Truck, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new SupplierManagementView(_authService)));
  yPos +=50;
- CreateModernMenuItem("Database Seeder", IconChar.Database, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new DatabaseSeedView(_authService.GetDbContext())));
- yPos +=50;
  CreateModernMenuItem("Database Management", IconChar.Server, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new DatabaseManagementForm()));
  yPos +=50;
  CreateModernMenuItem("Analytics", IconChar.ChartPie, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AnalyticsView(_authService)));
@@ -658,24 +656,9 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
                             loginForm.ShowDialog();
                             break;
 
-                        case LogoutDialog.LogoutAction.Logout:
-                            // Logout and return to login form
-                            Console.WriteLine("User chose to logout and return to login");
-                            await _authService.LogoutAsync();
-                            this.Close();
-                            break;
-
-                        case LogoutDialog.LogoutAction.ExitApplication:
-                            // Exit application completely
-                            Console.WriteLine("User chose to exit application completely");
-                            await _authService.LogoutAsync();
-                            this.Close();
-                            Application.Exit();
-                            break;
-
                         case LogoutDialog.LogoutAction.Cancel:
                             // Do nothing
-                            Console.WriteLine("User cancelled logout");
+                            Console.WriteLine("User cancelled");
                             break;
                     }
                 }

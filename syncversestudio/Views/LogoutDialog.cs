@@ -26,7 +26,7 @@ namespace SyncVerseStudio.Views
         private void InitializeDialog(User currentUser)
         {
             this.Text = "";
-            this.Size = new Size(550, 380);
+            this.Size = new Size(550, 340);
             this.StartPosition = FormStartPosition.CenterParent;
             this.FormBorderStyle = FormBorderStyle.None;
             this.BackColor = Color.White;
@@ -59,7 +59,7 @@ namespace SyncVerseStudio.Views
             // Title
             var titleLabel = new Label
             {
-                Text = "Account Options",
+                Text = "ACCOUNT OPTIONS",
                 Font = new Font("Segoe UI", 18, FontStyle.Bold),
                 ForeColor = Color.White,
                 Location = new Point(20, 25),
@@ -97,8 +97,8 @@ namespace SyncVerseStudio.Views
             var switchUserButton = new Button
             {
                 Text = "Switch User",
-                Location = new Point(30, 180),
-                Size = new Size(490, 50),
+                Location = new Point(30, 175),
+                Size = new Size(490, 45),
                 BackColor = BrandTheme.Primary,
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -113,17 +113,18 @@ namespace SyncVerseStudio.Views
             // Logout Button
             var logoutButton = new Button
             {
-                Text = "Logout (Return to Login)",
-                Location = new Point(30, 240),
-                Size = new Size(235, 50),
-                BackColor = Color.FromArgb(34, 197, 94),
-                ForeColor = Color.White,
+                Text = "Logout",
+                Location = new Point(30, 230),
+                Size = new Size(240, 45),
+                BackColor = Color.White,
+                ForeColor = BrandTheme.PrimaryText,
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Font = new Font("Segoe UI", 11),
                 Cursor = Cursors.Hand
             };
-            logoutButton.FlatAppearance.BorderSize = 0;
-            logoutButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(22, 163, 74);
+            logoutButton.FlatAppearance.BorderSize = 2;
+            logoutButton.FlatAppearance.BorderColor = BrandTheme.Primary;
+            logoutButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 245, 245);
             logoutButton.Click += (s, e) => { SelectedAction = LogoutAction.Logout; this.Close(); };
             this.Controls.Add(logoutButton);
 
@@ -131,16 +132,17 @@ namespace SyncVerseStudio.Views
             var exitButton = new Button
             {
                 Text = "Exit Application",
-                Location = new Point(285, 240),
-                Size = new Size(235, 50),
-                BackColor = Color.FromArgb(239, 68, 68),
-                ForeColor = Color.White,
+                Location = new Point(280, 230),
+                Size = new Size(240, 45),
+                BackColor = Color.White,
+                ForeColor = Color.FromArgb(200, 50, 50),
                 FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold),
+                Font = new Font("Segoe UI", 11),
                 Cursor = Cursors.Hand
             };
-            exitButton.FlatAppearance.BorderSize = 0;
-            exitButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(220, 38, 38);
+            exitButton.FlatAppearance.BorderSize = 2;
+            exitButton.FlatAppearance.BorderColor = Color.FromArgb(200, 50, 50);
+            exitButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(255, 240, 240);
             exitButton.Click += (s, e) => { SelectedAction = LogoutAction.ExitApplication; this.Close(); };
             this.Controls.Add(exitButton);
 
@@ -148,15 +150,15 @@ namespace SyncVerseStudio.Views
             var cancelButton = new Button
             {
                 Text = "Cancel",
-                Location = new Point(30, 300),
-                Size = new Size(490, 45),
+                Location = new Point(30, 285),
+                Size = new Size(490, 40),
                 BackColor = Color.White,
                 ForeColor = BrandTheme.SecondaryText,
                 FlatStyle = FlatStyle.Flat,
                 Font = new Font("Segoe UI", 10),
                 Cursor = Cursors.Hand
             };
-            cancelButton.FlatAppearance.BorderSize = 2;
+            cancelButton.FlatAppearance.BorderSize = 1;
             cancelButton.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
             cancelButton.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 245, 245);
             cancelButton.Click += (s, e) => { SelectedAction = LogoutAction.Cancel; this.Close(); };
