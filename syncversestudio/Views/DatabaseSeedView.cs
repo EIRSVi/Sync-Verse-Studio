@@ -19,10 +19,6 @@ namespace SyncVerseStudio.Views
         private IconButton btnSeedCustomers;
         private IconButton btnSeedProducts;
         private IconButton btnSeedAll;
-        private IconButton btnRefreshAll;
-        private IconButton btnClearAll;
-        private IconButton btnResetDatabase;
-        private IconButton btnBackupDatabase;
         private RichTextBox txtLog;
         private Panel panelHeader;
         private Label lblTitle;
@@ -114,37 +110,11 @@ namespace SyncVerseStudio.Views
             panelButtons2.Controls.Add(btnSeedAll);
             this.Controls.Add(panelButtons2);
 
-            // Buttons Panel - Third Row (Refresh & Management)
-            Panel panelButtons3 = new Panel
-            {
-                Location = new Point(20, 280),
-                Size = new Size(660, 80),
-                BackColor = Color.White
-            };
-
-            btnRefreshAll = CreateButton("Refresh All Data", IconChar.Sync, 10, Color.FromArgb(230, 126, 34));
-            btnClearAll = CreateButton("Clear All Data", IconChar.TrashAlt, 175, Color.FromArgb(231, 76, 60));
-            btnResetDatabase = CreateButton("Reset Database", IconChar.ExclamationTriangle, 340, Color.FromArgb(192, 57, 43));
-            btnBackupDatabase = CreateButton("Backup Database", IconChar.Download, 505, Color.FromArgb(52, 152, 219));
-
-            btnRefreshAll.Size = new Size(155, 50);
-            btnClearAll.Size = new Size(155, 50);
-            btnResetDatabase.Size = new Size(155, 50);
-            btnBackupDatabase.Size = new Size(155, 50);
-
-            btnRefreshAll.Click += BtnRefreshAll_Click;
-            btnClearAll.Click += BtnClearAll_Click;
-            btnResetDatabase.Click += BtnResetDatabase_Click;
-            btnBackupDatabase.Click += BtnBackupDatabase_Click;
-
-            panelButtons3.Controls.AddRange(new Control[] { btnRefreshAll, btnClearAll, btnResetDatabase, btnBackupDatabase });
-            this.Controls.Add(panelButtons3);
-
-            // Log TextBox
+            // Log TextBox - moved up since we removed the dangerous buttons
             txtLog = new RichTextBox
             {
-                Location = new Point(20, 370),
-                Size = new Size(660, 250),
+                Location = new Point(20, 280),
+                Size = new Size(660, 340),
                 ReadOnly = true,
                 BackColor = Color.White,
                 Font = new Font("Consolas", 9)
@@ -198,159 +168,7 @@ namespace SyncVerseStudio.Views
             await SeedData("All Data", async () => await DatabaseSeeder.SeedAllAsync(_context));
         }
 
-        private async void BtnRefreshAll_Click(object sender, EventArgs e)
-        {
-            var result = MessageBox.Show(
-                "This will refresh all data by clearing existing data and re-seeding with fresh data.\n\n" +
-                "⚠️ WARNING: This will delete all existing:\n" +
-                "• Products and their images\n" +
-                "• Categories\n" +
-                "• Suppliers\n" +
-                "• Customers (encrypted data)\n" +
-                "• Sales data will be preserved\n\n" +
-                "A backup will be created automatically before proceeding.\n\n" +
-                "Are you sure you want to continue?",
-                "Refresh All Data - Confirmation",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Warning);
 
-            if (result == DialogResult.Yes)
-            {
-                await SeedDataWithBackup("Refresh All Data", async () => await DatabaseSeeder.RefreshAllDataAsync(_context));
-            }
-        }
-
-        private async void BtnClearAll_Click(object sender, EventArgs e)
-        {
-            var result = MessageBox.Show(
-                "This will clear ALL data from the database including:\n\n" +
-                "⚠️ DANGER: This will permanently delete:\n" +
-                "• All Products and their images\n" +
-                "• All Categories\n" +
-                "• All Suppliers\n" +
-                "• All Customers\n" +
-                "• All Sales data\n" +
-                "• All Users (except current admin)\n\n" +
-                "A backup will be created automatically before proceeding.\n\n" +
-                "Are you absolutely sure?",
-                "Clear All Data - DANGER",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Stop);
-
-            if (result == DialogResult.Yes)
-            {
-                var confirmResult = MessageBox.Show(
-                    "FINAL CONFIRMATION\n\n" +
-                    "This will permanently delete ALL data!\n" +
-                    "A backup will be created first.\n\n" +
-                    "Type 'DELETE' to confirm this destructive action.",
-                    "Final Confirmation Required",
-                    MessageBoxButtons.OKCancel,
-                    MessageBoxIcon.Stop);
-
-                if (confirmResult == DialogResult.OK)
-                {
-                    // Show input dialog for confirmation
-                    string userInput = ShowInputDialog("Type 'DELETE' to confirm:", "Confirmation Required");
-
-                    if (userInput == "DELETE")
-                    {
-                        await SeedDataWithBackup("Clear All Data", async () => await DatabaseSeeder.ClearAllDataAsync(_context));
-                    }
-                    else
-                    {
-                        LogMessage("Clear operation cancelled - incorrect confirmation text.", Color.Orange);
-                    }
-                }
-            }
-        }
-
-        private async void BtnResetDatabase_Click(object sender, EventArgs e)
-        {
-            var result = MessageBox.Show(
-                "This will completely reset the database to factory defaults:\n\n" +
-                "⚠️ EXTREME DANGER: This will:\n" +
-                "• Drop and recreate all database tables\n" +
-                "• Delete ALL data permanently\n" +
-                "• Reset database schema to initial state\n" +
-                "• Create fresh admin user\n" +
-                "• Seed with default sample data\n\n" +
-                "A backup will be created automatically before proceeding.\n" +
-                "This is equivalent to a fresh installation!\n\n" +
-                "Are you absolutely sure?",
-                "Reset Database - EXTREME DANGER",
-                MessageBoxButtons.YesNo,
-                MessageBoxIcon.Stop);
-
-            if (result == DialogResult.Yes)
-            {
-                var confirmResult = MessageBox.Show(
-                    "FINAL WARNING\n\n" +
-                    "This will DESTROY the entire database!\n" +
-                    "A backup will be created first.\n\n" +
-                    "Continue with database reset?",
-                    "Database Reset - Point of No Return",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Stop);
-
-                if (confirmResult == DialogResult.Yes)
-                {
-                    // Show input dialog for confirmation
-                    string userInput = ShowInputDialog("Type 'RESET DATABASE' to confirm:", "Final Confirmation Required");
-
-                    if (userInput == "RESET DATABASE")
-                    {
-                        await SeedDataWithBackup("Reset Database", async () => await DatabaseSeeder.ResetDatabaseAsync(_context));
-                    }
-                    else
-                    {
-                        LogMessage("Database reset cancelled - incorrect confirmation text.", Color.Orange);
-                    }
-                }
-            }
-        }
-
-        private async void BtnBackupDatabase_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                DisableButtons();
-                
-                // First test database connection
-                LogMessage("Testing database connection...", Color.Blue);
-                await TestDatabaseConnection();
-                
-                LogMessage("Creating database backup...", Color.Blue);
-                string backupPath = await CreateDatabaseBackup();
-                
-                LogMessage($"✓ Database backup created successfully!", Color.Green);
-                LogMessage($"Backup saved to: {backupPath}", Color.Blue);
-                
-                var result = MessageBox.Show(
-                    $"Database backup created successfully!\n\n" +
-                    $"Backup saved to:\n{backupPath}\n\n" +
-                    "Would you like to open the backup folder?",
-                    "Backup Complete",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Information);
-
-                if (result == DialogResult.Yes)
-                {
-                    System.Diagnostics.Process.Start("explorer.exe", $"/select,\"{backupPath}\"");
-                }
-            }
-            catch (Exception ex)
-            {
-                LogMessage($"✗ Error creating backup: {ex.Message}", Color.Red);
-                LogMessage($"Full backup error: {ex}", Color.Red);
-                MessageBox.Show($"Error creating backup: {ex.Message}", "Error", 
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-            finally
-            {
-                EnableButtons();
-            }
-        }
 
         private async Task TestDatabaseConnection()
         {
@@ -627,10 +445,6 @@ namespace SyncVerseStudio.Views
             btnSeedCustomers.Enabled = false;
             btnSeedProducts.Enabled = false;
             btnSeedAll.Enabled = false;
-            btnRefreshAll.Enabled = false;
-            btnClearAll.Enabled = false;
-            btnResetDatabase.Enabled = false;
-            btnBackupDatabase.Enabled = false;
         }
 
         private void EnableButtons()
@@ -640,10 +454,6 @@ namespace SyncVerseStudio.Views
             btnSeedCustomers.Enabled = true;
             btnSeedProducts.Enabled = true;
             btnSeedAll.Enabled = true;
-            btnRefreshAll.Enabled = true;
-            btnClearAll.Enabled = true;
-            btnResetDatabase.Enabled = true;
-            btnBackupDatabase.Enabled = true;
         }
 
         private string ShowInputDialog(string prompt, string title)
