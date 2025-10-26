@@ -36,6 +36,9 @@ namespace SyncVerseStudio.Views.CashierDashboard
         // Tax settings
         private decimal taxRate = 10m; // Default 10%
         
+        // Timer for live dashboard updates
+        private System.Windows.Forms.Timer _liveUpdateTimer;
+        
         public EnhancedPOSSystem(AuthenticationService authService)
         {
             _authService = authService;
@@ -43,6 +46,21 @@ namespace SyncVerseStudio.Views.CashierDashboard
             InitializeComponent();
             LoadCategories();
             LoadProducts();
+            StartLiveUpdates();
+        }
+        
+        private void StartLiveUpdates()
+        {
+            _liveUpdateTimer = new System.Windows.Forms.Timer();
+            _liveUpdateTimer.Interval = 3000; // Update every 3 seconds
+            _liveUpdateTimer.Tick += async (s, e) => await UpdateLiveDashboard();
+            _liveUpdateTimer.Start();
+        }
+        
+        private async System.Threading.Tasks.Task UpdateLiveDashboard()
+        {
+            // This will be called every 3 seconds to refresh live data
+            // Can be used to update recent sales, statistics, etc.
         }
 
         private void InitializeComponent()
@@ -419,9 +437,19 @@ namespace SyncVerseStudio.Views.CashierDashboard
                 Minimum = 0,
                 Maximum = 100,
                 DecimalPlaces = 2,
-                Value = 10m
+                Value = 10m,
+                // Role-based access: Only Admin and Inventory Clerk can edit
+                Enabled = _authService.CurrentUser.Role == UserRole.Administrator || 
+                         _authService.CurrentUser.Role == UserRole.InventoryClerk
             };
             numTaxRate.ValueChanged += (s, e) => { taxRate = numTaxRate.Value; UpdateCartTotals(); };
+            
+            // Add tooltip for restricted users
+            if (!numTaxRate.Enabled)
+            {
+                var tooltip = new ToolTip();
+                tooltip.SetToolTip(numTaxRate, "Tax rate editing restricted to Admin/Inventory Clerk roles");
+            }
 
             lblTax = new Label
             {
@@ -830,8 +858,51 @@ namespace SyncVerseStudio.Views.CashierDashboard
             nameLabel.Click += (s, e) => AddToCart(product);
             priceLabel.Click += (s, e) => AddToCart(product);
 
-            card.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(249, 250, 251);
-            card.MouseLeave += (s, e) => card.BackColor = Color.White;
+            // Glitch hover effect
+            var glitchTimer = new System.Windows.Forms.Timer { Interval = 50 };
+            var random = new Random();
+            int glitchCount = 0;
+            
+            card.MouseEnter += (s, e) =>
+            {
+                glitchCount = 0;
+                glitchTimer.Tick += (ts, te) =>
+                {
+                    if (glitchCount < 3)
+                    {
+                        // Glitch effect: random color shifts
+                        int r = random.Next(240, 256);
+                        int g = random.Next(240, 256);
+                        int b = random.Next(240, 256);
+                        card.BackColor = Color.FromArgb(r, g, b);
+                        
+                        // Slight position shift
+                        int offsetX = random.Next(-2, 3);
+                        int offsetY = random.Next(-2, 3);
+                        card.Location = new Point(card.Location.X + offsetX, card.Location.Y + offsetY);
+                        
+                        glitchCount++;
+                    }
+                    else
+                    {
+                        glitchTimer.Stop();
+                        card.BackColor = Color.FromArgb(219, 234, 254); // Light blue highlight
+                        // Reset position
+                        card.Location = new Point(
+                            (card.Location.X / 220) * 220 + 10,
+                            (card.Location.Y / 260) * 260 + 10
+                        );
+                    }
+                };
+                glitchTimer.Start();
+            };
+            
+            card.MouseLeave += (s, e) =>
+            {
+                glitchTimer.Stop();
+                card.BackColor = Color.White;
+                glitchCount = 0;
+            };
 
             card.Controls.AddRange(new Control[] { imgBox, nameLabel, priceLabel, stockLabel });
             return card;
@@ -895,6 +966,13 @@ namespace SyncVerseStudio.Views.CashierDashboard
             lblSubtotal.Text = $"${subtotal:N2}";
             lblTax.Text = $"${tax:N2}";
             lblTotal.Text = $"${total:N2}";
+
+            // Auto-calculate cash amount
+            if (rbCash.Checked && txtCashAmount != null)
+            {
+                // Auto-fill with exact amount, user can adjust if needed
+                txtCashAmount.Text = total.ToString("F2");
+            }
 
             CalculateChange();
         }
@@ -1298,130 +1376,206 @@ namespace SyncVerseStudio.Views.CashierDashboard
         private void PrintInvoicePage(object sender, PrintPageEventArgs e, Invoice invoice, string customerName)
         {
             Graphics g = e.Graphics;
-            Font titleFont = new Font("Segoe UI", 20, FontStyle.Bold);
-            Font headerFont = new Font("Segoe UI", 12, FontStyle.Bold);
+            g.SmoothingMode = SmoothingMode.AntiAlias;
+            g.TextRenderingHint = System.Drawing.Text.TextRenderingHint.AntiAlias;
+            
+            Font titleFont = new Font("Segoe UI", 24, FontStyle.Bold);
+            Font companyFont = new Font("Segoe UI", 16, FontStyle.Bold);
+            Font headerFont = new Font("Segoe UI", 11, FontStyle.Bold);
             Font normalFont = new Font("Segoe UI", 10);
             Font smallFont = new Font("Segoe UI", 8);
+            Font invoiceFont = new Font("Segoe UI", 20, FontStyle.Bold);
             
             Brush blackBrush = Brushes.Black;
-            Brush grayBrush = Brushes.Gray;
+            Brush grayBrush = new SolidBrush(Color.FromArgb(100, 100, 100));
+            Brush tealBrush = new SolidBrush(Color.FromArgb(20, 184, 166));
             
-            int yPos = 50;
-            int leftMargin = 50;
-            int rightMargin = e.PageBounds.Width - 50;
+            int yPos = 40;
+            int leftMargin = 60;
+            int rightMargin = e.PageBounds.Width - 60;
+            int centerX = e.PageBounds.Width / 2;
 
-            // Company Logo and Name
-            g.DrawString("SYNCVERSE STUDIO", titleFont, new SolidBrush(Color.FromArgb(20, 184, 166)), leftMargin, yPos);
-            yPos += 35;
-            
-            g.DrawString("Point of Sale System", normalFont, grayBrush, leftMargin, yPos);
-            yPos += 20;
-            g.DrawString("123 Business Street, City, Country", smallFont, grayBrush, leftMargin, yPos);
-            yPos += 15;
-            g.DrawString("Phone: +1 234 567 8900 | Email: sales@syncverse.com", smallFont, grayBrush, leftMargin, yPos);
-            yPos += 40;
-
-            // Invoice Title
-            g.DrawString("INVOICE", new Font("Segoe UI", 18, FontStyle.Bold), blackBrush, leftMargin, yPos);
-            yPos += 40;
-
-            // Invoice Details
-            g.DrawString($"Invoice Number:", headerFont, blackBrush, leftMargin, yPos);
-            g.DrawString(invoice.InvoiceNumber, normalFont, blackBrush, leftMargin + 200, yPos);
-            yPos += 25;
-
-            g.DrawString($"Date:", headerFont, blackBrush, leftMargin, yPos);
-            g.DrawString(invoice.InvoiceDate.ToString("MMMM dd, yyyy HH:mm"), normalFont, blackBrush, leftMargin + 200, yPos);
-            yPos += 25;
-
-            g.DrawString($"Cashier:", headerFont, blackBrush, leftMargin, yPos);
-            g.DrawString(_authService.CurrentUser.Username, normalFont, blackBrush, leftMargin + 200, yPos);
-            yPos += 25;
-
-            if (!string.IsNullOrEmpty(customerName))
+            // Header Background
+            using (var headerBrush = new SolidBrush(Color.FromArgb(240, 253, 250)))
             {
-                g.DrawString($"Customer:", headerFont, blackBrush, leftMargin, yPos);
-                g.DrawString(customerName, normalFont, blackBrush, leftMargin + 200, yPos);
-                yPos += 25;
+                g.FillRectangle(headerBrush, 0, 0, e.PageBounds.Width, 180);
             }
 
-            yPos += 20;
-
-            // Line separator
-            g.DrawLine(new Pen(Color.Black, 2), leftMargin, yPos, rightMargin, yPos);
-            yPos += 20;
-
-            // Table Headers
-            g.DrawString("Item", headerFont, blackBrush, leftMargin, yPos);
-            g.DrawString("Qty", headerFont, blackBrush, leftMargin + 300, yPos);
-            g.DrawString("Price", headerFont, blackBrush, leftMargin + 380, yPos);
-            g.DrawString("Total", headerFont, blackBrush, leftMargin + 480, yPos);
-            yPos += 30;
-
-            g.DrawLine(Pens.Gray, leftMargin, yPos, rightMargin, yPos);
+            // Company Logo (Text-based)
+            g.DrawString("SYNCVERSE", titleFont, tealBrush, leftMargin, yPos);
+            yPos += 35;
+            g.DrawString("STUDIO", new Font("Segoe UI", 18, FontStyle.Bold), tealBrush, leftMargin + 10, yPos);
+            yPos += 40;
+            
+            // Company Details
+            g.DrawString("Retail & Point of Sale Solutions", normalFont, grayBrush, leftMargin, yPos);
+            yPos += 18;
+            g.DrawString("📍 123 Business Street, City, State 12345", smallFont, grayBrush, leftMargin, yPos);
             yPos += 15;
+            g.DrawString("📞 +1 (234) 567-8900  |  ✉ sales@syncverse.com", smallFont, grayBrush, leftMargin, yPos);
+            yPos += 15;
+            g.DrawString("🌐 www.syncverse.com  |  Tax ID: 12-3456789", smallFont, grayBrush, leftMargin, yPos);
+
+            // Invoice Title (Right side)
+            g.DrawString("INVOICE", invoiceFont, new SolidBrush(Color.FromArgb(239, 68, 68)), rightMargin - 180, 50);
+            
+            // Invoice Box (Right side)
+            Rectangle invoiceBox = new Rectangle(rightMargin - 220, 90, 220, 80);
+            using (var boxBrush = new SolidBrush(Color.White))
+            {
+                g.FillRectangle(boxBrush, invoiceBox);
+                g.DrawRectangle(new Pen(Color.FromArgb(200, 200, 200), 1), invoiceBox);
+            }
+            
+            g.DrawString("Invoice #:", new Font("Segoe UI", 9, FontStyle.Bold), blackBrush, rightMargin - 210, 100);
+            g.DrawString(invoice.InvoiceNumber, new Font("Segoe UI", 9), blackBrush, rightMargin - 210, 118);
+            g.DrawString("Date:", new Font("Segoe UI", 9, FontStyle.Bold), blackBrush, rightMargin - 210, 140);
+            g.DrawString(invoice.InvoiceDate.ToString("MMM dd, yyyy HH:mm"), new Font("Segoe UI", 9), blackBrush, rightMargin - 210, 158);
+
+            yPos = 200;
+
+            // Bill To Section
+            g.DrawString("BILL TO:", headerFont, blackBrush, leftMargin, yPos);
+            yPos += 25;
+            
+            if (!string.IsNullOrEmpty(customerName))
+            {
+                g.DrawString(customerName, normalFont, blackBrush, leftMargin, yPos);
+                yPos += 20;
+            }
+            else
+            {
+                g.DrawString("Walk-in Customer", normalFont, grayBrush, leftMargin, yPos);
+                yPos += 20;
+            }
+
+            // Seller Info (Right side)
+            g.DrawString("SOLD BY:", headerFont, blackBrush, rightMargin - 220, 200);
+            g.DrawString($"Cashier: {_authService.CurrentUser.Username}", normalFont, blackBrush, rightMargin - 220, 225);
+            g.DrawString($"Terminal: POS-01", normalFont, blackBrush, rightMargin - 220, 245);
+
+            yPos += 20;
+
+            // Items Table Header
+            using (var tableBrush = new SolidBrush(Color.FromArgb(241, 245, 249)))
+            {
+                g.FillRectangle(tableBrush, leftMargin, yPos, rightMargin - leftMargin, 35);
+            }
+            g.DrawRectangle(new Pen(Color.FromArgb(200, 200, 200)), leftMargin, yPos, rightMargin - leftMargin, 35);
+            
+            yPos += 10;
+            g.DrawString("ITEM DESCRIPTION", headerFont, blackBrush, leftMargin + 10, yPos);
+            g.DrawString("QTY", headerFont, blackBrush, leftMargin + 350, yPos);
+            g.DrawString("UNIT PRICE", headerFont, blackBrush, leftMargin + 420, yPos);
+            g.DrawString("AMOUNT", headerFont, blackBrush, leftMargin + 550, yPos);
+            yPos += 30;
 
             // Invoice Items
             var invoiceItems = _context.InvoiceItems
                 .Where(ii => ii.InvoiceId == invoice.Id)
                 .ToList();
 
+            int itemNumber = 1;
             foreach (var item in invoiceItems)
             {
-                g.DrawString(item.ProductName, normalFont, blackBrush, leftMargin, yPos);
-                g.DrawString(item.Quantity.ToString(), normalFont, blackBrush, leftMargin + 300, yPos);
-                g.DrawString($"${item.UnitPrice:N2}", normalFont, blackBrush, leftMargin + 380, yPos);
-                g.DrawString($"${item.TotalPrice:N2}", normalFont, blackBrush, leftMargin + 480, yPos);
+                // Alternating row colors
+                if (itemNumber % 2 == 0)
+                {
+                    using (var rowBrush = new SolidBrush(Color.FromArgb(250, 250, 250)))
+                    {
+                        g.FillRectangle(rowBrush, leftMargin, yPos - 5, rightMargin - leftMargin, 25);
+                    }
+                }
+                
+                g.DrawString($"{itemNumber}. {item.ProductName}", normalFont, blackBrush, leftMargin + 10, yPos);
+                g.DrawString(item.Quantity.ToString(), normalFont, blackBrush, leftMargin + 360, yPos);
+                g.DrawString($"${item.UnitPrice:N2}", normalFont, blackBrush, leftMargin + 430, yPos);
+                g.DrawString($"${item.TotalPrice:N2}", new Font("Segoe UI", 10, FontStyle.Bold), blackBrush, leftMargin + 560, yPos);
                 yPos += 25;
+                itemNumber++;
             }
 
-            yPos += 10;
-            g.DrawLine(Pens.Gray, leftMargin, yPos, rightMargin, yPos);
-            yPos += 20;
+            // Bottom border of items table
+            g.DrawRectangle(new Pen(Color.FromArgb(200, 200, 200)), leftMargin, 295, rightMargin - leftMargin, yPos - 295);
 
-            // Totals
-            g.DrawString("Subtotal:", headerFont, blackBrush, leftMargin + 350, yPos);
-            g.DrawString($"${invoice.SubTotal:N2}", normalFont, blackBrush, leftMargin + 480, yPos);
-            yPos += 25;
-
-            g.DrawString($"Tax ({taxRate}%):", headerFont, blackBrush, leftMargin + 350, yPos);
-            g.DrawString($"${invoice.TaxAmount:N2}", normalFont, blackBrush, leftMargin + 480, yPos);
-            yPos += 30;
-
-            g.DrawLine(new Pen(Color.Black, 2), leftMargin + 350, yPos, rightMargin, yPos);
             yPos += 15;
 
-            g.DrawString("TOTAL:", new Font("Segoe UI", 14, FontStyle.Bold), blackBrush, leftMargin + 350, yPos);
-            g.DrawString($"${invoice.TotalAmount:N2}", new Font("Segoe UI", 14, FontStyle.Bold), 
-                new SolidBrush(Color.FromArgb(34, 197, 94)), leftMargin + 480, yPos);
-            yPos += 40;
+            // Totals Section with background
+            Rectangle totalsBox = new Rectangle(leftMargin + 340, yPos, rightMargin - leftMargin - 340, 120);
+            using (var totalsBrush = new SolidBrush(Color.FromArgb(249, 250, 251)))
+            {
+                g.FillRectangle(totalsBrush, totalsBox);
+                g.DrawRectangle(new Pen(Color.FromArgb(200, 200, 200)), totalsBox);
+            }
 
-            // Payment Info
+            yPos += 15;
+
+            // Subtotal
+            g.DrawString("Subtotal:", headerFont, blackBrush, leftMargin + 360, yPos);
+            g.DrawString($"${invoice.SubTotal:N2}", normalFont, blackBrush, leftMargin + 560, yPos);
+            yPos += 25;
+
+            // Tax
+            g.DrawString($"Tax ({taxRate}%):", headerFont, blackBrush, leftMargin + 360, yPos);
+            g.DrawString($"${invoice.TaxAmount:N2}", normalFont, blackBrush, leftMargin + 560, yPos);
+            yPos += 30;
+
+            // Total line
+            g.DrawLine(new Pen(Color.Black, 2), leftMargin + 360, yPos, rightMargin - 20, yPos);
+            yPos += 15;
+
+            // Grand Total
+            g.DrawString("TOTAL:", new Font("Segoe UI", 14, FontStyle.Bold), blackBrush, leftMargin + 360, yPos);
+            g.DrawString($"${invoice.TotalAmount:N2}", new Font("Segoe UI", 16, FontStyle.Bold), 
+                new SolidBrush(Color.FromArgb(34, 197, 94)), leftMargin + 540, yPos - 2);
+            
+            yPos += 50;
+
+            // Payment Information Box
+            Rectangle paymentBox = new Rectangle(leftMargin, yPos, 300, 80);
+            using (var paymentBrush = new SolidBrush(Color.FromArgb(240, 253, 250)))
+            {
+                g.FillRectangle(paymentBrush, paymentBox);
+                g.DrawRectangle(new Pen(Color.FromArgb(20, 184, 166), 2), paymentBox);
+            }
+
+            yPos += 15;
+            g.DrawString("PAYMENT DETAILS", new Font("Segoe UI", 10, FontStyle.Bold), tealBrush, leftMargin + 10, yPos);
+            yPos += 25;
+
             if (rbCash.Checked)
             {
                 decimal cashAmount = decimal.Parse(txtCashAmount.Text);
                 decimal change = cashAmount - invoice.TotalAmount;
                 
-                g.DrawString("Cash Tendered:", normalFont, blackBrush, leftMargin + 350, yPos);
-                g.DrawString($"${cashAmount:N2}", normalFont, blackBrush, leftMargin + 480, yPos);
-                yPos += 25;
-
-                g.DrawString("Change:", normalFont, blackBrush, leftMargin + 350, yPos);
-                g.DrawString($"${change:N2}", normalFont, blackBrush, leftMargin + 480, yPos);
-                yPos += 30;
+                g.DrawString($"Method: Cash", normalFont, blackBrush, leftMargin + 10, yPos);
+                yPos += 20;
+                g.DrawString($"Tendered: ${cashAmount:N2}", normalFont, blackBrush, leftMargin + 10, yPos);
+                g.DrawString($"Change: ${change:N2}", new Font("Segoe UI", 10, FontStyle.Bold), 
+                    new SolidBrush(Color.FromArgb(34, 197, 94)), leftMargin + 160, yPos);
             }
             else
             {
-                g.DrawString($"Payment Method: {GetPaymentMethod()}", normalFont, blackBrush, leftMargin + 350, yPos);
-                yPos += 30;
+                g.DrawString($"Method: {GetPaymentMethod()}", normalFont, blackBrush, leftMargin + 10, yPos);
+                yPos += 20;
+                g.DrawString("Status: Paid", new Font("Segoe UI", 10, FontStyle.Bold), 
+                    new SolidBrush(Color.FromArgb(34, 197, 94)), leftMargin + 10, yPos);
             }
 
-            // Footer
-            yPos += 40;
-            g.DrawString("Thank you for your business!", new Font("Segoe UI", 12, FontStyle.Bold), 
-                blackBrush, leftMargin + 150, yPos);
+            yPos += 50;
+
+            // Footer Section
+            g.DrawLine(new Pen(Color.FromArgb(200, 200, 200), 1), leftMargin, yPos, rightMargin, yPos);
+            yPos += 20;
+            
+            g.DrawString("Thank you for your business!", new Font("Segoe UI", 13, FontStyle.Bold), 
+                tealBrush, centerX - 120, yPos);
             yPos += 25;
-            g.DrawString("Please keep this invoice for your records", smallFont, grayBrush, leftMargin + 170, yPos);
+            g.DrawString("For questions about this invoice, please contact us at sales@syncverse.com", 
+                smallFont, grayBrush, centerX - 180, yPos);
+            yPos += 15;
+            g.DrawString("This is a computer-generated invoice and is valid without signature", 
+                new Font("Segoe UI", 7, FontStyle.Italic), grayBrush, centerX - 150, yPos);
         }
 
         private async void BtnHold_Click(object sender, EventArgs e)
