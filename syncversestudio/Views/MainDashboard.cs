@@ -240,6 +240,8 @@ sidebarPanel.Controls.Add(navHeader);
  yPos +=50;
  CreateModernMenuItem("Database Seeder", IconChar.Database, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new DatabaseSeedView(_authService.GetDbContext())));
  yPos +=50;
+ CreateModernMenuItem("Database Management", IconChar.Server, BrandTheme.DarkGray, yPos, () => SafeLoadChildForm(() => new DatabaseManagementForm()));
+ yPos +=50;
  CreateModernMenuItem("Analytics", IconChar.ChartPie, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AnalyticsView(_authService)));
  yPos +=50;
  CreateModernMenuItem("Audit Logs", IconChar.FileText, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new AuditLogView(_authService)));
@@ -710,10 +712,7 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
                     Console.WriteLine("User chose to exit application completely");
                     await _authService.LogoutAsync();
                     
-                    // Set the login form to exit mode
-                    _loginForm?.SetExiting();
-                    
-                    // Close this form which will trigger the FormClosed event in LoginForm
+                    // Close this form
                     this.Close();
                     
                     // Exit application

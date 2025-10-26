@@ -16,87 +16,84 @@ namespace SyncVerseStudio.Services
                 // Ensure database is created
                 await context.Database.EnsureCreatedAsync();
                 
-                // Check if admin user exists
-                var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "vi");
+                Console.WriteLine("Database initialized successfully!");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error initializing database: {ex.Message}");
+                throw;
+            }
+        }
+
+        // Manual seeder for categories - Admin can call this
+        public static async Task SeedCategoriesAsync()
+        {
+            using var context = new ApplicationDbContext();
+            
+            if (!await context.Categories.AnyAsync())
+            {
+                var categories = new[]
+                {
+                    new Category { Name = "Electronics", Description = "Electronic devices and accessories", IsActive = true },
+                    new Category { Name = "Beverages", Description = "Drinks and beverages", IsActive = true },
+                    new Category { Name = "Snacks", Description = "Snacks and confectionery", IsActive = true },
+                    new Category { Name = "Stationery", Description = "Office and school supplies", IsActive = true }
+                };
                 
-                if (adminUser == null)
+                context.Categories.AddRange(categories);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // Manual seeder for suppliers - Admin can call this
+        public static async Task SeedSuppliersAsync()
+        {
+            using var context = new ApplicationDbContext();
+            
+            if (!await context.Suppliers.AnyAsync())
+            {
+                var suppliers = new[]
                 {
-                    // Create admin user with hashed password
-                    adminUser = new User
-                    {
-                        Username = "vi",
-                        Password = BCrypt.Net.BCrypt.HashPassword("vi"),
-                        Email = "vi@syncverse.com",
-                        FirstName = "Vi",
-                        LastName = "Admin",
-                        Role = UserRole.Administrator,
-                        IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
-                    };
-                    
-                    context.Users.Add(adminUser);
-                }
-                else
-                {
-                    // Update password to ensure it's properly hashed
-                    adminUser.Password = BCrypt.Net.BCrypt.HashPassword("vi");
-                    context.Users.Update(adminUser);
-                }
+                    new Supplier 
+                    { 
+                        Name = "Tech Solutions Ltd", 
+                        ContactPerson = "John Smith", 
+                        Phone = "+855123456789", 
+                        Email = "contact@techsolutions.com",
+                        IsActive = true
+                    },
+                    new Supplier 
+                    { 
+                        Name = "Fresh Beverages Co", 
+                        ContactPerson = "Mary Johnson", 
+                        Phone = "+855987654321", 
+                        Email = "orders@freshbev.com",
+                        IsActive = true
+                    }
+                };
                 
-                // Initialize categories if they don't exist
-                if (!await context.Categories.AnyAsync())
-                {
-                    var categories = new[]
-                    {
-                        new Category { Name = "Electronics", Description = "Electronic devices and accessories", IsActive = true },
-                        new Category { Name = "Beverages", Description = "Drinks and beverages", IsActive = true },
-                        new Category { Name = "Snacks", Description = "Snacks and confectionery", IsActive = true },
-                        new Category { Name = "Stationery", Description = "Office and school supplies", IsActive = true }
-                    };
-                    
-                    context.Categories.AddRange(categories);
-                }
+                context.Suppliers.AddRange(suppliers);
+                await context.SaveChangesAsync();
+            }
+        }
+
+        // Manual seeder for sample products - Admin can call this
+        public static async Task SeedProductsAsync()
+        {
+            using var context = new ApplicationDbContext();
+            
+            if (!await context.Products.AnyAsync())
+            {
+                var electronicsCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Electronics");
+                var beveragesCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Beverages");
+                var snacksCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Snacks");
+                var stationeryCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Stationery");
                 
-                // Initialize suppliers if they don't exist
-                if (!await context.Suppliers.AnyAsync())
-                {
-                    var suppliers = new[]
-                    {
-                        new Supplier 
-                        { 
-                            Name = "Tech Solutions Ltd", 
-                            ContactPerson = "John Smith", 
-                            Phone = "+855123456789", 
-                            Email = "contact@techsolutions.com",
-                            IsActive = true
-                        },
-                        new Supplier 
-                        { 
-                            Name = "Fresh Beverages Co", 
-                            ContactPerson = "Mary Johnson", 
-                            Phone = "+855987654321", 
-                            Email = "orders@freshbev.com",
-                            IsActive = true
-                        }
-                    };
-                    
-                    context.Suppliers.AddRange(suppliers);
-                }
+                var techSupplier = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Tech Solutions Ltd");
+                var beverageSupplier = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Fresh Beverages Co");
                 
-                // Initialize sample products if they don't exist
-                if (!await context.Products.AnyAsync())
+                if (electronicsCategory != null && beveragesCategory != null && techSupplier != null && beverageSupplier != null)
                 {
-                    await context.SaveChangesAsync(); // Save categories and suppliers first
-                    
-                    var electronicsCategory = await context.Categories.FirstAsync(c => c.Name == "Electronics");
-                    var beveragesCategory = await context.Categories.FirstAsync(c => c.Name == "Beverages");
-                    var snacksCategory = await context.Categories.FirstAsync(c => c.Name == "Snacks");
-                    var stationeryCategory = await context.Categories.FirstAsync(c => c.Name == "Stationery");
-                    
-                    var techSupplier = await context.Suppliers.FirstAsync(s => s.Name == "Tech Solutions Ltd");
-                    var beverageSupplier = await context.Suppliers.FirstAsync(s => s.Name == "Fresh Beverages Co");
-                    
                     var products = new[]
                     {
                         new Product
@@ -126,62 +123,12 @@ namespace SyncVerseStudio.Services
                             Quantity = 100,
                             MinQuantity = 20,
                             IsActive = true
-                        },
-                        new Product
-                        {
-                            Name = "Notebook A4",
-                            Description = "Ruled notebook 200 pages",
-                            Barcode = "3456789012345",
-                            SKU = "NOTE-A4-200",
-                            CategoryId = stationeryCategory.Id,
-                            SupplierId = techSupplier.Id,
-                            CostPrice = 1.00m,
-                            SellingPrice = 2.50m,
-                            Quantity = 75,
-                            MinQuantity = 15,
-                            IsActive = true
-                        },
-                        new Product
-                        {
-                            Name = "Potato Chips",
-                            Description = "Original flavor potato chips",
-                            Barcode = "4567890123456",
-                            SKU = "CHIPS-001",
-                            CategoryId = snacksCategory.Id,
-                            SupplierId = beverageSupplier.Id,
-                            CostPrice = 0.75m,
-                            SellingPrice = 1.50m,
-                            Quantity = 80,
-                            MinQuantity = 20,
-                            IsActive = true
                         }
                     };
                     
                     context.Products.AddRange(products);
+                    await context.SaveChangesAsync();
                 }
-                
-                // Initialize guest customer if doesn't exist
-                if (!await context.Customers.AnyAsync())
-                {
-                    var guestCustomer = new Customer
-                    {
-                        FirstName = "Guest",
-                        LastName = "Customer",
-                        Phone = "",
-                        Email = "",
-                        LoyaltyPoints = 0
-                    };
-                    
-                    context.Customers.Add(guestCustomer);
-                }
-                
-                await context.SaveChangesAsync();
-                Console.WriteLine("Database initialized successfully!");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error initializing database: {ex.Message}");
-                throw;
             }
         }
     }

@@ -17,7 +17,7 @@ namespace SyncVerseStudio.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Documents\myasfsfawetw235sdf.accdb");
+            optionsBuilder.UseSqlServer("Data Source=DESKTOP-6RCREN5\MSSQLSERVER01;Initial Catalog=POSDB;Integrated Security=True;Persist Security Info=False;Pooling=False;MultipleActiveResultSets=False;Encrypt=False;TrustServerCertificate=True;Application Name="SQL Server Management Studio";Command Timeout=0");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -33,41 +33,85 @@ namespace SyncVerseStudio.Views
      }
 
         private void InitializeComponent()
-  {
-         this.AutoScaleDimensions = new SizeF(8F, 20F);
+        {
+            this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
-          this.BackColor = Color.White;
-    this.ClientSize = new Size(600, 600);
-    this.FormBorderStyle = FormBorderStyle.FixedDialog;
-          this.MaximizeBox = false;
-   this.MinimizeBox = false;
+            this.BackColor = Color.White;
+            this.ClientSize = new Size(600, 600);
+            this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "CustomerEditForm";
-  this.StartPosition = FormStartPosition.CenterParent;
+            this.StartPosition = FormStartPosition.CenterParent;
             this.Text = _customerId.HasValue ? "Edit Customer" : "Add Customer";
 
-      CreateControls();
+            CreateHeaderPanel();
+            CreateControls();
+        }
+
+        private void CreateHeaderPanel()
+        {
+            var headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = BrandTheme.CoolWhite
+            };
+
+            // Make header draggable
+            Point mouseOffset = Point.Empty;
+            headerPanel.MouseDown += (s, e) =>
+            {
+                mouseOffset = new Point(-e.X, -e.Y);
+            };
+            headerPanel.MouseMove += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    Point mousePos = Control.MousePosition;
+                    mousePos.Offset(mouseOffset.X, mouseOffset.Y);
+                    this.Location = mousePos;
+                }
+            };
+
+            // Close Button
+            var btnClose = new Button
+            {
+                Text = "✕",
+                Size = new Size(40, 40),
+                Location = new Point(this.ClientSize.Width - 45, 10),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = BrandTheme.SecondaryText,
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 240, 240);
+            btnClose.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+            headerPanel.Controls.Add(btnClose);
+
+            // Title in header
+            var headerTitle = new Label
+            {
+                Text = _customerId.HasValue ? "Edit Customer" : "Add New Customer",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = BrandTheme.PrimaryText,
+                Location = new Point(20, 15),
+                Size = new Size(400, 30),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(headerTitle);
+
+            this.Controls.Add(headerPanel);
         }
 
     private void CreateControls()
-     {
-      int yPos = 20;
-   int leftMargin = 30;
+        {
+            int yPos = 80; // Start below header
+            int leftMargin = 30;
             int controlWidth = 540;
-     int labelHeight = 25;
+            int labelHeight = 25;
             int controlHeight = 30;
             int spacing = 15;
-
-            // Title
-      titleLabel = new Label
-            {
-                Text = _customerId.HasValue ? "Edit Customer" : "Add New Customer",
-        Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 33, 33),
-         Location = new Point(leftMargin, yPos),
-      Size = new Size(400, 30)
-        };
-       this.Controls.Add(titleLabel);
-   yPos += 50;
 
             // First Name
     AddLabel("First Name *", leftMargin, yPos);

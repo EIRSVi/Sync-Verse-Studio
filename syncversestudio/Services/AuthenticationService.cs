@@ -24,15 +24,31 @@ namespace SyncVerseStudio.Services
                 var user = await _context.Users
                     .FirstOrDefaultAsync(u => u.Username == username && u.IsActive);
 
-                if (user != null && BCrypt.Net.BCrypt.Verify(password, user.Password))
+                if (user != null)
                 {
-                    _currentUser = user;
-                    
-                    // Enhanced audit logging with role and status information
-                    await LogAuditAsync("LOGIN_SUCCESS", "Users", user.Id, null, 
-                        $"User '{username}' (Role: {user.Role}) successfully logged in - Status: ACTIVE");
-                    
-                    return true;
+                    // Check if user has no password (empty string)
+                    bool passwordMatch = false;
+                    if (string.IsNullOrEmpty(user.Password))
+                    {
+                        // No password required
+                        passwordMatch = true;
+                    }
+                    else
+                    {
+                        // Verify password
+                        passwordMatch = BCrypt.Net.BCrypt.Verify(password, user.Password);
+                    }
+
+                    if (passwordMatch)
+                    {
+                        _currentUser = user;
+                        
+                        // Enhanced audit logging with role and status information
+                        await LogAuditAsync("LOGIN_SUCCESS", "Users", user.Id, null, 
+                            $"User '{username}' (Role: {user.Role}) successfully logged in - Status: ACTIVE");
+                        
+                        return true;
+                    }
                 }
 
                 // Enhanced failed login logging

@@ -134,10 +134,10 @@ dotnet ef database update --project syncversestudio
 5. Build the solution
 
 ```bash
-dotnet build syncversestudio/syncversestudio.csproj
+dotnet run --project syncversestudio/syncversestudio.csproj
 ```
 
-6. Run the application
+6. Run the application and fix
 
 ```bash
 dotnet run --project syncversestudio/syncversestudio.csproj
@@ -149,7 +149,7 @@ After initial setup, use these credentials:
 
 - Administrator:
 - Cashier:
-- Inventory Clerk:
+- Inventory dsClerk:
 
 ## Build and Run
 

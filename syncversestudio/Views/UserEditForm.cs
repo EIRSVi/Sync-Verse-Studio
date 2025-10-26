@@ -2,6 +2,7 @@ using System.Drawing;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Data;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace SyncVerseStudio.Views
@@ -18,6 +19,9 @@ namespace SyncVerseStudio.Views
         private CheckBox isActiveCheckBox;
         private Button saveButton, cancelButton;
         private Label titleLabel, passwordHintLabel;
+        private Panel headerPanel;
+        private Button btnClose;
+        private Point mouseOffset;
 
         public UserEditForm(AuthenticationService authService, int? userId = null)
         {
@@ -39,36 +43,79 @@ namespace SyncVerseStudio.Views
             this.AutoScaleMode = AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new Size(500, 650);
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "UserEditForm";
             this.StartPosition = FormStartPosition.CenterParent;
-            this.Text = _userId.HasValue ? "Edit User" : " Add User";
+            this.Text = _userId.HasValue ? "Edit User" : "Add User";
 
+            CreateHeaderPanel();
             CreateControls();
+        }
+
+        private void CreateHeaderPanel()
+        {
+            headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = BrandTheme.CoolWhite
+            };
+
+            // Make header draggable
+            headerPanel.MouseDown += (s, e) =>
+            {
+                mouseOffset = new Point(-e.X, -e.Y);
+            };
+            headerPanel.MouseMove += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    Point mousePos = Control.MousePosition;
+                    mousePos.Offset(mouseOffset.X, mouseOffset.Y);
+                    this.Location = mousePos;
+                }
+            };
+
+            // Close Button
+            btnClose = new Button
+            {
+                Text = "✕",
+                Size = new Size(40, 40),
+                Location = new Point(this.ClientSize.Width - 45, 10),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = BrandTheme.SecondaryText,
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 240, 240);
+            btnClose.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+            headerPanel.Controls.Add(btnClose);
+
+            // Title in header
+            var headerTitle = new Label
+            {
+                Text = _userId.HasValue ? "Edit User Account" : "Create New User Account",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = BrandTheme.PrimaryText,
+                Location = new Point(20, 15),
+                Size = new Size(400, 30),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(headerTitle);
+
+            this.Controls.Add(headerPanel);
         }
 
         private void CreateControls()
         {
-            int yPos = 20;
+            int yPos = 80; // Start below header
             int leftMargin = 30;
             int controlWidth = 300;
             int labelHeight = 25;
             int controlHeight = 30;
             int spacing = 15;
-
-            // Title
-            titleLabel = new Label
-            {
-                Text = _userId.HasValue ? "Edit User Account" : "Create New User Account",
-                Font = new System.Drawing.Font("Segoe UI", 16F, FontStyle.Bold),
-                ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
-                Location = new Point(leftMargin, yPos),
-                Size = new Size(400, 30)
-            };
-            this.Controls.Add(titleLabel);
-            yPos += 50;
 
             // Username
             AddLabel("Username *", leftMargin, yPos);

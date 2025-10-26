@@ -1,3 +1,5 @@
+using SyncVerseStudio.Views;
+
 namespace SyncVerseStudio
 {
     internal static class Program

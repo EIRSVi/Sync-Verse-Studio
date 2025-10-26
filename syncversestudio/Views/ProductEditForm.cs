@@ -24,6 +24,9 @@ namespace SyncVerseStudio.Views
         private Label imageCountLabel;
         private FlowLayoutPanel thumbnailsPanel;
         private List<ProductImage> tempProductImages = new List<ProductImage>();
+        private Panel headerPanel;
+        private Button btnClose;
+        private Point mouseOffset;
 
         public ProductEditForm(AuthenticationService authService, int? productId = null)
         {
@@ -50,37 +53,80 @@ namespace SyncVerseStudio.Views
             this.AutoScaleMode = AutoScaleMode.Font;
             this.BackColor = Color.White;
             this.ClientSize = new Size(1000, 700);
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "ProductEditForm";
             this.StartPosition = FormStartPosition.CenterParent;
             this.Text = _productId.HasValue ? "Edit Product" : "Add Product";
 
+            CreateHeaderPanel();
             CreateControls();
             CreateImagePreviewPanel();
         }
 
+        private void CreateHeaderPanel()
+        {
+            headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = BrandTheme.CoolWhite
+            };
+
+            // Make header draggable
+            headerPanel.MouseDown += (s, e) =>
+            {
+                mouseOffset = new Point(-e.X, -e.Y);
+            };
+            headerPanel.MouseMove += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    Point mousePos = Control.MousePosition;
+                    mousePos.Offset(mouseOffset.X, mouseOffset.Y);
+                    this.Location = mousePos;
+                }
+            };
+
+            // Close Button
+            btnClose = new Button
+            {
+                Text = "✕",
+                Size = new Size(40, 40),
+                Location = new Point(this.ClientSize.Width - 45, 10),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = BrandTheme.SecondaryText,
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 240, 240);
+            btnClose.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+            headerPanel.Controls.Add(btnClose);
+
+            // Title in header
+            var headerTitle = new Label
+            {
+                Text = _productId.HasValue ? "Edit Product" : "Add New Product",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = BrandTheme.PrimaryText,
+                Location = new Point(20, 15),
+                Size = new Size(300, 30),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(headerTitle);
+
+            this.Controls.Add(headerPanel);
+        }
+
         private void CreateControls()
         {
-            int yPos = 20;
+            int yPos = 80; // Start below header
             int leftMargin = 30;
             int controlWidth = 300;
             int labelHeight = 25;
             int controlHeight = 30;
             int spacing = 15;
-
-            // Title
-            titleLabel = new Label
-            {
-                Text = _productId.HasValue ? "Edit Product" : "Add New Product",
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(33, 33, 33),
-                Location = new Point(leftMargin, yPos),
-                Size = new Size(400, 30)
-            };
-            this.Controls.Add(titleLabel);
-            yPos += 50;
 
             // Product Name
             AddLabel("Product Name *", leftMargin, yPos);
@@ -619,7 +665,7 @@ namespace SyncVerseStudio.Views
             // Image preview panel on the right side
             imagePreviewPanel = new Panel
             {
-                Location = new Point(450, 70),
+                Location = new Point(450, 80), // Adjusted for header
                 Size = new Size(520, 580),
                 BackColor = Color.FromArgb(248, 250, 252),
                 BorderStyle = BorderStyle.FixedSingle

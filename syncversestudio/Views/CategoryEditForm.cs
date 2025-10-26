@@ -20,6 +20,7 @@ namespace SyncVerseStudio.Views
         private Label titleLabel, nameLabel, descriptionLabel;
         private IconPictureBox titleIcon, nameIcon, descIcon, statusIconPic;
         private Panel mainPanel, buttonPanel;
+        private Point mouseOffset;
 
         public CategoryEditForm(AuthenticationService authService, int? categoryId = null)
         {
@@ -39,17 +40,83 @@ namespace SyncVerseStudio.Views
         {
             this.AutoScaleDimensions = new SizeF(8F, 20F);
             this.AutoScaleMode = AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.FromArgb(245, 245, 245);
+            this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new Size(480, 450);
-            this.FormBorderStyle = FormBorderStyle.FixedDialog;
-            this.MaximizeBox = false;
-            this.MinimizeBox = false;
+            this.FormBorderStyle = FormBorderStyle.None;
             this.Name = "CategoryEditForm";
             this.StartPosition = FormStartPosition.CenterParent;
             this.Text = _categoryId.HasValue ? "Edit Category" : "Add Category";
             this.Font = new System.Drawing.Font("Segoe UI", 10F);
 
+            CreateHeaderPanel();
             CreateControls();
+        }
+
+        private void CreateHeaderPanel()
+        {
+            var headerPanel = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = System.Drawing.Color.FromArgb(248, 249, 250)
+            };
+
+            // Make header draggable
+            headerPanel.MouseDown += (s, e) =>
+            {
+                mouseOffset = new Point(-e.X, -e.Y);
+            };
+            headerPanel.MouseMove += (s, e) =>
+            {
+                if (e.Button == MouseButtons.Left)
+                {
+                    Point mousePos = Control.MousePosition;
+                    mousePos.Offset(mouseOffset.X, mouseOffset.Y);
+                    this.Location = mousePos;
+                }
+            };
+
+            // Close Button
+            var btnClose = new Button
+            {
+                Text = "✕",
+                Size = new Size(40, 40),
+                Location = new Point(this.ClientSize.Width - 45, 10),
+                FlatStyle = FlatStyle.Flat,
+                BackColor = Color.Transparent,
+                ForeColor = System.Drawing.Color.FromArgb(64, 64, 64),
+                Font = new Font("Segoe UI", 16, FontStyle.Bold),
+                Cursor = Cursors.Hand
+            };
+            btnClose.FlatAppearance.BorderSize = 0;
+            btnClose.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 240, 240);
+            btnClose.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
+            headerPanel.Controls.Add(btnClose);
+
+            // Title in header with icon
+            var headerIcon = new IconPictureBox
+            {
+                IconChar = IconChar.Tags,
+                IconColor = System.Drawing.Color.FromArgb(24, 119, 18),
+                IconSize = 24,
+                Location = new Point(20, 18),
+                Size = new Size(30, 30),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(headerIcon);
+
+            var headerTitle = new Label
+            {
+                Text = _categoryId.HasValue ? "Edit Category" : "Create New Category",
+                Font = new Font("Segoe UI", 14F, FontStyle.Bold),
+                ForeColor = System.Drawing.Color.FromArgb(33, 33, 33),
+                Location = new Point(60, 15),
+                Size = new Size(350, 30),
+                BackColor = Color.Transparent
+            };
+            headerPanel.Controls.Add(headerTitle);
+
+            this.Controls.Add(headerPanel);
         }
 
         private void CreateControls()
@@ -58,8 +125,8 @@ namespace SyncVerseStudio.Views
             mainPanel = new Panel
             {
                 BackColor = System.Drawing.Color.White,
-                Location = new Point(15, 15),
-                Size = new Size(450, 380),
+                Location = new Point(15, 75), // Adjusted for header
+                Size = new Size(450, 320),
                 Padding = new Padding(30)
             };
 

@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
+    <NoWarn>CS8618,CS8622,CS8602,CS8604,CS8600,CS8603,CS1998,CS0168,CS0169,CS4014</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,12 +20,22 @@
     <PackageReference Include="ZXing.Net" Version="0.16.9" />
     <PackageReference Include="QuestPDF" Version="2023.12.6" />
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="logo.png">
+    <Content Include="..\logo.png" Link="logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\assets\brand\logo.png" Link="assets\brand\logo.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+
+  <Target Name="CopyLogoFiles" AfterTargets="Build">
+    <Copy SourceFiles="..\logo.png" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="true" />
+    <MakeDir Directories="$(OutputPath)assets\brand" />
+    <Copy SourceFiles="..\assets\brand\logo.png" DestinationFolder="$(OutputPath)assets\brand" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>

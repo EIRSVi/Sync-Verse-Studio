@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SyncVerseStudio.Models;
+using SyncVerseStudio.Helpers;
 
 namespace SyncVerseStudio.Data
 {
@@ -18,7 +19,12 @@ namespace SyncVerseStudio.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseSqlServer("Data Source=RATANAK\\SQLEXPRESS;Initial Catalog=abc;Integrated Security=True;Persist Security Info=False;Pooling=False;Multiple Active Result Sets=False;Encrypt=True;Trust Server Certificate=True;Application Name=\"SQL Server Management Studio\";Command Timeout=0");
+            var connectionString = DatabaseConnectionManager.GetConnectionString();
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                throw new InvalidOperationException("Database connection string is not configured. Please configure it in the application.");
+            }
+            optionsBuilder.UseSqlServer(connectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -119,34 +125,7 @@ namespace SyncVerseStudio.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
-            // Seed data
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    Username = "vi",
-                    Password = "$2a$11$8K1p/a0dL8B9WvjqRJlqaOK9vF8JXw8tJ1K1K1K1K1K1K1K1K1K1K1",
-                    Email = "vi@syncverse.com",
-                    FirstName = "Vi",
-                    LastName = "Admin",
-                    Role = UserRole.Administrator,
-                    IsActive = true,
-                    CreatedAt = DateTime.Now,
-                    UpdatedAt = DateTime.Now
-                }
-            );
-
-            modelBuilder.Entity<Category>().HasData(
-                new Category { Id = 1, Name = "Electronics", Description = "Electronic devices and accessories" },
-                new Category { Id = 2, Name = "Beverages", Description = "Drinks and beverages" },
-                new Category { Id = 3, Name = "Snacks", Description = "Snacks and confectionery" },
-                new Category { Id = 4, Name = "Stationery", Description = "Office and school supplies" }
-            );
-
-            modelBuilder.Entity<Supplier>().HasData(
-                new Supplier { Id = 1, Name = "Tech Solutions Ltd", ContactPerson = "John Smith", Phone = "+855123456789", Email = "contact@techsolutions.com" },
-                new Supplier { Id = 2, Name = "Fresh Beverages Co", ContactPerson = "Mary Johnson", Phone = "+855987654321", Email = "orders@freshbev.com" }
-            );
+            // NO DEFAULT SEED DATA - Admin can use seeder functions
         }
     }
 }
