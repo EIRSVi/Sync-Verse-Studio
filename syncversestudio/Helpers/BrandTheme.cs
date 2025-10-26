@@ -7,13 +7,15 @@ namespace SyncVerseStudio.Helpers
     /// </summary>
     public static class BrandTheme
     {
-        // Brand Colors
+        // Brand Colors - Updated Design System
         public static readonly Color Primary = Color.FromArgb(37, 99, 102);          // #256366 - Main brand color (Teal)
-        public static readonly Color PrimaryHover = Color.FromArgb(45, 122, 125);    // #2D7A7D - Hover state
-        public static readonly Color CoolWhite = Color.FromArgb(215, 232, 250);      // #D7E8FA
+        public static readonly Color PrimaryHover = Color.FromArgb(29, 79, 82);      // Darker hover state
+        public static readonly Color Secondary = Color.FromArgb(158, 236, 255);      // #9EECFF - Light Blue
+        public static readonly Color SecondaryHover = Color.FromArgb(126, 218, 237); // Darker light blue
+        public static readonly Color CoolWhite = Color.FromArgb(215, 232, 250);      // #D7E8FA - Background
         public static readonly Color DarkGray = Color.FromArgb(45, 45, 45);          // #2D2D2D - Dark color
         public static readonly Color LimeGreen = Color.FromArgb(95, 237, 131);       // #5FED83 - Green 3
-        public static readonly Color LightGreen = Color.FromArgb(191, 255, 209);     // #BFFFD1 - Green 1  #ecfff2ff 
+        public static readonly Color LightGreen = Color.FromArgb(191, 255, 209);     // #BFFFD1 - Green 1
         public static readonly Color LightBlue = Color.FromArgb(158, 236, 255);      // #9EECFF - Blue 1
         public static readonly Color MediumBlue = Color.FromArgb(48, 148, 255);      // #3094FF - Blue 2
         public static readonly Color HoverColor = Color.FromArgb(246, 248, 250);     // #ddddddff

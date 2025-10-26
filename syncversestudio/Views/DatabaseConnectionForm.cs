@@ -48,14 +48,14 @@ namespace SyncVerseStudio.Views
             this.Size = new Size(750, 650);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.White;
+            this.BackColor = BrandTheme.CoolWhite; // #D7E8FA
 
             // Header Panel
             headerPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 120,
-                BackColor = BrandTheme.Primary
+                Height = 200,
+                BackColor = BrandTheme.CoolWhite // #D7E8FA
             };
 
             // Make header draggable
@@ -90,11 +90,11 @@ namespace SyncVerseStudio.Views
             btnCloseX.Click += (s, e) => this.Close();
             headerPanel.Controls.Add(btnCloseX);
 
-            // Logo
+            // Logo - Centered and larger
             logoPictureBox = new PictureBox
             {
-                Size = new Size(300, 70),
-                Location = new Point((this.Width - 300) / 2, 25),
+                Size = new Size(400, 120),
+                Location = new Point((this.Width - 400) / 2, 40),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
@@ -138,22 +138,10 @@ namespace SyncVerseStudio.Views
             headerPanel.Controls.Add(logoPictureBox);
             this.Controls.Add(headerPanel);
 
-            // Title Label
-            var titleLabel = new Label
-            {
-                Text = "Database Connection Setup",
-                Font = new Font("Segoe UI", 18, FontStyle.Bold),
-                Location = new Point(50, 135),
-                Size = new Size(650, 30),
-                ForeColor = BrandTheme.PrimaryText,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            this.Controls.Add(titleLabel);
-
-            // Tab Control
+            // Tab Control - No title, minimalist design
             tabControl = new TabControl
             {
-                Location = new Point(50, 180),
+                Location = new Point(50, 210),
                 Size = new Size(650, 330),
                 Font = new Font("Segoe UI", 10)
             };

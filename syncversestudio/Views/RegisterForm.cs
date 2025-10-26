@@ -6,6 +6,7 @@ using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Data;
 using Microsoft.EntityFrameworkCore;
+using FontAwesome.Sharp;
 
 namespace SyncVerseStudio.Views
 {
@@ -18,8 +19,8 @@ namespace SyncVerseStudio.Views
         private TextBox txtFirstName;
         private TextBox txtLastName;
         private ComboBox cmbRole;
-        private Button btnRegister;
-        private Button btnCancel;
+        private IconButton btnRegister;
+        private IconButton btnCancel;
         private Label lblStatus;
         private CheckBox chkShowPassword;
         private CheckBox chkNoPassword;
@@ -39,14 +40,14 @@ namespace SyncVerseStudio.Views
             this.Size = new Size(600, 800);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.White;
+            this.BackColor = BrandTheme.CoolWhite; // #D7E8FA
 
             // Header Panel
             headerPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 120,
-                BackColor = BrandTheme.Primary
+                Height = 200,
+                BackColor = BrandTheme.CoolWhite // #D7E8FA
             };
 
             // Make header draggable
@@ -81,11 +82,11 @@ namespace SyncVerseStudio.Views
             btnClose.Click += (s, e) => this.Close();
             headerPanel.Controls.Add(btnClose);
 
-            // Logo
+            // Logo - Centered and larger
             logoPictureBox = new PictureBox
             {
-                Size = new Size(250, 70),
-                Location = new Point((this.Width - 250) / 2, 25),
+                Size = new Size(400, 120),
+                Location = new Point((this.Width - 400) / 2, 40),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
@@ -129,25 +130,13 @@ namespace SyncVerseStudio.Views
             headerPanel.Controls.Add(logoPictureBox);
             this.Controls.Add(headerPanel);
 
-            // Title
-            var titleLabel = new Label
-            {
-                Text = "Create New Account",
-                Font = new Font("Segoe UI", 20, FontStyle.Bold),
-                Location = new Point(50, 135),
-                Size = new Size(500, 30),
-                ForeColor = BrandTheme.PrimaryText,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            this.Controls.Add(titleLabel);
-
-            // Scrollable content panel
+            // Scrollable content panel - No title, minimalist design
             var contentPanel = new Panel
             {
-                Location = new Point(0, 180),
-                Size = new Size(600, 570),
+                Location = new Point(0, 200),
+                Size = new Size(600, 600),
                 AutoScroll = true,
-                BackColor = Color.White
+                BackColor = BrandTheme.CoolWhite // #D7E8FA
             };
             this.Controls.Add(contentPanel);
 
@@ -281,38 +270,50 @@ namespace SyncVerseStudio.Views
             contentPanel.Controls.Add(lblStatus);
             yPos += 35;
 
-            // Register Button
-            btnRegister = new Button
+            // Register Button with icon
+            btnRegister = new IconButton
             {
-                Text = "Create Account",
+                Text = "  Create Account",
+                IconChar = IconChar.UserPlus,
+                IconColor = Color.White,
+                IconSize = 20,
                 Location = new Point(50, yPos),
-                Size = new Size(240, 45),
+                Size = new Size(240, 50),
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = BrandTheme.Primary,
                 ForeColor = Color.White,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
+                TextImageRelation = TextImageRelation.ImageBeforeText
             };
-            btnRegister.FlatAppearance.BorderSize = 0;
-            btnRegister.FlatAppearance.MouseOverBackColor = BrandTheme.PrimaryHover;
+            ((IconButton)btnRegister).FlatAppearance.BorderSize = 0;
+            ((IconButton)btnRegister).FlatAppearance.MouseOverBackColor = BrandTheme.PrimaryHover;
             btnRegister.Click += BtnRegister_Click;
             contentPanel.Controls.Add(btnRegister);
 
-            // Cancel Button
-            btnCancel = new Button
+            // Cancel Button with icon
+            btnCancel = new IconButton
             {
-                Text = "Cancel",
+                Text = "  Cancel",
+                IconChar = IconChar.Times,
+                IconColor = BrandTheme.Primary,
+                IconSize = 18,
                 Location = new Point(310, yPos),
-                Size = new Size(240, 45),
+                Size = new Size(240, 50),
                 Font = new Font("Segoe UI", 11),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.White,
-                ForeColor = BrandTheme.SecondaryText,
-                Cursor = Cursors.Hand
+                ForeColor = BrandTheme.Primary,
+                Cursor = Cursors.Hand,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
+                TextImageRelation = TextImageRelation.ImageBeforeText
             };
-            btnCancel.FlatAppearance.BorderSize = 2;
-            btnCancel.FlatAppearance.BorderColor = Color.FromArgb(220, 220, 220);
-            btnCancel.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 245, 245);
+            ((IconButton)btnCancel).FlatAppearance.BorderSize = 2;
+            ((IconButton)btnCancel).FlatAppearance.BorderColor = BrandTheme.Primary;
+            ((IconButton)btnCancel).FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 245, 245);
             btnCancel.Click += (s, e) => this.Close();
             contentPanel.Controls.Add(btnCancel);
         }

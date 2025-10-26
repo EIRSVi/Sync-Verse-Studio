@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using SyncVerseStudio.Helpers;
 using SyncVerseStudio.Services;
 using System.IO;
+using FontAwesome.Sharp;
 
 namespace SyncVerseStudio.Views
 {
@@ -11,9 +12,9 @@ namespace SyncVerseStudio.Views
     {
         private TextBox txtUsername;
         private TextBox txtPassword;
-        private Button btnLogin;
-        private Button btnRegister;
-        private Button btnChangeDatabaseConnection;
+        private IconButton btnLogin;
+        private IconButton btnRegister;
+        private IconButton btnChangeDatabaseConnection;
         private Label lblStatus;
         private Panel headerPanel;
         private PictureBox logoPictureBox;
@@ -30,17 +31,17 @@ namespace SyncVerseStudio.Views
         private void InitializeComponents()
         {
             this.Text = "Login - SyncVerse Studio";
-            this.Size = new Size(550, 650);
+            this.Size = new Size(550, 600);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
-            this.BackColor = Color.White;
+            this.BackColor = BrandTheme.CoolWhite; // #D7E8FA
 
             // Header Panel
             headerPanel = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 140,
-                BackColor = BrandTheme.Primary
+                Height = 250,
+                BackColor = BrandTheme.CoolWhite // #D7E8FA
             };
 
             // Make header draggable
@@ -75,11 +76,11 @@ namespace SyncVerseStudio.Views
             btnClose.Click += (s, e) => Application.Exit();
             headerPanel.Controls.Add(btnClose);
 
-            // Logo
+            // Logo - Centered and larger
             logoPictureBox = new PictureBox
             {
-                Size = new Size(300, 80),
-                Location = new Point((this.ClientSize.Width - 300) / 2, 30),
+                Size = new Size(400, 120),
+                Location = new Point((this.ClientSize.Width - 400) / 2, 60),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
@@ -123,36 +124,12 @@ namespace SyncVerseStudio.Views
             headerPanel.Controls.Add(logoPictureBox);
             this.Controls.Add(headerPanel);
 
-            // Title
-            var titleLabel = new Label
-            {
-                Text = "Sign In",
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
-                Location = new Point(50, 160),
-                Size = new Size(450, 35),
-                ForeColor = BrandTheme.PrimaryText,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            this.Controls.Add(titleLabel);
-
-            // Subtitle
-            var subtitleLabel = new Label
-            {
-                Text = "Enter your credentials to access the system",
-                Font = new Font("Segoe UI", 10),
-                Location = new Point(50, 200),
-                Size = new Size(450, 20),
-                ForeColor = BrandTheme.SecondaryText,
-                TextAlign = ContentAlignment.MiddleCenter
-            };
-            this.Controls.Add(subtitleLabel);
-
-            // Username Label
+            // Username Label - No title/subtitle, minimalist design
             var lblUsername = new Label
             {
                 Text = "Username",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Location = new Point(75, 245),
+                Location = new Point(75, 270),
                 Size = new Size(400, 22),
                 ForeColor = BrandTheme.PrimaryText
             };
@@ -161,10 +138,11 @@ namespace SyncVerseStudio.Views
             // Username TextBox
             txtUsername = new TextBox
             {
-                Location = new Point(75, 270),
+                Location = new Point(75, 295),
                 Size = new Size(400, 35),
                 Font = new Font("Segoe UI", 12),
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White
             };
             this.Controls.Add(txtUsername);
 
@@ -173,7 +151,7 @@ namespace SyncVerseStudio.Views
             {
                 Text = "Password",
                 Font = new Font("Segoe UI", 11, FontStyle.Bold),
-                Location = new Point(75, 320),
+                Location = new Point(75, 345),
                 Size = new Size(400, 22),
                 ForeColor = BrandTheme.PrimaryText
             };
@@ -182,11 +160,12 @@ namespace SyncVerseStudio.Views
             // Password TextBox
             txtPassword = new TextBox
             {
-                Location = new Point(75, 345),
+                Location = new Point(75, 370),
                 Size = new Size(400, 35),
                 Font = new Font("Segoe UI", 12),
                 UseSystemPasswordChar = true,
-                BorderStyle = BorderStyle.FixedSingle
+                BorderStyle = BorderStyle.FixedSingle,
+                BackColor = Color.White
             };
             this.Controls.Add(txtPassword);
 
@@ -194,10 +173,11 @@ namespace SyncVerseStudio.Views
             chkShowPassword = new CheckBox
             {
                 Text = "Show Password",
-                Location = new Point(75, 390),
+                Location = new Point(75, 415),
                 Size = new Size(150, 25),
                 Font = new Font("Segoe UI", 9),
-                ForeColor = BrandTheme.SecondaryText
+                ForeColor = BrandTheme.PrimaryText,
+                BackColor = BrandTheme.CoolWhite
             };
             chkShowPassword.CheckedChanged += (s, e) => txtPassword.UseSystemPasswordChar = !chkShowPassword.Checked;
             this.Controls.Add(chkShowPassword);
@@ -205,42 +185,55 @@ namespace SyncVerseStudio.Views
             // Status Label
             lblStatus = new Label
             {
-                Location = new Point(75, 425),
+                Location = new Point(75, 450),
                 Size = new Size(400, 25),
                 Font = new Font("Segoe UI", 9),
                 ForeColor = BrandTheme.Error,
-                TextAlign = ContentAlignment.MiddleLeft
+                TextAlign = ContentAlignment.MiddleLeft,
+                BackColor = BrandTheme.CoolWhite
             };
             this.Controls.Add(lblStatus);
 
-            // Login Button
-            btnLogin = new Button
+            // Login Button with icon
+            btnLogin = new IconButton
             {
-                Text = "Sign In",
-                Location = new Point(75, 460),
-                Size = new Size(400, 45),
+                Text = "  Sign In",
+                IconChar = IconChar.SignInAlt,
+                IconColor = Color.White,
+                IconSize = 20,
+                Location = new Point(75, 485),
+                Size = new Size(400, 50),
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = BrandTheme.Primary,
                 ForeColor = Color.White,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
+                TextImageRelation = TextImageRelation.ImageBeforeText
             };
             btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.FlatAppearance.MouseOverBackColor = BrandTheme.PrimaryHover;
             btnLogin.Click += BtnLogin_Click;
             this.Controls.Add(btnLogin);
 
-            // Register Button
-            btnRegister = new Button
+            // Register Button with icon
+            btnRegister = new IconButton
             {
-                Text = "Create New Account",
-                Location = new Point(75, 515),
-                Size = new Size(400, 40),
+                Text = "  Create Account",
+                IconChar = IconChar.UserPlus,
+                IconColor = BrandTheme.Primary,
+                IconSize = 18,
+                Location = new Point(75, 545),
+                Size = new Size(195, 40),
                 Font = new Font("Segoe UI", 10, FontStyle.Regular),
                 FlatStyle = FlatStyle.Flat,
                 BackColor = Color.White,
                 ForeColor = BrandTheme.Primary,
-                Cursor = Cursors.Hand
+                Cursor = Cursors.Hand,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
+                TextImageRelation = TextImageRelation.ImageBeforeText
             };
             btnRegister.FlatAppearance.BorderSize = 2;
             btnRegister.FlatAppearance.BorderColor = BrandTheme.Primary;
@@ -248,20 +241,27 @@ namespace SyncVerseStudio.Views
             btnRegister.Click += BtnRegister_Click;
             this.Controls.Add(btnRegister);
 
-            // Change Database Connection Button
-            btnChangeDatabaseConnection = new Button
+            // Change Database Connection Button with icon
+            btnChangeDatabaseConnection = new IconButton
             {
-                Text = "Database Settings",
-                Location = new Point(75, 565),
-                Size = new Size(400, 35),
+                Text = "  Database",
+                IconChar = IconChar.Database,
+                IconColor = BrandTheme.Primary,
+                IconSize = 18,
+                Location = new Point(280, 545),
+                Size = new Size(195, 40),
                 FlatStyle = FlatStyle.Flat,
-                BackColor = Color.Transparent,
-                ForeColor = BrandTheme.SecondaryText,
-                Font = new Font("Segoe UI", 9),
-                Cursor = Cursors.Hand
+                BackColor = Color.White,
+                ForeColor = BrandTheme.Primary,
+                Font = new Font("Segoe UI", 10),
+                Cursor = Cursors.Hand,
+                ImageAlign = ContentAlignment.MiddleLeft,
+                TextAlign = ContentAlignment.MiddleCenter,
+                TextImageRelation = TextImageRelation.ImageBeforeText
             };
-            btnChangeDatabaseConnection.FlatAppearance.BorderSize = 0;
-            btnChangeDatabaseConnection.FlatAppearance.MouseOverBackColor = Color.FromArgb(245, 245, 245);
+            btnChangeDatabaseConnection.FlatAppearance.BorderSize = 2;
+            btnChangeDatabaseConnection.FlatAppearance.BorderColor = BrandTheme.Primary;
+            btnChangeDatabaseConnection.FlatAppearance.MouseOverBackColor = Color.FromArgb(240, 248, 255);
             btnChangeDatabaseConnection.Click += BtnChangeDatabaseConnection_Click;
             this.Controls.Add(btnChangeDatabaseConnection);
 
