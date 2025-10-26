@@ -35,6 +35,8 @@ namespace SyncVerseStudio.Models
         public virtual Customer? Customer { get; set; }
         public virtual User Cashier { get; set; } = null!;
         public virtual ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
+        public virtual Invoice? Invoice { get; set; }
+        public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
 
         [NotMapped]
         public decimal SubTotal => SaleItems?.Sum(si => si.TotalPrice) ?? 0;

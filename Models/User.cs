@@ -43,6 +43,11 @@ namespace SyncVerseStudio.Models
         public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
         public virtual ICollection<InventoryMovement> InventoryMovements { get; set; } = new List<InventoryMovement>();
         public virtual ICollection<AuditLog> AuditLogs { get; set; } = new List<AuditLog>();
+        public virtual ICollection<Invoice> CreatedInvoices { get; set; } = new List<Invoice>();
+        public virtual ICollection<Invoice> VoidedInvoices { get; set; } = new List<Invoice>();
+        public virtual ICollection<Payment> ProcessedPayments { get; set; } = new List<Payment>();
+        public virtual ICollection<PaymentLink> CreatedPaymentLinks { get; set; } = new List<PaymentLink>();
+        public virtual ICollection<HeldTransaction> HeldTransactions { get; set; } = new List<HeldTransaction>();
     }
 
     public enum UserRole

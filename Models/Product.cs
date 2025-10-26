@@ -39,6 +39,13 @@ namespace SyncVerseStudio.Models
 
         public bool IsActive { get; set; } = true;
 
+        public bool IsSyncedToOnlineStore { get; set; } = false;
+
+        public DateTime? LastSyncedAt { get; set; }
+
+        [StringLength(100)]
+        public string? OnlineStoreProductId { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
@@ -48,6 +55,7 @@ namespace SyncVerseStudio.Models
         public virtual Supplier? Supplier { get; set; }
         public virtual ICollection<SaleItem> SaleItems { get; set; } = new List<SaleItem>();
         public virtual ICollection<InventoryMovement> InventoryMovements { get; set; } = new List<InventoryMovement>();
+        public virtual ICollection<InvoiceItem> InvoiceItems { get; set; } = new List<InvoiceItem>();
 
         [NotMapped]
         public bool IsLowStock => Quantity <= MinQuantity;

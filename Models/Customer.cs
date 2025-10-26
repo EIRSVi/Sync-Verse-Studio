@@ -27,6 +27,8 @@ namespace SyncVerseStudio.Models
 
         // Navigation properties
         public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
+        public virtual ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
+        public virtual ICollection<PaymentLink> PaymentLinks { get; set; } = new List<PaymentLink>();
 
         public string FullName => $"{FirstName} {LastName}".Trim();
     }

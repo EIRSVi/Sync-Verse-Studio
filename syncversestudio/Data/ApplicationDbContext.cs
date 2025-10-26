@@ -16,6 +16,12 @@ namespace SyncVerseStudio.Data
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentLink> PaymentLinks { get; set; }
+        public DbSet<HeldTransaction> HeldTransactions { get; set; }
+        public DbSet<OnlineStoreIntegration> OnlineStoreIntegrations { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

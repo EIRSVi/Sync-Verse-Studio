@@ -3,6 +3,7 @@ using System.Drawing.Drawing2D;
 using SyncVerseStudio.Services;
 using SyncVerseStudio.Models;
 using SyncVerseStudio.Helpers;
+using SyncVerseStudio.Views.CashierDashboard;
 using FontAwesome.Sharp;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -246,12 +247,10 @@ sidebarPanel.Controls.Add(navHeader);
  break;
 
  case UserRole.Cashier:
- CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CashierDashboardView(_authService)));
+ CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new EnhancedCashierDashboardView(_authService)));
  yPos += 50;
- CreateModernMenuItem("Modern POS Terminal", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CashierPOSView(_authService)));
+ CreateModernMenuItem("Cashier (POS)", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ModernPOSView(_authService)));
      yPos += 50;
- CreateModernMenuItem("Sales History", IconChar.Receipt, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new SalesView(_authService)));
-         yPos += 50;
             CreateModernMenuItem("Customers", IconChar.UserFriends, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new CustomerManagementView(_authService)));
       break;
 
@@ -531,7 +530,7 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
             switch (_authService.CurrentUser.Role)
             {
                 case UserRole.Cashier:
-                    SafeLoadChildForm(() => new CashierDashboardView(_authService));
+                    SafeLoadChildForm(() => new EnhancedCashierDashboardView(_authService));
                     break;
                 case UserRole.InventoryClerk:
                     SafeLoadChildForm(() => new InventoryClerkDashboardView(_authService));

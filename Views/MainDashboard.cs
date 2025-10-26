@@ -234,13 +234,19 @@ namespace SyncVerseStudio.Views
                     break;
 
                 case UserRole.Cashier:
-                    AddMenuItem("Dashboard", FontAwesome.Sharp.IconChar.ChartLine, yPos, () => LoadChildForm(new DashboardView(_authService)), true);
+                    AddMenuItem("Dashboard", FontAwesome.Sharp.IconChar.ChartLine, yPos, () => LoadChildForm(new CashierDashboard.EnhancedCashierDashboardView(_authService)), true);
                     yPos += 50;
-                    AddMenuItem("Point of Sale", FontAwesome.Sharp.IconChar.CashRegister, yPos, () => LoadChildForm(new PointOfSaleView(_authService)));
+                    AddMenuItem("Invoices", FontAwesome.Sharp.IconChar.FileInvoice, yPos, () => LoadChildForm(new InvoiceManagementView(_authService)));
                     yPos += 50;
-                    AddMenuItem("Sales Management", FontAwesome.Sharp.IconChar.ChartArea, yPos, () => LoadChildForm(new SalesManagementView(_authService)));
+                    AddMenuItem("Payment Links", FontAwesome.Sharp.IconChar.Link, yPos, () => LoadChildForm(new PaymentLinkManagementView(_authService)));
                     yPos += 50;
-                    AddMenuItem("Customer Management", FontAwesome.Sharp.IconChar.UserFriends, yPos, () => LoadChildForm(new CustomerManagementView(_authService)));
+                    AddMenuItem("Online Store", FontAwesome.Sharp.IconChar.Store, yPos, () => LoadChildForm(new OnlineStoreView(_authService)));
+                    yPos += 50;
+                    AddMenuItem("Cashier (POS)", FontAwesome.Sharp.IconChar.CashRegister, yPos, () => LoadChildForm(new CashierDashboard.ModernPOSView(_authService)));
+                    yPos += 50;
+                    AddMenuItem("Products", FontAwesome.Sharp.IconChar.Box, yPos, () => LoadChildForm(new ProductManagementView(_authService)));
+                    yPos += 50;
+                    AddMenuItem("Clients", FontAwesome.Sharp.IconChar.UserFriends, yPos, () => LoadChildForm(new CustomerManagementView(_authService)));
                     yPos += 50;
                     AddMenuItem("Reports", FontAwesome.Sharp.IconChar.ChartBar, yPos, () => LoadChildForm(new ReportsView(_authService)));
                     break;
@@ -381,7 +387,14 @@ namespace SyncVerseStudio.Views
 
         private void LoadDefaultView(UserRole role)
         {
-            LoadChildForm(new DashboardView(_authService));
+            if (role == UserRole.Cashier)
+            {
+                LoadChildForm(new CashierDashboard.EnhancedCashierDashboardView(_authService));
+            }
+            else
+            {
+                LoadChildForm(new DashboardView(_authService));
+            }
         }
 
         private void LoadChildForm(Form childForm)

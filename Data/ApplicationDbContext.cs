@@ -14,6 +14,12 @@ namespace SyncVerseStudio.Data
         public DbSet<SaleItem> SaleItems { get; set; }
         public DbSet<InventoryMovement> InventoryMovements { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
+        public DbSet<Invoice> Invoices { get; set; }
+        public DbSet<InvoiceItem> InvoiceItems { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<PaymentLink> PaymentLinks { get; set; }
+        public DbSet<HeldTransaction> HeldTransactions { get; set; }
+        public DbSet<OnlineStoreIntegration> OnlineStoreIntegrations { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -105,6 +111,118 @@ namespace SyncVerseStudio.Data
                     .WithMany(p => p.AuditLogs)
                     .HasForeignKey(d => d.UserId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Invoice entity
+            modelBuilder.Entity<Invoice>(entity =>
+            {
+                entity.HasIndex(e => e.InvoiceNumber).IsUnique();
+                entity.Property(e => e.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.Invoices)
+                    .HasForeignKey(d => d.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.CreatedByUser)
+                    .WithMany(p => p.CreatedInvoices)
+                    .HasForeignKey(d => d.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.VoidedByUser)
+                    .WithMany(p => p.VoidedInvoices)
+                    .HasForeignKey(d => d.VoidedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.Sale)
+                    .WithOne(p => p.Invoice)
+                    .HasForeignKey<Invoice>(d => d.SaleId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure InvoiceItem entity
+            modelBuilder.Entity<InvoiceItem>(entity =>
+            {
+                entity.HasOne(d => d.Invoice)
+                    .WithMany(p => p.InvoiceItems)
+                    .HasForeignKey(d => d.InvoiceId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(d => d.Product)
+                    .WithMany(p => p.InvoiceItems)
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Payment entity
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.HasIndex(e => e.PaymentReference).IsUnique();
+                entity.Property(e => e.PaymentMethod)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.Property(e => e.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.HasOne(d => d.Invoice)
+                    .WithMany(p => p.Payments)
+                    .HasForeignKey(d => d.InvoiceId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.Sale)
+                    .WithMany(p => p.Payments)
+                    .HasForeignKey(d => d.SaleId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.ProcessedByUser)
+                    .WithMany(p => p.ProcessedPayments)
+                    .HasForeignKey(d => d.ProcessedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure PaymentLink entity
+            modelBuilder.Entity<PaymentLink>(entity =>
+            {
+                entity.HasIndex(e => e.LinkCode).IsUnique();
+                entity.Property(e => e.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.HasOne(d => d.Invoice)
+                    .WithMany()
+                    .HasForeignKey(d => d.InvoiceId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.Customer)
+                    .WithMany(p => p.PaymentLinks)
+                    .HasForeignKey(d => d.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.Payment)
+                    .WithMany()
+                    .HasForeignKey(d => d.PaymentId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.CreatedByUser)
+                    .WithMany(p => p.CreatedPaymentLinks)
+                    .HasForeignKey(d => d.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure HeldTransaction entity
+            modelBuilder.Entity<HeldTransaction>(entity =>
+            {
+                entity.HasIndex(e => e.TransactionCode).IsUnique();
+                entity.HasOne(d => d.Customer)
+                    .WithMany()
+                    .HasForeignKey(d => d.CustomerId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.HeldByUser)
+                    .WithMany(p => p.HeldTransactions)
+                    .HasForeignKey(d => d.HeldByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure OnlineStoreIntegration entity
+            modelBuilder.Entity<OnlineStoreIntegration>(entity =>
+            {
+                entity.Property(e => e.Platform)
+                    .HasConversion<string>()
+                    .HasMaxLength(50);
+                entity.Property(e => e.LastSyncStatus)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
             });
 
             // Seed data
