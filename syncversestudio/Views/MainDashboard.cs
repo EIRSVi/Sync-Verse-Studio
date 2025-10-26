@@ -628,101 +628,57 @@ MessageBox.Show($"Error creating form: {ex.Message}\n\nStack Trace:\n{ex.StackTr
         {
             try
             {
-                // Create a custom dialog with three options
-                var logoutDialog = new Form()
+                // Show modern logout dialog
+                using (var dialog = new LogoutDialog(_authService.CurrentUser))
                 {
-                    Text = "Logout Options",
-                    Size = new Size(400, 200),
-                    StartPosition = FormStartPosition.CenterParent,
-                    FormBorderStyle = FormBorderStyle.FixedDialog,
-                    MaximizeBox = false,
-                    MinimizeBox = false,
-                    BackColor = Color.White
-                };
+                    dialog.ShowDialog(this);
 
-                var messageLabel = new Label()
-                {
-                    Text = "What would you like to do?",
-                    Font = new Font("Segoe UI", 12F, FontStyle.Regular),
-                    Location = new Point(20, 20),
-                    Size = new Size(350, 30),
-                    TextAlign = ContentAlignment.MiddleCenter
-                };
+                    switch (dialog.SelectedAction)
+                    {
+                        case LogoutDialog.LogoutAction.SwitchUser:
+                            // Switch User - logout and show login form
+                            Console.WriteLine("User chose to switch user");
+                            await _authService.LogoutAsync();
+                            this.Hide();
 
-                var logoutButton = new Button()
-                {
-                    Text = "Logout (Return to Login)",
-                    Location = new Point(50, 70),
-                    Size = new Size(180, 35),
-                    BackColor = BrandTheme.LimeGreen,
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 10F),
-                    DialogResult = DialogResult.Yes
-                };
+                            var loginForm = new LoginForm();
+                            loginForm.FormClosed += (s, ev) =>
+                            {
+                                if (loginForm.DialogResult == DialogResult.OK)
+                                {
+                                    // User logged in successfully, close this dashboard
+                                    this.Close();
+                                }
+                                else
+                                {
+                                    // User cancelled login, exit application
+                                    Application.Exit();
+                                }
+                            };
+                            loginForm.ShowDialog();
+                            break;
 
-                var exitButton = new Button()
-                {
-                    Text = "Exit Application",
-                    Location = new Point(250, 70),
-                    Size = new Size(120, 35),
-                    BackColor = BrandTheme.Error,
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 10F),
-                    DialogResult = DialogResult.Abort
-                };
+                        case LogoutDialog.LogoutAction.Logout:
+                            // Logout and return to login form
+                            Console.WriteLine("User chose to logout and return to login");
+                            await _authService.LogoutAsync();
+                            this.Close();
+                            break;
 
-                var cancelButton = new Button()
-                {
-                    Text = "Cancel",
-                    Location = new Point(150, 120),
-                    Size = new Size(100, 35),
-                    BackColor = Color.FromArgb(108, 117, 125),
-                    ForeColor = Color.White,
-                    FlatStyle = FlatStyle.Flat,
-                    Font = new Font("Segoe UI", 10F),
-                    DialogResult = DialogResult.Cancel
-                };
+                        case LogoutDialog.LogoutAction.ExitApplication:
+                            // Exit application completely
+                            Console.WriteLine("User chose to exit application completely");
+                            await _authService.LogoutAsync();
+                            this.Close();
+                            Application.Exit();
+                            break;
 
-                logoutButton.FlatAppearance.BorderSize = 0;
-                exitButton.FlatAppearance.BorderSize = 0;
-                cancelButton.FlatAppearance.BorderSize = 0;
-
-                logoutDialog.Controls.AddRange(new Control[] { messageLabel, logoutButton, exitButton, cancelButton });
-                logoutDialog.AcceptButton = logoutButton;
-                logoutDialog.CancelButton = cancelButton;
-
-                DialogResult result;
-                using (logoutDialog)
-                {
-                    result = logoutDialog.ShowDialog(this);
+                        case LogoutDialog.LogoutAction.Cancel:
+                            // Do nothing
+                            Console.WriteLine("User cancelled logout");
+                            break;
+                    }
                 }
-
-                if (result == DialogResult.Yes)
-                {
-                    // Logout and return to login form
-                    Console.WriteLine("User chose to logout and return to login");
-                    await _authService.LogoutAsync();
-                    this.Close(); // This will trigger the FormClosed event in LoginForm
-                }
-                else if (result == DialogResult.Abort)
-                {
-                    // Exit application completely
-                    Console.WriteLine("User chose to exit application completely");
-                    await _authService.LogoutAsync();
-                    
-                    // Close this form
-                    this.Close();
-                    
-                    // Exit application
-                    Application.Exit();
-                }
-                else
-                {
-                    Console.WriteLine("User cancelled logout");
-                }
-                // If Cancel, do nothing
             }
             catch (Exception ex)
             {
