@@ -247,7 +247,7 @@ sidebarPanel.Controls.Add(navHeader);
  break;
 
  case UserRole.Cashier:
- CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new EnhancedCashierDashboardView(_authService)));
+ CreateModernMenuItem("Dashboard", IconChar.Home, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new RealTimeCashierDashboard(_authService)));
  yPos += 50;
  CreateModernMenuItem("Cashier (POS)", IconChar.CashRegister, BrandTheme.LimeGreen, yPos, () => SafeLoadChildForm(() => new ModernPOSView(_authService)));
      yPos += 50;
@@ -530,7 +530,7 @@ Anchor = AnchorStyles.Bottom | AnchorStyles.Left,
             switch (_authService.CurrentUser.Role)
             {
                 case UserRole.Cashier:
-                    SafeLoadChildForm(() => new EnhancedCashierDashboardView(_authService));
+                    SafeLoadChildForm(() => new RealTimeCashierDashboard(_authService));
                     break;
                 case UserRole.InventoryClerk:
                     SafeLoadChildForm(() => new InventoryClerkDashboardView(_authService));
