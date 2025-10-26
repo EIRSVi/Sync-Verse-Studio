@@ -100,7 +100,7 @@ namespace SyncVerseStudio.Views
                 Text = "Stock Management • Product Control • Supplier Coordination",
                 Font = new Font("Segoe UI", 9F),
                 ForeColor = Color.FromArgb(120, 120, 120),
-                Location = new Point(75, 52),
+                Location = new Point(75, 58),
                 Size = new Size(500, 20),
                 AutoSize = false,
                 BackColor = Color.Transparent
@@ -153,46 +153,29 @@ namespace SyncVerseStudio.Views
             };
             contentPanel.Controls.Add(actionsLabel);
 
-            var actionsPanel = new Panel
+            // Create a FlowLayoutPanel for better responsive layout
+            var actionsFlow = new FlowLayoutPanel
             {
                 Location = new Point(0, sectionY + 45),
-                Size = new Size(1140, 180),
-                BackColor = Color.White
+                Size = new Size(1140, 350),
+                BackColor = Color.Transparent,
+                WrapContents = true,
+                AutoScroll = false
             };
 
-            actionsPanel.Paint += (s, e) =>
-            {
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                using (var path = GetRoundedRectPath(new Rectangle(0, 0, actionsPanel.Width - 1, actionsPanel.Height - 1), 12))
-                using (var brush = new SolidBrush(Color.White))
-                {
-                    e.Graphics.FillPath(brush, path);
-                }
-            };
-
-            // Increase the actions panel height to accommodate more buttons
-            actionsPanel.Size = new Size(1140, 260);
-
-            CreateActionButton(actionsPanel, IconChar.Plus, "Add New Product", "Create new product entry", Color.FromArgb(59, 130, 246), 20, 20, ProductManagement_Click);
-            CreateActionButton(actionsPanel, IconChar.ArrowUp, "Receive Stock", "Process incoming stock", Color.FromArgb(34, 197, 94), 20, 100, ReceiveStock_Click);
-            CreateActionButton(actionsPanel, IconChar.PenToSquare, "Stock Adjustment", "Adjust inventory levels", Color.FromArgb(249, 115, 22), 300, 20, StockAdjustment_Click);
-            CreateActionButton(actionsPanel, IconChar.ArrowsLeftRight, "Stock Transfer", "Transfer between locations", Color.FromArgb(168, 85, 247), 300, 100, StockTransfer_Click);
-            CreateActionButton(actionsPanel, IconChar.FileLines, "Generate Report", "Create inventory reports", Color.FromArgb(14, 165, 233), 580, 20, GenerateReport_Click);
-            CreateActionButton(actionsPanel, IconChar.TruckFast, "Manage Suppliers", "View supplier information", Color.FromArgb(236, 72, 153), 580, 100, ManageSuppliers_Click);
-            CreateActionButton(actionsPanel, IconChar.BoxOpen, "View Categories", "Manage product categories", Color.FromArgb(139, 92, 246), 860, 20, ViewCategories_Click);
-            CreateActionButton(actionsPanel, IconChar.Barcode, "Scan Barcode", "Quick product lookup", Color.FromArgb(6, 182, 212), 860, 100, ScanBarcode_Click);
+            // Core Inventory Actions
+            CreateModernActionCard(actionsFlow, IconChar.Plus, "Add New Product", "Create new product entry", Color.FromArgb(59, 130, 246), ProductManagement_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.BoxOpen, "View Categories", "Manage product categories", Color.FromArgb(139, 92, 246), ViewCategories_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.TruckFast, "Manage Suppliers", "View supplier information", Color.FromArgb(236, 72, 153), ManageSuppliers_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.FileLines, "Generate Report", "Create inventory reports", Color.FromArgb(14, 165, 233), GenerateReport_Click, true);
             
-            // Product Image Management Buttons
-            CreateActionButton(actionsPanel, IconChar.Images, "Add Product Images", "Add images to existing products", Color.FromArgb(155, 89, 182), 20, 180, AddProductImages_Click);
-            CreateActionButton(actionsPanel, IconChar.Image, "Add Specific Image", "Add image to specific product", Color.FromArgb(142, 68, 173), 300, 180, AddSpecificImage_Click);
-            
-            // View Product Images Button
-            CreateActionButton(actionsPanel, IconChar.Eye, "View Product Images", "View and manage product images", Color.FromArgb(52, 152, 219), 580, 180, ViewProductImages_Click);
-            
-            // Logout Button
-            CreateActionButton(actionsPanel, IconChar.SignOutAlt, "Logout Options", "Switch user or exit application", Color.FromArgb(231, 76, 60), 860, 180, LogoutButton_Click);
+            // Stock Management Actions
+            CreateModernActionCard(actionsFlow, IconChar.ArrowUp, "Receive Stock", "Process incoming stock", Color.FromArgb(34, 197, 94), ReceiveStock_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.PenToSquare, "Stock Adjustment", "Adjust inventory levels", Color.FromArgb(249, 115, 22), StockAdjustment_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.ArrowsLeftRight, "Stock Transfer", "Transfer between locations", Color.FromArgb(168, 85, 247), StockTransfer_Click, true);
+            CreateModernActionCard(actionsFlow, IconChar.Barcode, "Scan Barcode", "Quick product lookup", Color.FromArgb(6, 182, 212), ScanBarcode_Click, true);
 
-            contentPanel.Controls.Add(actionsPanel);
+            contentPanel.Controls.Add(actionsFlow);
 
             // Recent Activity & Alerts Section
             sectionY += 325;
@@ -209,7 +192,7 @@ namespace SyncVerseStudio.Views
 
             _activityPanel = new Panel
             {
-                Location = new Point(0, sectionY + 45),
+                Location = new Point(0, sectionY + 55),
                 Size = new Size(560, 300),
                 BackColor = Color.White,
                 AutoScroll = true
@@ -228,10 +211,10 @@ namespace SyncVerseStudio.Views
             var activityTitle = new Label
             {
                 Text = "Recent Stock Activity",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 30, 30),
-                Location = new Point(20, 15),
-                Size = new Size(300, 25),
+                Location = new Point(20, 22),
+                Size = new Size(300, 28),
                 BackColor = Color.Transparent,
                 Tag = "title"
             };
@@ -241,9 +224,9 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = IconChar.ArrowsRotate,
                 IconColor = Color.FromArgb(120, 120, 120),
-                IconSize = 16,
-                Location = new Point(520, 18),
-                Size = new Size(16, 16),
+                IconSize = 18,
+                Location = new Point(520, 24),
+                Size = new Size(18, 18),
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand,
                 Tag = "refresh"
@@ -256,7 +239,7 @@ namespace SyncVerseStudio.Views
             // Low Stock Alerts Panel
             _alertsPanel = new Panel
             {
-                Location = new Point(580, sectionY + 45),
+                Location = new Point(580, sectionY + 55),
                 Size = new Size(560, 300),
                 BackColor = Color.White,
                 AutoScroll = true
@@ -275,10 +258,10 @@ namespace SyncVerseStudio.Views
             var alertsTitle = new Label
             {
                 Text = "Low Stock Alerts",
-                Font = new Font("Segoe UI", 12F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 13F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(239, 68, 68),
-                Location = new Point(20, 15),
-                Size = new Size(300, 25),
+                Location = new Point(20, 22),
+                Size = new Size(300, 28),
                 BackColor = Color.Transparent,
                 Tag = "title"
             };
@@ -288,9 +271,9 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = IconChar.ArrowsRotate,
                 IconColor = Color.FromArgb(239, 68, 68),
-                IconSize = 16,
-                Location = new Point(520, 18),
-                Size = new Size(16, 16),
+                IconSize = 18,
+                Location = new Point(520, 24),
+                Size = new Size(18, 18),
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand,
                 Tag = "refresh"
@@ -382,55 +365,143 @@ namespace SyncVerseStudio.Views
             parent.Controls.Add(card);
         }
 
-        private void CreateActionButton(Panel parent, IconChar icon, string title, string description, Color color, int x, int y, EventHandler clickHandler)
+        private void CreateModernActionCard(FlowLayoutPanel parent, IconChar icon, string title, string description, Color color, EventHandler clickHandler, bool isAvailable)
         {
-            var button = new Panel
+            var card = new Panel
             {
-                Location = new Point(x, y),
-                Size = new Size(260, 60),
-                BackColor = Color.Transparent,
+                Size = new Size(270, 100),
+                Margin = new Padding(0, 0, 15, 15),
+                BackColor = Color.White,
                 Cursor = Cursors.Hand,
-                Tag = title
+                Tag = new { Title = title, Available = isAvailable }
             };
+
+            // Add shadow and rounded corners
+            card.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                var rect = card.ClientRectangle;
+
+                // Shadow effect
+                using (var shadowPath = GetRoundedRectPath(new Rectangle(2, 2, rect.Width - 3, rect.Height - 3), 12))
+                using (var shadowBrush = new SolidBrush(Color.FromArgb(15, 0, 0, 0)))
+                {
+                    e.Graphics.FillPath(shadowBrush, shadowPath);
+                }
+
+                // Card background
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, rect.Width - 1, rect.Height - 1), 12))
+                using (var brush = new SolidBrush(card.BackColor))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+
+                // Left accent border
+                using (var accentBrush = new SolidBrush(color))
+                {
+                    e.Graphics.FillRectangle(accentBrush, 0, 12, 4, rect.Height - 24);
+                }
+            };
+
+            // Icon with colored background circle
+            var iconPanel = new Panel
+            {
+                Size = new Size(50, 50),
+                Location = new Point(15, 25),
+                BackColor = Color.Transparent
+            };
+            iconPanel.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var brush = new SolidBrush(Color.FromArgb(25, color)))
+                {
+                    e.Graphics.FillEllipse(brush, 0, 0, 50, 50);
+                }
+            };
+            card.Controls.Add(iconPanel);
 
             var iconBox = new IconPictureBox
             {
                 IconChar = icon,
                 IconColor = color,
-                IconSize = 24,
-                Location = new Point(10, 18),
-                Size = new Size(24, 24),
-                BackColor = Color.Transparent
+                IconSize = 26,
+                Location = new Point(12, 12),
+                Size = new Size(26, 26),
+                BackColor = Color.Transparent,
+                Parent = iconPanel
             };
-            button.Controls.Add(iconBox);
 
+            // Title
             var titleLabel = new Label
             {
                 Text = title,
                 Font = new Font("Segoe UI", 11F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 30, 30),
-                Location = new Point(45, 10),
-                Size = new Size(205, 22),
+                Location = new Point(75, 20),
+                Size = new Size(185, 24),
                 BackColor = Color.Transparent
             };
-            button.Controls.Add(titleLabel);
+            card.Controls.Add(titleLabel);
 
+            // Description
             var descLabel = new Label
             {
                 Text = description,
                 Font = new Font("Segoe UI", 8.5F),
                 ForeColor = Color.FromArgb(120, 120, 120),
-                Location = new Point(45, 32),
-                Size = new Size(205, 18),
+                Location = new Point(75, 44),
+                Size = new Size(185, 18),
                 BackColor = Color.Transparent
             };
-            button.Controls.Add(descLabel);
+            card.Controls.Add(descLabel);
 
-            button.MouseEnter += (s, e) => button.BackColor = Color.FromArgb(248, 250, 252);
-            button.MouseLeave += (s, e) => button.BackColor = Color.Transparent;
-            button.Click += clickHandler;
+            // Status badge - only show for unavailable features
+            if (!isAvailable)
+            {
+                var badge = new Label
+                {
+                    Text = "SOON",
+                    Font = new Font("Segoe UI", 7F, FontStyle.Bold),
+                    ForeColor = Color.White,
+                    BackColor = Color.FromArgb(249, 115, 22),
+                    Location = new Point(75, 68),
+                    Size = new Size(45, 18),
+                    TextAlign = ContentAlignment.MiddleCenter
+                };
+                badge.Paint += (s, e) =>
+                {
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    using (var path = GetRoundedRectPath(new Rectangle(0, 0, badge.Width - 1, badge.Height - 1), 4))
+                    using (var brush = new SolidBrush(badge.BackColor))
+                    {
+                        e.Graphics.FillPath(brush, path);
+                    }
+                    TextRenderer.DrawText(e.Graphics, badge.Text, badge.Font, badge.ClientRectangle, badge.ForeColor, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+                };
+                card.Controls.Add(badge);
+            }
+            // No badge for available features - cleaner look
 
-            parent.Controls.Add(button);
+            // Hover effects
+            card.MouseEnter += (s, e) =>
+            {
+                card.BackColor = Color.FromArgb(248, 250, 252);
+                card.Invalidate();
+            };
+            card.MouseLeave += (s, e) =>
+            {
+                card.BackColor = Color.White;
+                card.Invalidate();
+            };
+
+            // Click handler
+            card.Click += clickHandler;
+            foreach (Control ctrl in card.Controls)
+            {
+                ctrl.Click += clickHandler;
+            }
+
+            parent.Controls.Add(card);
         }
 
         private async System.Threading.Tasks.Task LoadDashboardData()
@@ -495,14 +566,14 @@ namespace SyncVerseStudio.Views
                     .Take(8)
                     .ToListAsync();
 
-                int yPos = 50;
+                int yPos = 65;
                 
                 if (recentProducts.Any())
                 {
                     foreach (var product in recentProducts)
                     {
                         CreateActivityItem(_activityPanel, product, yPos);
-                        yPos += 30;
+                        yPos += 38;
                     }
                 }
                 else
@@ -510,10 +581,10 @@ namespace SyncVerseStudio.Views
                     var noDataLabel = new Label
                     {
                         Text = "No recent stock activity in the last 24 hours",
-                        Font = new Font("Segoe UI", 9F, FontStyle.Italic),
+                        Font = new Font("Segoe UI", 9.5F, FontStyle.Italic),
                         ForeColor = Color.FromArgb(150, 150, 150),
-                        Location = new Point(20, 50),
-                        Size = new Size(500, 20),
+                        Location = new Point(20, 65),
+                        Size = new Size(500, 22),
                         BackColor = Color.Transparent
                     };
                     _activityPanel.Controls.Add(noDataLabel);
@@ -543,40 +614,63 @@ namespace SyncVerseStudio.Views
             var itemPanel = new Panel
             {
                 Location = new Point(20, yPos),
-                Size = new Size(520, 25),
-                BackColor = Color.Transparent
+                Size = new Size(520, 36),
+                BackColor = Color.Transparent,
+                Cursor = Cursors.Hand
             };
+
+            // Hover effect
+            itemPanel.MouseEnter += (s, e) => itemPanel.BackColor = Color.FromArgb(248, 250, 252);
+            itemPanel.MouseLeave += (s, e) => itemPanel.BackColor = Color.Transparent;
 
             var icon = new IconPictureBox
             {
                 IconChar = product.Quantity <= product.MinQuantity ? IconChar.TriangleExclamation : IconChar.Check,
                 IconColor = statusColor,
-                IconSize = 14,
-                Location = new Point(0, 5),
-                Size = new Size(14, 14),
+                IconSize = 16,
+                Location = new Point(0, 10),
+                Size = new Size(16, 16),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(icon);
 
-            // Product ID Label (new)
+            // Product ID Badge
+            var idBadge = new Panel
+            {
+                Location = new Point(22, 8),
+                Size = new Size(45, 20),
+                BackColor = Color.FromArgb(239, 246, 255)
+            };
+            idBadge.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, idBadge.Width - 1, idBadge.Height - 1), 4))
+                using (var brush = new SolidBrush(Color.FromArgb(239, 246, 255)))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+            itemPanel.Controls.Add(idBadge);
+
             var idLabel = new Label
             {
-                Text = $"ID:{product.Id}",
+                Text = $"#{product.Id}",
                 Font = new Font("Segoe UI", 8F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(59, 130, 246),
-                Location = new Point(20, 3),
-                Size = new Size(40, 18),
-                BackColor = Color.Transparent
+                Location = new Point(0, 0),
+                Size = new Size(45, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent,
+                Parent = idBadge
             };
-            itemPanel.Controls.Add(idLabel);
 
             var nameLabel = new Label
             {
                 Text = product.Name,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 30, 30),
-                Location = new Point(65, 3),
-                Size = new Size(150, 18),
+                Location = new Point(75, 9),
+                Size = new Size(140, 18),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(nameLabel);
@@ -584,10 +678,10 @@ namespace SyncVerseStudio.Views
             var qtyLabel = new Label
             {
                 Text = $"Qty: {product.Quantity}",
-                Font = new Font("Segoe UI", 9F),
+                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
                 ForeColor = statusColor,
-                Location = new Point(220, 3),
-                Size = new Size(60, 18),
+                Location = new Point(220, 9),
+                Size = new Size(65, 18),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(qtyLabel);
@@ -596,9 +690,9 @@ namespace SyncVerseStudio.Views
             {
                 Text = product.Category?.Name ?? "N/A",
                 Font = new Font("Segoe UI", 8.5F),
-                ForeColor = Color.FromArgb(120, 120, 120),
-                Location = new Point(285, 4),
-                Size = new Size(80, 16),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Location = new Point(290, 10),
+                Size = new Size(90, 16),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(categoryLabel);
@@ -607,16 +701,15 @@ namespace SyncVerseStudio.Views
             {
                 Text = timeAgo,
                 Font = new Font("Segoe UI", 8F),
-                ForeColor = Color.FromArgb(150, 150, 150),
-                Location = new Point(370, 5),
-                Size = new Size(80, 14),
+                ForeColor = Color.FromArgb(148, 163, 184),
+                Location = new Point(385, 10),
+                Size = new Size(130, 16),
                 TextAlign = ContentAlignment.MiddleRight,
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(timeLabel);
 
             // Add click handler to copy product ID
-            itemPanel.Cursor = Cursors.Hand;
             itemPanel.Click += (s, e) => 
             {
                 Clipboard.SetText(product.Id.ToString());
@@ -651,14 +744,14 @@ namespace SyncVerseStudio.Views
                     .Take(8)
                     .ToListAsync();
 
-                int yPos = 50;
+                int yPos = 65;
                 
                 if (lowStockProducts.Any())
                 {
                     foreach (var product in lowStockProducts)
                     {
                         CreateAlertItem(_alertsPanel, product, yPos);
-                        yPos += 30;
+                        yPos += 38;
                     }
                 }
                 else
@@ -666,10 +759,10 @@ namespace SyncVerseStudio.Views
                     var noDataLabel = new Label
                     {
                         Text = "All products are adequately stocked!",
-                        Font = new Font("Segoe UI", 9F, FontStyle.Italic),
+                        Font = new Font("Segoe UI", 9.5F, FontStyle.Italic),
                         ForeColor = Color.FromArgb(34, 197, 94),
-                        Location = new Point(20, 50),
-                        Size = new Size(500, 20),
+                        Location = new Point(20, 65),
+                        Size = new Size(500, 22),
                         BackColor = Color.Transparent
                     };
                     _alertsPanel.Controls.Add(noDataLabel);
@@ -699,7 +792,7 @@ namespace SyncVerseStudio.Views
             var itemPanel = new Panel
             {
                 Location = new Point(20, yPos),
-                Size = new Size(520, 25),
+                Size = new Size(520, 36),
                 BackColor = Color.Transparent,
                 Cursor = Cursors.Hand
             };
@@ -711,75 +804,132 @@ namespace SyncVerseStudio.Views
             {
                 IconChar = product.Quantity == 0 ? IconChar.CircleExclamation : IconChar.TriangleExclamation,
                 IconColor = urgencyColor,
-                IconSize = 14,
-                Location = new Point(0, 5),
-                Size = new Size(14, 14),
+                IconSize = 16,
+                Location = new Point(0, 10),
+                Size = new Size(16, 16),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(icon);
 
-            // Product ID Label (new)
+            // Product ID Badge
+            var idBadge = new Panel
+            {
+                Location = new Point(22, 8),
+                Size = new Size(45, 20),
+                BackColor = Color.FromArgb(239, 246, 255)
+            };
+            idBadge.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, idBadge.Width - 1, idBadge.Height - 1), 4))
+                using (var brush = new SolidBrush(Color.FromArgb(239, 246, 255)))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+            itemPanel.Controls.Add(idBadge);
+
             var idLabel = new Label
             {
-                Text = $"ID:{product.Id}",
+                Text = $"#{product.Id}",
                 Font = new Font("Segoe UI", 8F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(59, 130, 246),
-                Location = new Point(20, 3),
-                Size = new Size(40, 18),
-                BackColor = Color.Transparent
+                Location = new Point(0, 0),
+                Size = new Size(45, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent,
+                Parent = idBadge
             };
-            itemPanel.Controls.Add(idLabel);
 
             var nameLabel = new Label
             {
                 Text = product.Name,
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(30, 30, 30),
-                Location = new Point(65, 3),
-                Size = new Size(130, 18),
+                Location = new Point(75, 9),
+                Size = new Size(120, 18),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(nameLabel);
 
+            // Stock ratio badge
+            var stockBadge = new Panel
+            {
+                Location = new Point(200, 8),
+                Size = new Size(55, 20),
+                BackColor = Color.FromArgb(254, 242, 242)
+            };
+            stockBadge.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, stockBadge.Width - 1, stockBadge.Height - 1), 4))
+                using (var brush = new SolidBrush(Color.FromArgb(254, 242, 242)))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+            itemPanel.Controls.Add(stockBadge);
+
             var qtyLabel = new Label
             {
                 Text = $"{product.Quantity}/{product.MinQuantity}",
-                Font = new Font("Segoe UI", 9F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
                 ForeColor = urgencyColor,
-                Location = new Point(200, 3),
-                Size = new Size(50, 18),
-                BackColor = Color.Transparent
+                Location = new Point(0, 0),
+                Size = new Size(55, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent,
+                Parent = stockBadge
             };
-            itemPanel.Controls.Add(qtyLabel);
 
             var supplierLabel = new Label
             {
                 Text = product.Supplier?.Name ?? "No Supplier",
                 Font = new Font("Segoe UI", 8.5F),
-                ForeColor = Color.FromArgb(120, 120, 120),
-                Location = new Point(255, 4),
+                ForeColor = Color.FromArgb(100, 116, 139),
+                Location = new Point(265, 10),
                 Size = new Size(100, 16),
                 BackColor = Color.Transparent
             };
             itemPanel.Controls.Add(supplierLabel);
 
-            var actionLabel = new Label
+            // Order button
+            var orderBtn = new Panel
             {
-                Text = $"Order {reorderQty}",
-                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(59, 130, 246),
-                Location = new Point(360, 5),
-                Size = new Size(80, 14),
-                TextAlign = ContentAlignment.MiddleRight,
-                BackColor = Color.Transparent,
+                Location = new Point(375, 8),
+                Size = new Size(140, 20),
+                BackColor = Color.FromArgb(239, 246, 255),
                 Cursor = Cursors.Hand
             };
-            actionLabel.Click += (s, e) => 
+            orderBtn.Paint += (s, e) =>
+            {
+                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                using (var path = GetRoundedRectPath(new Rectangle(0, 0, orderBtn.Width - 1, orderBtn.Height - 1), 4))
+                using (var brush = new SolidBrush(Color.FromArgb(239, 246, 255)))
+                {
+                    e.Graphics.FillPath(brush, path);
+                }
+            };
+            orderBtn.MouseEnter += (s, e) => orderBtn.BackColor = Color.FromArgb(219, 234, 254);
+            orderBtn.MouseLeave += (s, e) => orderBtn.BackColor = Color.FromArgb(239, 246, 255);
+            orderBtn.Click += (s, e) => 
             {
                 MessageBox.Show($"Reorder {product.Name}\n\nProduct ID: {product.Id}\nSuggested Order Quantity: {reorderQty}\nSupplier: {product.Supplier?.Name ?? "Not Set"}\nCurrent Stock: {product.Quantity}\nMinimum Stock: {product.MinQuantity}", 
                     "Reorder Product", MessageBoxButtons.OK, MessageBoxIcon.Information);
             };
-            itemPanel.Controls.Add(actionLabel);
+            itemPanel.Controls.Add(orderBtn);
+
+            var actionLabel = new Label
+            {
+                Text = $"📦 Order {reorderQty}",
+                Font = new Font("Segoe UI", 8F, FontStyle.Bold),
+                ForeColor = Color.FromArgb(59, 130, 246),
+                Location = new Point(0, 0),
+                Size = new Size(140, 20),
+                TextAlign = ContentAlignment.MiddleCenter,
+                BackColor = Color.Transparent,
+                Parent = orderBtn
+            };
 
             // Add click handler to copy product ID
             itemPanel.Click += (s, e) => 
@@ -840,82 +990,50 @@ namespace SyncVerseStudio.Views
 
         private void ProductManagement_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var productView = new ProductManagementView(_authService);
-                ShowView(productView);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Product Management functionality - Coming Soon!\n\nThis will allow you to:\n• Add new products\n• Edit existing products\n• Manage product categories\n• Set pricing and stock levels\n• Upload product images", 
-                    "Product Management", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            var productView = new ProductManagementView(_authService);
+            ShowView(productView);
         }
 
         private void ReceiveStock_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Receive Stock functionality - Coming Soon!\n\nThis will allow you to:\n• Process incoming deliveries\n• Update stock quantities\n• Record supplier information\n• Generate receiving reports", 
-                "Receive Stock", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var receiveStockView = new ReceiveStockView(_authService);
+            ShowView(receiveStockView);
         }
 
         private void StockAdjustment_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Stock Adjustment functionality - Coming Soon!\n\nThis will allow you to:\n• Adjust inventory levels\n• Record reasons for adjustments\n• Track waste and loss\n• Maintain audit trail", 
-                "Stock Adjustment", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var stockAdjustmentView = new StockAdjustmentView(_authService);
+            ShowView(stockAdjustmentView);
         }
 
         private void StockTransfer_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Stock Transfer functionality - Coming Soon!\n\nThis will allow you to:\n• Transfer stock between locations\n• Track transfer status\n• Generate transfer documents\n• Update inventory records", 
-                "Stock Transfer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var stockTransferView = new StockTransferView(_authService);
+            ShowView(stockTransferView);
         }
 
         private void GenerateReport_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var reportsView = new InventoryReportsView(_authService);
-                ShowView(reportsView);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Inventory Reports functionality - Coming Soon!\n\nThis will allow you to:\n• Generate stock level reports\n• View sales analytics\n• Export inventory data\n• Create custom reports\n• Schedule automated reports", 
-                    "Inventory Reports", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            var reportsView = new InventoryReportsView(_authService);
+            ShowView(reportsView);
         }
 
         private void ManageSuppliers_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var supplierView = new SupplierManagementView(_authService);
-                ShowView(supplierView);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Supplier Management functionality - Coming Soon!\n\nThis will allow you to:\n• Add new suppliers\n• Edit supplier information\n• Manage supplier contacts\n• Track supplier performance\n• View purchase history", 
-                    "Supplier Management", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            var supplierView = new SupplierManagementView(_authService);
+            ShowView(supplierView);
         }
 
         private void ViewCategories_Click(object sender, EventArgs e)
         {
-            try
-            {
-                var categoryView = new CategoryManagementView(_authService);
-                ShowView(categoryView);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Category Management functionality - Coming Soon!\n\nThis will allow you to:\n• Create product categories\n• Edit category details\n• Organize product hierarchy\n• Set category-specific settings\n• Manage category images", 
-                    "Category Management", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
+            var categoryView = new CategoryManagementView(_authService);
+            ShowView(categoryView);
         }
 
         private void ScanBarcode_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Barcode Scanner functionality - Coming Soon!\n\nThis will allow you to:\n• Scan product barcodes\n• Quick product lookup\n• Update stock levels\n• Print barcode labels", 
-                "Barcode Scanner", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            var scanBarcodeView = new ScanBarcodeView(_authService);
+            ShowView(scanBarcodeView);
         }
 
         private async void AddProductImages_Click(object sender, EventArgs e)
