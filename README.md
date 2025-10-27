@@ -1875,7 +1875,24 @@ For bug reports and feature requests:
 ### Development Team
 
 - **Lead Developer**: Vi
-- **Contributors**: See CONTRIBUTORS.md
+- **Contributors**:  
+
+@PHAVINTHYRATANAK 
+100034879410842
+
+phandanuphonn
+100006581647309
+
+SamnangDy 
+100028267065321
+
+CHOEUNSOKLA 
+100074770834689
+
+PhorkChanna  
+100057666978328
+
+
 
 ### Special Thanks
 
@@ -1946,63 +1963,21 @@ graph LR
 
 ### Project Links
 
-- **Repository**: [GitHub Repository URL]
+- **Repository**: [https://github.com/EIRSVi/sync-verse-studio]
 - **Documentation**: [Documentation URL]
-- **Issue Tracker**: [Issues URL]
-- **Discussions**: [Discussions URL]
+- **Issue Tracker**: [https://github.com/EIRSVi/sync-verse-studio/actions]
+- **Discussions**: [https://github.com/EIRSVi/sync-verse-studio/commits/master/]
 
 ### Support Channels
 
-- **Email**: support@syncversestudio.com
-- **Website**: www.syncversestudio.com
+- **Email**: support@****.com
+- **Website**: www.*****.com
 - **GitHub Issues**: For bug reports and feature requests
 - **GitHub Discussions**: For questions and community support
 
 ---
 
-## Changelog
-
-### Version 1.0.0 (October 2025)
-
-#### Added
-- Initial release of SYNCVERSE STUDIO
-- Complete point of sale system
-- Inventory management module
-- Customer relationship management
-- Invoice and payment processing
-- Analytics and reporting dashboard
-- Role-based access control
-- Audit logging system
-- Multi-payment method support
-- QR code generation for mobile payments
-- Professional invoice printing
-- Product image management
-- Category and supplier management
-- Real-time dashboard with charts
-- Hold and resume transaction feature
-- Customer loyalty points system
-
-#### Security
-- BCrypt password hashing
-- Customer data encryption
-- Comprehensive audit trail
-- Role-based permissions
-- Secure database connections
-
-
-#### Technical
-- .NET 8.0 framework
-- Entity Framework Core 8.0
-- SQL Server 2019+ support
-- Windows Forms UI
-- Material Design components
-- FontAwesome icon integration
-- QRCoder library integration
-- ZXing.Net barcode support
-- QuestPDF invoice generation
-- Newtonsoft.Json serialization
-
----
+ 
 
 ## FAQ
 
@@ -2273,21 +2248,9 @@ graph TD
 - [Windows Forms Tutorial](https://www.tutorialspoint.com/windows_forms/)
 
 
-### Community Resources
+ 
 
-- [Stack Overflow - .NET Tag](https://stackoverflow.com/questions/tagged/.net)
-- [Stack Overflow - Entity Framework Tag](https://stackoverflow.com/questions/tagged/entity-framework)
-- [Reddit - r/dotnet](https://www.reddit.com/r/dotnet/)
-- [Reddit - r/csharp](https://www.reddit.com/r/csharp/)
-
-### Tools and Utilities
-
-- [Visual Studio](https://visualstudio.microsoft.com/) - Primary IDE
-- [SQL Server Management Studio](https://docs.microsoft.com/sql/ssms/) - Database management
-- [LINQPad](https://www.linqpad.net/) - LINQ query testing
-- [Postman](https://www.postman.com/) - API testing (future use)
-- [Git](https://git-scm.com/) - Version control
-- [GitHub Desktop](https://desktop.github.com/) - Git GUI client
+ 
 
 ---
 
@@ -2313,6 +2276,8 @@ We welcome contributions from the community and are committed to continuous impr
 ---
 
 **SYNCVERSE STUDIO** - Empowering Retail Excellence
+
+
 
 *Version 1.0.0 | October 2025*
 
