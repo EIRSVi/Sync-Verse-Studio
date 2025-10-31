@@ -32,6 +32,9 @@ namespace SyncVerseStudio.Views.CashierDashboard
         private TextBox txtCashAmount;
         private Label lblChange;
         private Button btnCompleteSale;
+        private RadioButton rbCashUSD, rbCashKHR;
+        private Label lblCashCurrency;
+        private System.Media.SoundPlayer soundPlayer;
         
         // Tax settings
         private decimal taxRate = 10m; // Default 10%
@@ -549,6 +552,40 @@ namespace SyncVerseStudio.Views.CashierDashboard
             };
             rbMobile.CheckedChanged += PaymentMethod_Changed;
 
+            // Cash currency selection
+            lblCashCurrency = new Label
+            {
+                Text = "Currency:",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(71, 85, 105),
+                Location = new Point(420, 52),
+                AutoSize = true,
+                Visible = true
+            };
+
+            rbCashUSD = new RadioButton
+            {
+                Text = "USD ($)",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(420, 70),
+                AutoSize = true,
+                Checked = true,
+                Visible = true
+            };
+            rbCashUSD.CheckedChanged += (s, e) => { if (rbCashUSD.Checked) CalculateChange(); };
+
+            rbCashKHR = new RadioButton
+            {
+                Text = "Riel (៛)",
+                Font = new Font("Segoe UI", 9),
+                ForeColor = Color.FromArgb(30, 30, 30),
+                Location = new Point(420, 92),
+                AutoSize = true,
+                Visible = true
+            };
+            rbCashKHR.CheckedChanged += (s, e) => { if (rbCashKHR.Checked) CalculateChange(); };
+
             // Cash amount and change
             var lblCashAmount = new Label
             {
@@ -573,7 +610,7 @@ namespace SyncVerseStudio.Views.CashierDashboard
                 Text = "Change:",
                 Font = new Font("Segoe UI", 10, FontStyle.Bold),
                 ForeColor = Color.FromArgb(71, 85, 105),
-                Location = new Point(300, 90),
+                Location = new Point(20, 120),
                 AutoSize = true
             };
 
@@ -582,12 +619,13 @@ namespace SyncVerseStudio.Views.CashierDashboard
                 Text = "$0.00",
                 Font = new Font("Segoe UI", 12, FontStyle.Bold),
                 ForeColor = Color.FromArgb(34, 197, 94),
-                Location = new Point(380, 88),
+                Location = new Point(140, 118),
                 AutoSize = true
             };
 
             panel.Controls.AddRange(new Control[] { 
                 lblPaymentMethod, rbCash, rbCard, rbMobile, 
+                lblCashCurrency, rbCashUSD, rbCashKHR,
                 lblCashAmount, txtCashAmount, lblChangeText, lblChange 
             });
 
@@ -653,18 +691,22 @@ namespace SyncVerseStudio.Views.CashierDashboard
         {
             try
             {
-                var categories = await _context.Categories
-                    .Where(c => c.IsActive)
-                    .OrderBy(c => c.Name)
-                    .ToListAsync();
-
-                cmbCategory.Items.Add("All Categories");
-                foreach (var category in categories)
+                using (var context = new ApplicationDbContext())
                 {
-                    cmbCategory.Items.Add(category);
+                    var categories = await context.Categories
+                        .AsNoTracking()
+                        .Where(c => c.IsActive)
+                        .OrderBy(c => c.Name)
+                        .ToListAsync();
+
+                    cmbCategory.Items.Add("All Categories");
+                    foreach (var category in categories)
+                    {
+                        cmbCategory.Items.Add(category);
+                    }
+                    cmbCategory.DisplayMember = "Name";
+                    cmbCategory.SelectedIndex = 0;
                 }
-                cmbCategory.DisplayMember = "Name";
-                cmbCategory.SelectedIndex = 0;
             }
             catch (Exception ex)
             {
@@ -677,13 +719,17 @@ namespace SyncVerseStudio.Views.CashierDashboard
         {
             try
             {
-                var products = await _context.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.ProductImages)
-                    .Where(p => p.IsActive && p.Quantity > 0)
-                    .ToListAsync();
+                using (var context = new ApplicationDbContext())
+                {
+                    var products = await context.Products
+                        .AsNoTracking()
+                        .Include(p => p.Category)
+                        .Include(p => p.ProductImages)
+                        .Where(p => p.IsActive && p.Quantity > 0)
+                        .ToListAsync();
 
-                DisplayProducts(products);
+                    DisplayProducts(products);
+                }
             }
             catch (Exception ex)
             {
@@ -696,43 +742,47 @@ namespace SyncVerseStudio.Views.CashierDashboard
         {
             try
             {
-                var query = _context.Products
-                    .Include(p => p.Category)
-                    .Include(p => p.ProductImages)
-                    .Where(p => p.IsActive && p.Quantity > 0);
-
-                // Category filter
-                if (cmbCategory.SelectedIndex > 0 && cmbCategory.SelectedItem is Category category)
+                using (var context = new ApplicationDbContext())
                 {
-                    query = query.Where(p => p.CategoryId == category.Id);
-                }
+                    var query = context.Products
+                        .AsNoTracking()
+                        .Include(p => p.Category)
+                        .Include(p => p.ProductImages)
+                        .Where(p => p.IsActive && p.Quantity > 0);
 
-                // Search filter
-                if (!string.IsNullOrWhiteSpace(txtSearch.Text))
-                {
-                    var searchTerm = txtSearch.Text.ToLower();
-                    query = query.Where(p => p.Name.ToLower().Contains(searchTerm) || 
-                                           p.Barcode.ToLower().Contains(searchTerm));
-                }
-
-                var products = await query.ToListAsync();
-
-                // Sort
-                if (cmbSortBy.SelectedIndex >= 0)
-                {
-                    products = cmbSortBy.SelectedIndex switch
+                    // Category filter
+                    if (cmbCategory.SelectedIndex > 0 && cmbCategory.SelectedItem is Category category)
                     {
-                        0 => products.OrderBy(p => p.Name).ToList(),
-                        1 => products.OrderByDescending(p => p.Name).ToList(),
-                        2 => products.OrderBy(p => p.SellingPrice).ToList(),
-                        3 => products.OrderByDescending(p => p.SellingPrice).ToList(),
-                        4 => products.OrderByDescending(p => GetProductPopularity(p.Id)).ToList(),
-                        5 => products.OrderByDescending(p => p.CreatedAt).ToList(),
-                        _ => products
-                    };
-                }
+                        query = query.Where(p => p.CategoryId == category.Id);
+                    }
 
-                DisplayProducts(products);
+                    // Search filter
+                    if (!string.IsNullOrWhiteSpace(txtSearch.Text))
+                    {
+                        var searchTerm = txtSearch.Text.ToLower();
+                        query = query.Where(p => p.Name.ToLower().Contains(searchTerm) || 
+                                               p.Barcode.ToLower().Contains(searchTerm));
+                    }
+
+                    var products = await query.ToListAsync();
+
+                    // Sort
+                    if (cmbSortBy.SelectedIndex >= 0)
+                    {
+                        products = cmbSortBy.SelectedIndex switch
+                        {
+                            0 => products.OrderBy(p => p.Name).ToList(),
+                            1 => products.OrderByDescending(p => p.Name).ToList(),
+                            2 => products.OrderBy(p => p.SellingPrice).ToList(),
+                            3 => products.OrderByDescending(p => p.SellingPrice).ToList(),
+                            4 => products.OrderByDescending(p => GetProductPopularity(p.Id)).ToList(),
+                            5 => products.OrderByDescending(p => p.CreatedAt).ToList(),
+                            _ => products
+                        };
+                    }
+
+                    DisplayProducts(products);
+                }
             }
             catch (Exception ex)
             {
@@ -745,9 +795,13 @@ namespace SyncVerseStudio.Views.CashierDashboard
         {
             try
             {
-                return _context.SaleItems
-                    .Where(si => si.ProductId == productId)
-                    .Sum(si => si.Quantity);
+                using (var context = new ApplicationDbContext())
+                {
+                    return context.SaleItems
+                        .AsNoTracking()
+                        .Where(si => si.ProductId == productId)
+                        .Sum(si => (int?)si.Quantity) ?? 0;
+                }
             }
             catch
             {
@@ -982,9 +1036,29 @@ namespace SyncVerseStudio.Views.CashierDashboard
             if (decimal.TryParse(txtCashAmount.Text, out decimal cashAmount))
             {
                 decimal total = decimal.Parse(lblTotal.Text.Replace("$", "").Replace(",", ""));
-                decimal change = cashAmount - total;
-                lblChange.Text = $"${Math.Max(0, change):N2}";
-                lblChange.ForeColor = change >= 0 ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                
+                // Determine payment currency
+                var paidCurrency = rbCashUSD.Checked ? CurrencyService.Currency.USD : CurrencyService.Currency.KHR;
+                
+                try
+                {
+                    // Calculate change in the same currency as payment
+                    var (changeAmount, changeCurrency) = CurrencyService.CalculateChange(
+                        total, 
+                        cashAmount, 
+                        paidCurrency, 
+                        paidCurrency // Return change in same currency
+                    );
+                    
+                    // Format change display
+                    lblChange.Text = CurrencyService.Format(changeAmount, changeCurrency);
+                    lblChange.ForeColor = changeAmount >= 0 ? Color.FromArgb(34, 197, 94) : Color.FromArgb(239, 68, 68);
+                }
+                catch (InvalidOperationException)
+                {
+                    lblChange.Text = "Insufficient!";
+                    lblChange.ForeColor = Color.FromArgb(239, 68, 68);
+                }
             }
         }
 
@@ -1016,8 +1090,13 @@ namespace SyncVerseStudio.Views.CashierDashboard
 
         private void PaymentMethod_Changed(object sender, EventArgs e)
         {
-            txtCashAmount.Enabled = rbCash.Checked;
-            if (!rbCash.Checked)
+            bool isCash = rbCash.Checked;
+            txtCashAmount.Enabled = isCash;
+            lblCashCurrency.Visible = isCash;
+            rbCashUSD.Visible = isCash;
+            rbCashKHR.Visible = isCash;
+            
+            if (!isCash)
             {
                 txtCashAmount.Text = lblTotal.Text.Replace("$", "").Replace(",", "");
                 CalculateChange();
@@ -1200,6 +1279,9 @@ namespace SyncVerseStudio.Views.CashierDashboard
             btnConfirm.FlatAppearance.BorderSize = 0;
             btnConfirm.Click += async (s, e) => 
             {
+                // Play QR/Mobile payment sound
+                PlaySound(@"assets\audio\cash-register-kaching-376867.mp3");
+                
                 dialog.DialogResult = DialogResult.OK;
                 dialog.Close();
                 await ProcessSale();
@@ -1310,11 +1392,22 @@ namespace SyncVerseStudio.Views.CashierDashboard
 
                 await _context.SaveChangesAsync();
 
+                // Play invoice completion sound
+                PlaySound(@"assets\audio\cash-register-kaching-sound-effect-125042.mp3");
+
                 // Print Invoice
                 PrintInvoice(invoice, customerName);
 
+                // Prepare change message with currency
+                string changeMessage = lblChange.Text;
+                if (rbCash.Checked)
+                {
+                    var paidCurrency = rbCashUSD.Checked ? "USD" : "KHR";
+                    changeMessage = $"{lblChange.Text} ({paidCurrency})";
+                }
+
                 // Show success message
-                MessageBox.Show($"Sale completed successfully!\n\nInvoice: {invoice.InvoiceNumber}\nTotal: ${total:N2}\nChange: {lblChange.Text}", 
+                MessageBox.Show($"Sale completed successfully!\n\nInvoice: {invoice.InvoiceNumber}\nTotal: ${total:N2}\nChange: {changeMessage}", 
                     "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 // Clear cart
@@ -1619,6 +1712,24 @@ namespace SyncVerseStudio.Views.CashierDashboard
             }
         }
 
+        private void PlaySound(string soundFile)
+        {
+            try
+            {
+                string soundPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, soundFile);
+                if (System.IO.File.Exists(soundPath))
+                {
+                    soundPlayer = new System.Media.SoundPlayer(soundPath);
+                    soundPlayer.Play();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Silently fail if sound cannot be played
+                System.Diagnostics.Debug.WriteLine($"Sound error: {ex.Message}");
+            }
+        }
+
         private GraphicsPath GetRoundedRectPath(Rectangle rect, int radius)
         {
             var path = new GraphicsPath();
@@ -1640,3 +1751,4 @@ namespace SyncVerseStudio.Views.CashierDashboard
         }
     }
 }
+
