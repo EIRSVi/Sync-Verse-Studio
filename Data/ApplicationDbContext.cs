@@ -20,6 +20,10 @@ namespace SyncVerseStudio.Data
         public DbSet<PaymentLink> PaymentLinks { get; set; }
         public DbSet<HeldTransaction> HeldTransactions { get; set; }
         public DbSet<OnlineStoreIntegration> OnlineStoreIntegrations { get; set; }
+        public DbSet<GeneralLedgerEntry> GeneralLedgerEntries { get; set; }
+        public DbSet<Purchase> Purchases { get; set; }
+        public DbSet<PurchaseItem> PurchaseItems { get; set; }
+        public DbSet<FinancialAccount> FinancialAccounts { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -223,6 +227,72 @@ namespace SyncVerseStudio.Data
                 entity.Property(e => e.LastSyncStatus)
                     .HasConversion<string>()
                     .HasMaxLength(20);
+            });
+
+            // Configure GeneralLedgerEntry entity
+            modelBuilder.Entity<GeneralLedgerEntry>(entity =>
+            {
+                entity.HasIndex(e => e.EntryNumber).IsUnique();
+                entity.Property(e => e.AccountType)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.Property(e => e.BookOfEntry)
+                    .HasConversion<string>()
+                    .HasMaxLength(30);
+                entity.HasOne(d => d.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(d => d.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.RelatedSale)
+                    .WithMany()
+                    .HasForeignKey(d => d.RelatedSaleId)
+                    .OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(d => d.RelatedPayment)
+                    .WithMany()
+                    .HasForeignKey(d => d.RelatedPaymentId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configure Purchase entity
+            modelBuilder.Entity<Purchase>(entity =>
+            {
+                entity.HasIndex(e => e.PurchaseNumber).IsUnique();
+                entity.Property(e => e.Status)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.HasOne(d => d.Supplier)
+                    .WithMany()
+                    .HasForeignKey(d => d.SupplierId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(d => d.CreatedByUser)
+                    .WithMany()
+                    .HasForeignKey(d => d.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure PurchaseItem entity
+            modelBuilder.Entity<PurchaseItem>(entity =>
+            {
+                entity.HasOne(d => d.Purchase)
+                    .WithMany(p => p.PurchaseItems)
+                    .HasForeignKey(d => d.PurchaseId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(d => d.Product)
+                    .WithMany()
+                    .HasForeignKey(d => d.ProductId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure FinancialAccount entity
+            modelBuilder.Entity<FinancialAccount>(entity =>
+            {
+                entity.HasIndex(e => e.AccountCode).IsUnique();
+                entity.Property(e => e.AccountType)
+                    .HasConversion<string>()
+                    .HasMaxLength(20);
+                entity.Property(e => e.Category)
+                    .HasConversion<string>()
+                    .HasMaxLength(50);
             });
 
             // Seed data

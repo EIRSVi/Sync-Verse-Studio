@@ -230,6 +230,8 @@ namespace SyncVerseStudio.Views
                     yPos += 50;
                     AddMenuItem("Analytics", FontAwesome.Sharp.IconChar.ChartPie, yPos, () => LoadChildForm(new AnalyticsView(_authService)));
                     yPos += 50;
+                    AddMenuItem("Accounting Reports", FontAwesome.Sharp.IconChar.FileInvoiceDollar, yPos, () => LoadChildForm(new AccountingReportsView(_authService)));
+                    yPos += 50;
                     AddMenuItem("Audit Logs", FontAwesome.Sharp.IconChar.History, yPos, () => LoadChildForm(new AuditLogView(_authService)));
                     break;
 
@@ -248,6 +250,8 @@ namespace SyncVerseStudio.Views
                     yPos += 50;
                     AddMenuItem("Clients", FontAwesome.Sharp.IconChar.UserFriends, yPos, () => LoadChildForm(new CustomerManagementView(_authService)));
                     yPos += 50;
+                    AddMenuItem("Accounting Reports", FontAwesome.Sharp.IconChar.FileInvoiceDollar, yPos, () => LoadChildForm(new AccountingReportsView(_authService)));
+                    yPos += 50;
                     AddMenuItem("Reports", FontAwesome.Sharp.IconChar.ChartBar, yPos, () => LoadChildForm(new ReportsView(_authService)));
                     break;
 
@@ -261,6 +265,8 @@ namespace SyncVerseStudio.Views
                     AddMenuItem("Suppliers", FontAwesome.Sharp.IconChar.Truck, yPos, () => LoadChildForm(new SupplierManagementView(_authService)));
                     yPos += 50;
                     AddMenuItem("Inventory", FontAwesome.Sharp.IconChar.Warehouse, yPos, () => LoadChildForm(new InventoryView(_authService)));
+                    yPos += 50;
+                    AddMenuItem("Accounting Reports", FontAwesome.Sharp.IconChar.FileInvoiceDollar, yPos, () => LoadChildForm(new AccountingReportsView(_authService)));
                     yPos += 50;
                     AddMenuItem("Reports", FontAwesome.Sharp.IconChar.ChartBar, yPos, () => LoadChildForm(new ReportsView(_authService)));
                     break;
