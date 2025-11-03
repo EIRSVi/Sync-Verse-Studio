@@ -43,6 +43,17 @@ namespace SyncVerseStudio.Views
             this.StartPosition = FormStartPosition.CenterScreen;
             this.Text = "SyncVerse Studio - Dashboard";
             this.WindowState = FormWindowState.Maximized;
+            
+            // Set application icon
+            try
+            {
+                string iconPath = Path.Combine(Application.StartupPath, "app.ico");
+                if (File.Exists(iconPath))
+                {
+                    this.Icon = new System.Drawing.Icon(iconPath);
+                }
+            }
+            catch { }
 
             // Top Panel
             this.topPanel.BackColor = Color.White;

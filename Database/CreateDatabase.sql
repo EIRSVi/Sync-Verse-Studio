@@ -127,35 +127,72 @@ CREATE TABLE [dbo].[AuditLogs] (
     [IpAddress] NVARCHAR(45)
 );
 
--- Insert default admin user
-INSERT INTO [dbo].[Users] ([Username], [Password], [Email], [FirstName], [LastName], [Role])
-VALUES ('vi', '$2a$11$8K1p/a0dL8B9WvjqRJlqaOK9vF8JXw8tJ1K1K1K1K1K1K1K1K1K1K1', 'vi@syncverse.com', 'Vi', 'Admin', 'Administrator');
 
--- Insert sample categories
-INSERT INTO [dbo].[Categories] ([Name], [Description])
+-- Insert sample categories (Cambodia-based)
+INSERT INTO [dbo].[Categories] ([Name], [Description], [IsActive], [CreatedAt])
 VALUES 
-    ('Electronics', 'Electronic devices and accessories'),
-    ('Beverages', 'Drinks and beverages'),
-    ('Snacks', 'Snacks and confectionery'),
-    ('Stationery', 'Office and school supplies');
+    ('Soft Drinks', 'Carbonated and non-carbonated beverages', 1, GETDATE()),
+    ('Beer & Alcohol', 'Alcoholic beverages and beer', 1, GETDATE()),
+    ('Water', 'Bottled water and mineral water', 1, GETDATE()),
+    ('Energy Drinks', 'Energy and sports drinks', 1, GETDATE()),
+    ('Cosmetics', 'Beauty and personal care products', 1, GETDATE());
 
--- Insert sample suppliers
-INSERT INTO [dbo].[Suppliers] ([Name], [ContactPerson], [Phone], [Email])
+-- Insert sample suppliers (Cambodia-based)
+INSERT INTO [dbo].[Suppliers] ([Name], [ContactPerson], [Phone], [Email], [Address], [IsActive], [CreatedAt])
 VALUES 
-    ('Tech Solutions Ltd', 'John Smith', '+855123456789', 'contact@techsolutions.com'),
-    ('Fresh Beverages Co', 'Mary Johnson', '+855987654321', 'orders@freshbev.com');
+    ('KRUD Khmer Beverages', 'Sok Pisey', '+855 23 720 123', 'sales@krudbeverage.com.kh', 'Phnom Penh, Cambodia', 1, GETDATE()),
+    ('Hanuman Trading Co', 'Chea Sophea', '+855 12 345 678', 'orders@hanuman.com.kh', 'Siem Reap, Cambodia', 1, GETDATE()),
+    ('Cambodia Cosmetics Supply', 'Lim Dara', '+855 92 888 999', 'contact@cambodiacosmetics.com', 'Phnom Penh, Cambodia', 1, GETDATE()),
+    ('Vital Water Cambodia', 'Pov Samnang', '+855 77 123 456', 'info@vitalwater.com.kh', 'Battambang, Cambodia', 1, GETDATE()),
+    ('Hanuman Beer Distributor', 'Meas Chanthy', '+855 89 456 789', 'sales@hanumanbeer.com.kh', 'Kampong Cham, Cambodia', 1, GETDATE());
 
--- Insert sample products
-INSERT INTO [dbo].[Products] ([Name], [Description], [Barcode], [SKU], [CategoryId], [SupplierId], [CostPrice], [SellingPrice], [Quantity], [MinQuantity])
+-- Insert sample products (Cambodia-based - 21 products)
+INSERT INTO [dbo].[Products] ([Name], [Description], [Barcode], [SKU], [CategoryId], [SupplierId], [CostPrice], [SellingPrice], [Quantity], [MinQuantity], [IsActive], [CreatedAt], [UpdatedAt])
 VALUES 
-    ('USB Cable Type-C', '1-meter USB-C charging cable', '1234567890123', 'USB-C-001', 1, 1, 2.50, 5.00, 50, 10),
-    ('Coca Cola 330ml', 'Classic Coca Cola can', '2345678901234', 'COKE-330', 2, 2, 0.50, 1.00, 100, 20),
-    ('Notebook A4', 'Ruled notebook 200 pages', '3456789012345', 'NOTE-A4-200', 4, 1, 1.00, 2.50, 75, 15),
-    ('Potato Chips', 'Original flavor potato chips', '4567890123456', 'CHIPS-001', 3, 2, 0.75, 1.50, 80, 20);
+    -- Cambodie/Cambodia Beverages (Soft Drinks)
+    ('ABC Stout 330ml', 'Cambodian stout beer', '8850001001001', 'ABC-STOUT-330', 1, 1, 0.50, 0.90, 150, 40, 1, GETDATE(), GETDATE()),
+    ('Bayon Beer 330ml', 'Local Cambodian beer', '8850001001002', 'BAYON-330', 1, 1, 0.45, 0.85, 180, 50, 1, GETDATE(), GETDATE()),
+    ('Cambodia Beer 330ml', 'Premium local beer', '8850001001003', 'CAMBODIA-330', 1, 1, 0.55, 0.95, 160, 45, 1, GETDATE(), GETDATE()),
+    
+    -- Cole/Cola Drinks (Soft Drinks)
+    ('Coca Cola 330ml', 'Classic Coca Cola', '8850002002001', 'COKE-330', 1, 1, 0.40, 0.75, 200, 60, 1, GETDATE(), GETDATE()),
+    ('Pepsi 330ml', 'Pepsi cola drink', '8850002002002', 'PEPSI-330', 1, 1, 0.38, 0.70, 180, 55, 1, GETDATE(), GETDATE()),
+    ('Fanta Orange 330ml', 'Orange flavored soda', '8850002002003', 'FANTA-330', 1, 1, 0.35, 0.65, 190, 50, 1, GETDATE(), GETDATE()),
+    
+    -- Cusmic/Cosmetics
+    ('Khmer Beauty Cream 50g', 'Natural beauty cream', '8850005005001', 'COSMETIC-001', 5, 3, 2.50, 5.00, 80, 20, 1, GETDATE(), GETDATE()),
+    ('Cambodian Face Wash 100ml', 'Herbal face cleanser', '8850005005002', 'COSMETIC-002', 5, 3, 3.00, 6.00, 70, 15, 1, GETDATE(), GETDATE()),
+    ('Natural Soap Bar 100g', 'Traditional Khmer soap', '8850005005003', 'COSMETIC-003', 5, 3, 1.50, 3.00, 100, 25, 1, GETDATE(), GETDATE()),
+    
+    -- Food
+    ('Instant Noodles', 'Cambodian style noodles', '8850001003001', 'FOOD-001', 1, 2, 0.30, 0.60, 250, 80, 1, GETDATE(), GETDATE()),
+    ('Rice Crackers 100g', 'Traditional rice snack', '8850001003002', 'FOOD-002', 1, 2, 0.50, 1.00, 150, 40, 1, GETDATE(), GETDATE()),
+    ('Dried Fish Snack 50g', 'Cambodian dried fish', '8850001003003', 'FOOD-003', 1, 2, 1.20, 2.50, 100, 30, 1, GETDATE(), GETDATE()),
+    
+    -- Hanuman Energy Drinks
+    ('Hanuman Energy Red 250ml', 'Red energy drink', '8850004004001', 'HANUMAN-RED-250', 4, 2, 0.70, 1.20, 120, 30, 1, GETDATE(), GETDATE()),
+    ('Hanuman Energy Blue 250ml', 'Blue energy drink', '8850004004002', 'HANUMAN-BLUE-250', 4, 2, 0.70, 1.20, 110, 30, 1, GETDATE(), GETDATE()),
+    ('Hanuman Energy Green 250ml', 'Green energy drink', '8850004004003', 'HANUMAN-GREEN-250', 4, 2, 0.70, 1.20, 115, 30, 1, GETDATE(), GETDATE()),
+    
+    -- Health Products
+    ('Vitamin C Tablets', 'Health supplement', '8850005006001', 'HEALTH-001', 5, 3, 3.50, 7.00, 60, 15, 1, GETDATE(), GETDATE()),
+    ('Herbal Tea 20 bags', 'Traditional Khmer tea', '8850005006002', 'HEALTH-002', 5, 3, 2.00, 4.00, 80, 20, 1, GETDATE(), GETDATE()),
+    
+    -- Spirits/Alcohol
+    ('Sombai Rice Wine 750ml', 'Cambodian rice wine', '8850002007001', 'SPIRITS-001', 2, 5, 8.00, 15.00, 40, 10, 1, GETDATE(), GETDATE()),
+    
+    -- Vitaranc/Vitamin Drinks
+    ('Vitaranc Orange 500ml', 'Vitamin C orange drink', '8850004008001', 'VITARANC-500', 4, 4, 0.60, 1.10, 140, 35, 1, GETDATE(), GETDATE()),
+    
+    -- Water
+    ('Vital Water 500ml', 'Pure drinking water', '8850003003001', 'VITAL-500', 3, 4, 0.15, 0.30, 300, 100, 1, GETDATE(), GETDATE()),
+    ('Aqua Mineral Water 1.5L', 'Mineral water large', '8850003003002', 'AQUA-1500', 3, 4, 0.35, 0.70, 200, 60, 1, GETDATE(), GETDATE());
 
--- Insert sample customer
-INSERT INTO [dbo].[Customers] ([FirstName], [LastName], [Phone], [Email])
-VALUES ('Guest', 'Customer', '', '');
+-- Insert guest customer
+INSERT INTO [dbo].[Customers] ([FirstName], [LastName], [Phone], [Email], [Address], [LoyaltyPoints], [CreatedAt])
+VALUES 
+    ('Guest', 'Customer', '09876543224', 'ac@df.csd', 'pp#dkejr', 9, GETDATE());
+
 
 -- Create indexes for better performance
 CREATE NONCLUSTERED INDEX [IX_Products_CategoryId] ON [dbo].[Products] ([CategoryId]);

@@ -295,33 +295,173 @@ namespace SyncVerseStudio.Data
                     .HasMaxLength(50);
             });
 
-            // Seed data
-            modelBuilder.Entity<User>().HasData(
-                new User
+            // Seed data - Cambodia-based categories, suppliers, and products
+            modelBuilder.Entity<Category>().HasData(
+                new Category { Id = 1, Name = "Soft Drinks", Description = "Carbonated and non-carbonated beverages", IsActive = true, CreatedAt = DateTime.Now },
+                new Category { Id = 2, Name = "Beer & Alcohol", Description = "Alcoholic beverages and beer", IsActive = true, CreatedAt = DateTime.Now },
+                new Category { Id = 3, Name = "Water", Description = "Bottled water and mineral water", IsActive = true, CreatedAt = DateTime.Now },
+                new Category { Id = 4, Name = "Energy Drinks", Description = "Energy and sports drinks", IsActive = true, CreatedAt = DateTime.Now },
+                new Category { Id = 5, Name = "Cosmetics", Description = "Beauty and personal care products", IsActive = true, CreatedAt = DateTime.Now }
+            );
+
+            modelBuilder.Entity<Supplier>().HasData(
+                new Supplier 
+                { 
+                    Id = 1, 
+                    Name = "KRUD Khmer Beverages", 
+                    ContactPerson = "Sok Pisey", 
+                    Phone = "+855 23 720 123", 
+                    Email = "sales@krudbeverage.com.kh",
+                    Address = "Phnom Penh, Cambodia",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Supplier 
+                { 
+                    Id = 2, 
+                    Name = "Hanuman Trading Co", 
+                    ContactPerson = "Chea Sophea", 
+                    Phone = "+855 12 345 678", 
+                    Email = "orders@hanuman.com.kh",
+                    Address = "Siem Reap, Cambodia",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Supplier 
+                { 
+                    Id = 3, 
+                    Name = "Cambodia Cosmetics Supply", 
+                    ContactPerson = "Lim Dara", 
+                    Phone = "+855 92 888 999", 
+                    Email = "contact@cambodiacosmetics.com",
+                    Address = "Phnom Penh, Cambodia",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Supplier 
+                { 
+                    Id = 4, 
+                    Name = "Vital Water Cambodia", 
+                    ContactPerson = "Pov Samnang", 
+                    Phone = "+855 77 123 456", 
+                    Email = "info@vitalwater.com.kh",
+                    Address = "Battambang, Cambodia",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                },
+                new Supplier 
+                { 
+                    Id = 5, 
+                    Name = "KRUD Beer Distributor", 
+                    ContactPerson = "Meas Chanthy", 
+                    Phone = "+855 89 456 789", 
+                    Email = "sales@KRUDbeer.com.kh",
+                    Address = "Kampong Cham, Cambodia",
+                    IsActive = true,
+                    CreatedAt = DateTime.Now
+                }
+            );
+
+            modelBuilder.Entity<Product>().HasData(
+                new Product
                 {
                     Id = 1,
-                    Username = "vi",
-                    Password = "$2a$11$8K1p/a0dL8B9WvjqRJlqaOK9vF8JXw8tJ1K1K1K1K1K1K1K1K1K1K1",
-                    Email = "vi@syncverse.com",
-                    FirstName = "Vi",
-                    LastName = "Admin",
-                    Role = UserRole.Administrator,
+                    Name = "KRUD Soda 330ml",
+                    Description = "Cambodian local soda drink",
+                    Barcode = "8850999320101",
+                    SKU = "KRUD-330",
+                    CategoryId = 1,
+                    SupplierId = 1,
+                    CostPrice = 0.35m,
+                    SellingPrice = 0.70m,
+                    Quantity = 200,
+                    MinQuantity = 50,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Product
+                {
+                    Id = 2,
+                    Name = "Angkor Beer 330ml",
+                    Description = "Cambodia's premium lager beer",
+                    Barcode = "8850123456789",
+                    SKU = "ANGKOR-330",
+                    CategoryId = 2,
+                    SupplierId = 5,
+                    CostPrice = 0.60m,
+                    SellingPrice = 1.00m,
+                    Quantity = 150,
+                    MinQuantity = 40,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Product
+                {
+                    Id = 3,
+                    Name = "Vital Water 500ml",
+                    Description = "Pure drinking water",
+                    Barcode = "8850234567890",
+                    SKU = "VITAL-500",
+                    CategoryId = 3,
+                    SupplierId = 4,
+                    CostPrice = 0.15m,
+                    SellingPrice = 0.30m,
+                    Quantity = 300,
+                    MinQuantity = 100,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Product
+                {
+                    Id = 4,
+                    Name = "Hanuman Energy Drink 250ml",
+                    Description = "Local energy drink",
+                    Barcode = "8850345678901",
+                    SKU = "HANUMAN-250",
+                    CategoryId = 4,
+                    SupplierId = 2,
+                    CostPrice = 0.70m,
+                    SellingPrice = 1.20m,
+                    Quantity = 120,
+                    MinQuantity = 30,
+                    IsActive = true,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                new Product
+                {
+                    Id = 5,
+                    Name = "Khmer Beauty Cream 50g",
+                    Description = "Natural beauty cream",
+                    Barcode = "8850456789012",
+                    SKU = "COSMETIC-001",
+                    CategoryId = 5,
+                    SupplierId = 3,
+                    CostPrice = 2.50m,
+                    SellingPrice = 5.00m,
+                    Quantity = 80,
+                    MinQuantity = 20,
                     IsActive = true,
                     CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now
                 }
             );
 
-            modelBuilder.Entity<Category>().HasData(
-                new Category { Id = 1, Name = "Electronics", Description = "Electronic devices and accessories" },
-                new Category { Id = 2, Name = "Beverages", Description = "Drinks and beverages" },
-                new Category { Id = 3, Name = "Snacks", Description = "Snacks and confectionery" },
-                new Category { Id = 4, Name = "Stationery", Description = "Office and school supplies" }
-            );
-
-            modelBuilder.Entity<Supplier>().HasData(
-                new Supplier { Id = 1, Name = "Tech Solutions Ltd", ContactPerson = "John Smith", Phone = "+855123456789", Email = "contact@techsolutions.com" },
-                new Supplier { Id = 2, Name = "Fresh Beverages Co", ContactPerson = "Mary Johnson", Phone = "+855987654321", Email = "orders@freshbev.com" }
+            modelBuilder.Entity<Customer>().HasData(
+                new Customer
+                {
+                    Id = 1,
+                    FirstName = "Guest",
+                    LastName = "Customer",
+                    Phone = "",
+                    Email = "",
+                    Address = "",
+                    LoyaltyPoints = 0,
+                    CreatedAt = DateTime.Now
+                }
             );
         }
     }

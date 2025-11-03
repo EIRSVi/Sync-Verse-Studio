@@ -411,8 +411,14 @@ namespace SyncVerseStudio.Views
                 using (var context = new ApplicationDbContext())
                 {
                     // Delete all data in order (respecting foreign keys)
+                    // Start with child tables that reference other tables
+                    await context.Database.ExecuteSqlRawAsync("DELETE FROM InvoiceItems");
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM SaleItems");
+                    await context.Database.ExecuteSqlRawAsync("DELETE FROM PaymentLinks");
+                    await context.Database.ExecuteSqlRawAsync("DELETE FROM Payments");
+                    await context.Database.ExecuteSqlRawAsync("DELETE FROM Invoices");
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM Sales");
+                    await context.Database.ExecuteSqlRawAsync("DELETE FROM HeldTransactions");
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM InventoryMovements");
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM ProductImages");
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM Products");
@@ -423,8 +429,13 @@ namespace SyncVerseStudio.Views
                     await context.Database.ExecuteSqlRawAsync("DELETE FROM Users");
 
                     // Reset identity columns
+                    await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('InvoiceItems', RESEED, 0)");
                     await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('SaleItems', RESEED, 0)");
+                    await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('PaymentLinks', RESEED, 0)");
+                    await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Payments', RESEED, 0)");
+                    await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Invoices', RESEED, 0)");
                     await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Sales', RESEED, 0)");
+                    await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('HeldTransactions', RESEED, 0)");
                     await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('InventoryMovements', RESEED, 0)");
                     await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('ProductImages', RESEED, 0)");
                     await context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Products', RESEED, 0)");

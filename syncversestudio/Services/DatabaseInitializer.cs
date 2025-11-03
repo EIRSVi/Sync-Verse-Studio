@@ -34,10 +34,11 @@ namespace SyncVerseStudio.Services
             {
                 var categories = new[]
                 {
-                    new Category { Name = "Electronics", Description = "Electronic devices and accessories", IsActive = true },
-                    new Category { Name = "Beverages", Description = "Drinks and beverages", IsActive = true },
-                    new Category { Name = "Snacks", Description = "Snacks and confectionery", IsActive = true },
-                    new Category { Name = "Stationery", Description = "Office and school supplies", IsActive = true }
+                    new Category { Name = "Soft Drinks", Description = "Carbonated and non-carbonated beverages", IsActive = true },
+                    new Category { Name = "Beer & Alcohol", Description = "Alcoholic beverages and beer", IsActive = true },
+                    new Category { Name = "Water", Description = "Bottled water and mineral water", IsActive = true },
+                    new Category { Name = "Energy Drinks", Description = "Energy and sports drinks", IsActive = true },
+                    new Category { Name = "Cosmetics", Description = "Beauty and personal care products", IsActive = true }
                 };
                 
                 context.Categories.AddRange(categories);
@@ -56,18 +57,47 @@ namespace SyncVerseStudio.Services
                 {
                     new Supplier 
                     { 
-                        Name = "Tech Solutions Ltd", 
-                        ContactPerson = "John Smith", 
-                        Phone = "+855123456789", 
-                        Email = "contact@techsolutions.com",
+                        Name = "KRUD Khmer Beverages", 
+                        ContactPerson = "Sok Pisey", 
+                        Phone = "+855 23 720 123", 
+                        Email = "sales@krudbeverage.com.kh",
+                        Address = "Phnom Penh, Cambodia",
                         IsActive = true
                     },
                     new Supplier 
                     { 
-                        Name = "Fresh Beverages Co", 
-                        ContactPerson = "Mary Johnson", 
-                        Phone = "+855987654321", 
-                        Email = "orders@freshbev.com",
+                        Name = "Hanuman Trading Co", 
+                        ContactPerson = "Chea Sophea", 
+                        Phone = "+855 12 345 678", 
+                        Email = "orders@hanuman.com.kh",
+                        Address = "Siem Reap, Cambodia",
+                        IsActive = true
+                    },
+                    new Supplier 
+                    { 
+                        Name = "Cambodia Cosmetics Supply", 
+                        ContactPerson = "Lim Dara", 
+                        Phone = "+855 92 888 999", 
+                        Email = "contact@cambodiacosmetics.com",
+                        Address = "Phnom Penh, Cambodia",
+                        IsActive = true
+                    },
+                    new Supplier 
+                    { 
+                        Name = "Vital Water Cambodia", 
+                        ContactPerson = "Pov Samnang", 
+                        Phone = "+855 77 123 456", 
+                        Email = "info@vitalwater.com.kh",
+                        Address = "Battambang, Cambodia",
+                        IsActive = true
+                    },
+                    new Supplier 
+                    { 
+                        Name = "Angkor Beer Distributor", 
+                        ContactPerson = "Meas Chanthy", 
+                        Phone = "+855 89 456 789", 
+                        Email = "sales@angkorbeer.com.kh",
+                        Address = "Kampong Cham, Cambodia",
                         IsActive = true
                     }
                 };
@@ -84,43 +114,89 @@ namespace SyncVerseStudio.Services
             
             if (!await context.Products.AnyAsync())
             {
-                var electronicsCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Electronics");
-                var beveragesCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Beverages");
-                var snacksCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Snacks");
-                var stationeryCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Stationery");
+                var softDrinksCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Soft Drinks");
+                var beerCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Beer & Alcohol");
+                var waterCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Water");
+                var energyCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Energy Drinks");
+                var cosmeticsCategory = await context.Categories.FirstOrDefaultAsync(c => c.Name == "Cosmetics");
                 
-                var techSupplier = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Tech Solutions Ltd");
-                var beverageSupplier = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Fresh Beverages Co");
+                var krudBeverage = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "KRUD Khmer Beverages");
+                var hanumanTrading = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Hanuman Trading Co");
+                var cambodiaCosmetics = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Cambodia Cosmetics Supply");
+                var vitalWater = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Vital Water Cambodia");
+                var angkorBeer = await context.Suppliers.FirstOrDefaultAsync(s => s.Name == "Angkor Beer Distributor");
                 
-                if (electronicsCategory != null && beveragesCategory != null && techSupplier != null && beverageSupplier != null)
+                if (softDrinksCategory != null && beerCategory != null && krudBeverage != null && angkorBeer != null)
                 {
                     var products = new[]
                     {
                         new Product
                         {
-                            Name = "USB Cable Type-C",
-                            Description = "1-meter USB-C charging cable",
-                            Barcode = "1234567890123",
-                            SKU = "USB-C-001",
-                            CategoryId = electronicsCategory.Id,
-                            SupplierId = techSupplier.Id,
-                            CostPrice = 2.50m,
-                            SellingPrice = 5.00m,
-                            Quantity = 50,
-                            MinQuantity = 10,
+                            Name = "KRUD Soda 330ml",
+                            Description = "Cambodian local soda drink",
+                            Barcode = "8850999320101",
+                            SKU = "KRUD-330",
+                            CategoryId = softDrinksCategory.Id,
+                            SupplierId = krudBeverage.Id,
+                            CostPrice = 0.35m,
+                            SellingPrice = 0.70m,
+                            Quantity = 200,
+                            MinQuantity = 50,
                             IsActive = true
                         },
                         new Product
                         {
-                            Name = "Coca Cola 330ml",
-                            Description = "Classic Coca Cola can",
-                            Barcode = "2345678901234",
-                            SKU = "COKE-330",
-                            CategoryId = beveragesCategory.Id,
-                            SupplierId = beverageSupplier.Id,
-                            CostPrice = 0.50m,
+                            Name = "Angkor Beer 330ml",
+                            Description = "Cambodia's premium lager beer",
+                            Barcode = "8850123456789",
+                            SKU = "ANGKOR-330",
+                            CategoryId = beerCategory.Id,
+                            SupplierId = angkorBeer.Id,
+                            CostPrice = 0.60m,
                             SellingPrice = 1.00m,
-                            Quantity = 100,
+                            Quantity = 150,
+                            MinQuantity = 40,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Vital Water 500ml",
+                            Description = "Pure drinking water",
+                            Barcode = "8850234567890",
+                            SKU = "VITAL-500",
+                            CategoryId = waterCategory?.Id ?? softDrinksCategory.Id,
+                            SupplierId = vitalWater?.Id ?? krudBeverage.Id,
+                            CostPrice = 0.15m,
+                            SellingPrice = 0.30m,
+                            Quantity = 300,
+                            MinQuantity = 100,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Hanuman Energy Drink 250ml",
+                            Description = "Local energy drink",
+                            Barcode = "8850345678901",
+                            SKU = "HANUMAN-250",
+                            CategoryId = energyCategory?.Id ?? softDrinksCategory.Id,
+                            SupplierId = hanumanTrading?.Id ?? krudBeverage.Id,
+                            CostPrice = 0.70m,
+                            SellingPrice = 1.20m,
+                            Quantity = 120,
+                            MinQuantity = 30,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Khmer Beauty Cream 50g",
+                            Description = "Natural beauty cream",
+                            Barcode = "8850456789012",
+                            SKU = "COSMETIC-001",
+                            CategoryId = cosmeticsCategory?.Id ?? softDrinksCategory.Id,
+                            SupplierId = cambodiaCosmetics?.Id ?? krudBeverage.Id,
+                            CostPrice = 2.50m,
+                            SellingPrice = 5.00m,
+                            Quantity = 80,
                             MinQuantity = 20,
                             IsActive = true
                         }

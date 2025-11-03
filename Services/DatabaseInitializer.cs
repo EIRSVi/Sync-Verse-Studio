@@ -16,43 +16,16 @@ namespace SyncVerseStudio.Services
                 // Ensure database is created
                 await context.Database.EnsureCreatedAsync();
                 
-                // Check if admin user exists
-                var adminUser = await context.Users.FirstOrDefaultAsync(u => u.Username == "vi");
-                
-                if (adminUser == null)
-                {
-                    // Create admin user with hashed password
-                    adminUser = new User
-                    {
-                        Username = "vi",
-                        Password = BCrypt.Net.BCrypt.HashPassword("vi"),
-                        Email = "vi@syncverse.com",
-                        FirstName = "Vi",
-                        LastName = "Admin",
-                        Role = UserRole.Administrator,
-                        IsActive = true,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now
-                    };
-                    
-                    context.Users.Add(adminUser);
-                }
-                else
-                {
-                    // Update password to ensure it's properly hashed
-                    adminUser.Password = BCrypt.Net.BCrypt.HashPassword("vi");
-                    context.Users.Update(adminUser);
-                }
-                
                 // Initialize categories if they don't exist
                 if (!await context.Categories.AnyAsync())
                 {
                     var categories = new[]
                     {
-                        new Category { Name = "Electronics", Description = "Electronic devices and accessories", IsActive = true },
-                        new Category { Name = "Beverages", Description = "Drinks and beverages", IsActive = true },
-                        new Category { Name = "Snacks", Description = "Snacks and confectionery", IsActive = true },
-                        new Category { Name = "Stationery", Description = "Office and school supplies", IsActive = true }
+                        new Category { Name = "Soft Drinks", Description = "Carbonated and non-carbonated beverages", IsActive = true },
+                        new Category { Name = "Beer & Alcohol", Description = "Alcoholic beverages and beer", IsActive = true },
+                        new Category { Name = "Water", Description = "Bottled water and mineral water", IsActive = true },
+                        new Category { Name = "Energy Drinks", Description = "Energy and sports drinks", IsActive = true },
+                        new Category { Name = "Cosmetics", Description = "Beauty and personal care products", IsActive = true }
                     };
                     
                     context.Categories.AddRange(categories);
@@ -65,18 +38,47 @@ namespace SyncVerseStudio.Services
                     {
                         new Supplier 
                         { 
-                            Name = "Tech Solutions Ltd", 
-                            ContactPerson = "John Smith", 
-                            Phone = "+855123456789", 
-                            Email = "contact@techsolutions.com",
+                            Name = "KRUD Khmer Beverages", 
+                            ContactPerson = "Sok Pisey", 
+                            Phone = "+855 23 720 123", 
+                            Email = "sales@krudbeverage.com.kh",
+                            Address = "Phnom Penh, Cambodia",
                             IsActive = true
                         },
                         new Supplier 
                         { 
-                            Name = "Fresh Beverages Co", 
-                            ContactPerson = "Mary Johnson", 
-                            Phone = "+855987654321", 
-                            Email = "orders@freshbev.com",
+                            Name = "Hanuman Trading Co", 
+                            ContactPerson = "Chea Sophea", 
+                            Phone = "+855 12 345 678", 
+                            Email = "orders@hanuman.com.kh",
+                            Address = "Siem Reap, Cambodia",
+                            IsActive = true
+                        },
+                        new Supplier 
+                        { 
+                            Name = "Cambodia Cosmetics Supply", 
+                            ContactPerson = "Lim Dara", 
+                            Phone = "+855 92 888 999", 
+                            Email = "contact@cambodiacosmetics.com",
+                            Address = "Phnom Penh, Cambodia",
+                            IsActive = true
+                        },
+                        new Supplier 
+                        { 
+                            Name = "Vital Water Cambodia", 
+                            ContactPerson = "Pov Samnang", 
+                            Phone = "+855 77 123 456", 
+                            Email = "info@vitalwater.com.kh",
+                            Address = "Battambang, Cambodia",
+                            IsActive = true
+                        },
+                        new Supplier 
+                        { 
+                            Name = "Angkor Beer Distributor", 
+                            ContactPerson = "Meas Chanthy", 
+                            Phone = "+855 89 456 789", 
+                            Email = "sales@angkorbeer.com.kh",
+                            Address = "Kampong Cham, Cambodia",
                             IsActive = true
                         }
                     };
@@ -89,68 +91,86 @@ namespace SyncVerseStudio.Services
                 {
                     await context.SaveChangesAsync(); // Save categories and suppliers first
                     
-                    var electronicsCategory = await context.Categories.FirstAsync(c => c.Name == "Electronics");
-                    var beveragesCategory = await context.Categories.FirstAsync(c => c.Name == "Beverages");
-                    var snacksCategory = await context.Categories.FirstAsync(c => c.Name == "Snacks");
-                    var stationeryCategory = await context.Categories.FirstAsync(c => c.Name == "Stationery");
+                    var softDrinksCategory = await context.Categories.FirstAsync(c => c.Name == "Soft Drinks");
+                    var beerCategory = await context.Categories.FirstAsync(c => c.Name == "Beer & Alcohol");
+                    var waterCategory = await context.Categories.FirstAsync(c => c.Name == "Water");
+                    var energyCategory = await context.Categories.FirstAsync(c => c.Name == "Energy Drinks");
+                    var cosmeticsCategory = await context.Categories.FirstAsync(c => c.Name == "Cosmetics");
                     
-                    var techSupplier = await context.Suppliers.FirstAsync(s => s.Name == "Tech Solutions Ltd");
-                    var beverageSupplier = await context.Suppliers.FirstAsync(s => s.Name == "Fresh Beverages Co");
+                    var krudBeverage = await context.Suppliers.FirstAsync(s => s.Name == "KRUD Khmer Beverages");
+                    var hanumanTrading = await context.Suppliers.FirstAsync(s => s.Name == "Hanuman Trading Co");
+                    var cambodiaCosmetics = await context.Suppliers.FirstAsync(s => s.Name == "Cambodia Cosmetics Supply");
+                    var vitalWater = await context.Suppliers.FirstAsync(s => s.Name == "Vital Water Cambodia");
+                    var angkorBeer = await context.Suppliers.FirstAsync(s => s.Name == "Angkor Beer Distributor");
                     
                     var products = new[]
                     {
                         new Product
                         {
-                            Name = "USB Cable Type-C",
-                            Description = "1-meter USB-C charging cable",
-                            Barcode = "1234567890123",
-                            SKU = "USB-C-001",
-                            CategoryId = electronicsCategory.Id,
-                            SupplierId = techSupplier.Id,
+                            Name = "KRUD Soda 330ml",
+                            Description = "Cambodian local soda drink",
+                            Barcode = "8850999320101",
+                            SKU = "KRUD-330",
+                            CategoryId = softDrinksCategory.Id,
+                            SupplierId = krudBeverage.Id,
+                            CostPrice = 0.35m,
+                            SellingPrice = 0.70m,
+                            Quantity = 200,
+                            MinQuantity = 50,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Angkor Beer 330ml",
+                            Description = "Cambodia's premium lager beer",
+                            Barcode = "8850123456789",
+                            SKU = "ANGKOR-330",
+                            CategoryId = beerCategory.Id,
+                            SupplierId = angkorBeer.Id,
+                            CostPrice = 0.60m,
+                            SellingPrice = 1.00m,
+                            Quantity = 150,
+                            MinQuantity = 40,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Vital Water 500ml",
+                            Description = "Pure drinking water",
+                            Barcode = "8850234567890",
+                            SKU = "VITAL-500",
+                            CategoryId = waterCategory.Id,
+                            SupplierId = vitalWater.Id,
+                            CostPrice = 0.15m,
+                            SellingPrice = 0.30m,
+                            Quantity = 300,
+                            MinQuantity = 100,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Hanuman Energy Drink 250ml",
+                            Description = "Local energy drink",
+                            Barcode = "8850345678901",
+                            SKU = "HANUMAN-250",
+                            CategoryId = energyCategory.Id,
+                            SupplierId = hanumanTrading.Id,
+                            CostPrice = 0.70m,
+                            SellingPrice = 1.20m,
+                            Quantity = 120,
+                            MinQuantity = 30,
+                            IsActive = true
+                        },
+                        new Product
+                        {
+                            Name = "Khmer Beauty Cream 50g",
+                            Description = "Natural beauty cream",
+                            Barcode = "8850456789012",
+                            SKU = "COSMETIC-001",
+                            CategoryId = cosmeticsCategory.Id,
+                            SupplierId = cambodiaCosmetics.Id,
                             CostPrice = 2.50m,
                             SellingPrice = 5.00m,
-                            Quantity = 50,
-                            MinQuantity = 10,
-                            IsActive = true
-                        },
-                        new Product
-                        {
-                            Name = "Coca Cola 330ml",
-                            Description = "Classic Coca Cola can",
-                            Barcode = "2345678901234",
-                            SKU = "COKE-330",
-                            CategoryId = beveragesCategory.Id,
-                            SupplierId = beverageSupplier.Id,
-                            CostPrice = 0.50m,
-                            SellingPrice = 1.00m,
-                            Quantity = 100,
-                            MinQuantity = 20,
-                            IsActive = true
-                        },
-                        new Product
-                        {
-                            Name = "Notebook A4",
-                            Description = "Ruled notebook 200 pages",
-                            Barcode = "3456789012345",
-                            SKU = "NOTE-A4-200",
-                            CategoryId = stationeryCategory.Id,
-                            SupplierId = techSupplier.Id,
-                            CostPrice = 1.00m,
-                            SellingPrice = 2.50m,
-                            Quantity = 75,
-                            MinQuantity = 15,
-                            IsActive = true
-                        },
-                        new Product
-                        {
-                            Name = "Potato Chips",
-                            Description = "Original flavor potato chips",
-                            Barcode = "4567890123456",
-                            SKU = "CHIPS-001",
-                            CategoryId = snacksCategory.Id,
-                            SupplierId = beverageSupplier.Id,
-                            CostPrice = 0.75m,
-                            SellingPrice = 1.50m,
                             Quantity = 80,
                             MinQuantity = 20,
                             IsActive = true
@@ -167,8 +187,8 @@ namespace SyncVerseStudio.Services
                     {
                         FirstName = "Guest",
                         LastName = "Customer",
-                        Phone = "",
-                        Email = "",
+                        Phone = "0987654321",
+                        Email = "qwerty@zx.y",
                         LoyaltyPoints = 0
                     };
                     

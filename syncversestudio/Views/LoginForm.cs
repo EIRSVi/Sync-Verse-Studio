@@ -35,6 +35,17 @@ namespace SyncVerseStudio.Views
             this.StartPosition = FormStartPosition.CenterScreen;
             this.FormBorderStyle = FormBorderStyle.None;
             this.BackColor = BrandTheme.CoolWhite; // #D7E8FA
+            
+            // Set application icon
+            try
+            {
+                string iconPath = Path.Combine(Application.StartupPath, "app.ico");
+                if (File.Exists(iconPath))
+                {
+                    this.Icon = new System.Drawing.Icon(iconPath);
+                }
+            }
+            catch { }
 
             // Header Panel
             headerPanel = new Panel
